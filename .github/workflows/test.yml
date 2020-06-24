@@ -146,8 +146,8 @@ jobs:
           AWS_REGION: us-east-1
         run: |
           mkdir -p ~/.aws
-          echo "$RELEASE_MGR_CREDENTIALS_FILE" > ~/.aws/credentials
-          echo "$RELEASE_MGR_CONFIG_FILE" > ~/.aws/config
+          echo "$QA_TESTER_CREDENTIALS_FILE" > ~/.aws/credentials
+          echo "$QA_TESTER_CONFIG_FILE" > ~/.aws/config
 
           cat ~/.aws/config
           export TERM=linux
