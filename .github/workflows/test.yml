@@ -141,14 +141,14 @@ jobs:
         env:
           FIGGY_DISABLE_KEYRING: true
           OVERRIDE_KEYRING: true
-          CONFIG_DEFAULT: ${{ secrets.CONFIG_FILE }}
-          CREDENTIALS_FILE: ${{ secrets.QA_TESTER_CREDENTIALS_FILE }}
-          CONFIG_FILE: ${{ secrets.QA_TESTER_CONFIG_FILE }}
+          CONFIG_DEFAULT: ${{ secrets.RELEASE_MGR_CONFIG_FILE }}
+          RELEASE_MGR_CREDENTIALS_FILE: ${{ secrets.QA_TESTER_RELEASE_MGR_CREDENTIALS_FILE }}
+          RELEASE_MGR_CONFIG_FILE: ${{ secrets.QA_TESTER_RELEASE_MGR_CONFIG_FILE }}
           AWS_REGION: us-east-1
         run: |
           mkdir -p ~/.aws
-          echo "$CREDENTIALS_FILE" > ~/.aws/credentials
-          echo "$CONFIG_FILE" > ~/.aws/config
+          echo "$RELEASE_MGR_CREDENTIALS_FILE" > ~/.aws/credentials
+          echo "$RELEASE_MGR_CONFIG_FILE" > ~/.aws/config
 
           cat ~/.aws/config
           export TERM=linux
