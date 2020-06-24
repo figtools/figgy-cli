@@ -94,9 +94,9 @@ def main():
         data_tests()
     elif auth_type == 'bastion':
         # Login to DEV Role
-        # print_test("Bastion DEV Login")
-        # DevLogin(BASTION_ENV).run()
-        # dev_tests(key_down_to_shared=1)
+        print_test("Bastion DEV Login")
+        DevLogin(BASTION_ENV).run()
+        dev_tests(key_down_to_shared=1)
 
         clear_cache()
         # Login to data role
