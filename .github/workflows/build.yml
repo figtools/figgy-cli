@@ -63,7 +63,7 @@ jobs:
 
       - name: Deploy
         env:
-          RELEASE_MGR_RELEASE_MGR_CONFIG_FILE: ${{ secrets.CONFIG_DEFAULT }}
+          RELEASE_MGR_CONFIG_FILE: ${{ secrets.RELEASE_MGR_CONFIG_FILE }}
           RELEASE_MGR_CREDENTIALS_FILE: ${{ secrets.RELEASE_MGR_CREDENTIALS_FILE }}
           VERSION: ${{ env.RELEASE_VERSION }}
         run: |
@@ -144,7 +144,7 @@ jobs:
 
       - name: Deploy
         env:
-          RELEASE_MGR_CONFIG_FILE: ${{ secrets.CONFIG_DEFAULT }}
+          RELEASE_MGR_CONFIG_FILE: ${{ secrets.RELEASE_MGR_CONFIG_FILE }}
           RELEASE_MGR_CREDENTIALS_FILE: ${{ secrets.RELEASE_MGR_CREDENTIALS_FILE }}
           VERSION: ${{ env.RELEASE_VERSION }}
         run: |
