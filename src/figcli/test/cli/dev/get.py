@@ -17,10 +17,10 @@ class DevGet(FiggyTest):
         self.get(param_1, param_1_val, get_more=False)
 
     def get(self, key, value, get_more=False, expect_missing=False, no_decrypt=False):
-        self.expect('.*PS Name*')
+        self.expect('.*PS Name.*')
         self.sendline(key)
         if expect_missing:
-            self.expect(f'.*Invalid PS Name specified..*')
+            self.expect(f'.*Invalid PS Name specified.*')
             print("Missing parameter validated.")
         elif no_decrypt:
             self.expect(f'.*do not have access.*')

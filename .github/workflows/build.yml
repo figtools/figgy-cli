@@ -28,8 +28,8 @@ jobs:
           pyinstaller figgy.spec
 
           mv dist/__main__/__main__ dist/__main__/figgy
-          scripts/zip_it.sh
-          scripts/tar_it.sh $(scripts/get_version.sh)
+          ../scripts/zip_it.sh
+          ../scripts/tar_it.sh $(scripts/get_version.sh)
 
       - name: Test Artifact
         env:
@@ -110,8 +110,8 @@ jobs:
           pyinstaller figgy.spec
 
           mv dist/__main__/__main__ dist/__main__/figgy
-          scripts/zip_it.sh
-          scripts/tar_it.sh $(scripts/get_version.sh)
+          ../scripts/zip_it.sh
+          ../scripts/tar_it.sh $(scripts/get_version.sh)
 
 
       - name: Test Artifact
@@ -184,7 +184,7 @@ jobs:
           pyinstaller figgy.spec
 
           mv dist/__main__/__main__.exe dist/__main__/figgy.exe
-          scripts/tar_it.sh $(scripts/get_version.sh)
+          ../scripts/tar_it.sh $(scripts/get_version.sh)
 
       - name: Zip
         run: |
