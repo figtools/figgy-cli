@@ -73,7 +73,7 @@ class FiggySetup:
 
         try:
             mfa_enabled = Utils.parse_bool(self._config_mgr.get_or_prompt(Config.Section.Figgy.MFA_ENABLED,
-                                                                          Input.select_mfa_enabled))
+                                                                          Input.select_mfa_enabled, desc=MFA_DESC))
             if mfa_enabled:
                 auto_mfa = Utils.parse_bool(self._config_mgr.get_or_prompt(Config.Section.Figgy.AUTO_MFA,
                                                                            Input.select_auto_mfa, desc=AUTO_MFA_DESC))
@@ -134,7 +134,7 @@ class FiggySetup:
         updated_defaults = current_defaults
         updated_defaults.region = self._config_mgr.get_or_prompt(Config.Section.Figgy.AWS_REGION, Input.select_region)
         updated_defaults.colors_enabled = self._config_mgr.get_or_prompt(Config.Section.Figgy.COLORS_ENABLED,
-                                                                         Input.select_enable_colors)
+                                                                         Input.select_enable_colors, force_prompt=True)
 
         # Defaulting to True, users will always be prompted to report or not report an error.
         updated_defaults.report_errors = True

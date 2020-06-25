@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.36
+- Improving ergonoimcs and clarity of the --configure command. 
+
 ## 0.0.35
 - Fixing a bug with browse where certain figs would get improperly assigned within the browse tree.
 

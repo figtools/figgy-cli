@@ -141,6 +141,8 @@ is_secret = [
 ]
 
 # Config defaults descriptions:
+MFA_DESC = "Does the user above have multi-factor authentication enabled?"
+
 AUTO_MFA_DESC = "By enabling this option you will never be prompted for MFA. Instead figgy will save your " \
                 "multi-factor secret in your OS keychain andwill generated one-time passcodes on your behalf. " \
                 "You will need your MFA secret handy. **This is your MFA secret, NOT your six-digit code that " \
@@ -150,5 +152,5 @@ OKTA_APP_LINK_DESC = "This is the 'Embed URL' linked to your OKTA SAML integrati
                      "the Figgy Docs OKTA setup guide."
 
 OKTA_MFA_TYPE_DESC = "Your OKTA administrator selects specific MFA types that are supported for OKTA. " \
-                     "For instance, GOOGLE = the Google Authenticator application. OKTA = Okta Verify - Push MFA."
+                     "For instance, GOOGLE = Google Authenticator Mobile application. OKTA = Okta Verify - Push MFA."
 

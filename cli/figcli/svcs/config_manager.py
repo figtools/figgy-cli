@@ -81,6 +81,10 @@ class ConfigManager:
             if not selection or force_prompt:
                 original_val = val
                 val = get_it()
+
+                if isinstance(val, bool):
+                    val = "true" if val else "false"
+
                 if val != original_val:
                     print(f"\n\nYou selected to overwrite the default. Updating default value:"
                           f"\nKey: {c.fg_gr}{key.value}{c.rs}"

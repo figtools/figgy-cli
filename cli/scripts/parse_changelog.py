@@ -1,7 +1,7 @@
 import re
 from figcli.config.constants import VERSION
 
-with open('CHANGELOG.md', 'r') as file:
+with open('../CHANGELOG.md', 'r') as file:
     changelog = file.read()
 
 regex = f'.*(##+\s+{VERSION}[^#]*)##+\s+[0-9]+\.[0-9]+\.[0-9]+.*'

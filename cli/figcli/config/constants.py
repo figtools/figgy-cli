@@ -1,11 +1,11 @@
 from pathlib import Path
 
-VERSION = '0.0.35'
+VERSION = '0.0.36'
 CLI_NAME = 'figgy'
 PROJECT_NAME = 'figgy'
 
 # Figgy URLS
-FIGGY_GITHUB = "https://github.com/figtools/figgy"
+FIGGY_GITHUB = "https://github.com/figtools/figgy-cli"
 FIGGY_OBS_API_BASE_URL = "https://api.figgy.dev"
 
 # Paths
