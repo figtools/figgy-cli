@@ -11,8 +11,6 @@ class DevGet(FiggyTest):
         super().__init__(pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(get)} --env {DEFAULT_ENV} '
                                        f'--skip-upgrade {extra_args}',
                                        timeout=10, encoding='utf-8'), extra_args=extra_args)
-        self._child.delayafterread = .01
-        self._child.delaybeforesend = .5
 
     def run(self):
         self.step(f"Testing GET for {param_1}")

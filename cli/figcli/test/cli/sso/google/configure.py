@@ -11,7 +11,7 @@ class ConfigureGoogle(FiggyTest):
         super().__init__(None)
 
         self._child = pexpect.spawn(f'{CLI_NAME} --{Utils.get_first(configure)} --skip-upgrade {self.extra_args}',
-                              encoding='utf-8', timeout=5)
+                              encoding='utf-8', timeout=10)
 
     def run(self):
         self.step(f"Testing `{CLI_NAME} --{Utils.get_first(configure)}`")
