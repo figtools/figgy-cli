@@ -5,10 +5,9 @@ import os
 # Platform Constants
 LINUX, MAC, WINDOWS = "Linux", "Darwin", "Windows"
 
-SHORT_DESCRIPTION = "Figgy is a free and opensource serverless application config framework designed to bring " \
-                    "simplicity, security, and resilience to application config management. Figgy is built on top of" \
-                    " AWS ParameterStore and leverages native AWS constructs such as AWS IAM, KMS, among other " \
-                    "services to ensure a simple and elegant integration with your AWS environment."
+SHORT_DESCRIPTION = "Tired of managing hundreds or thousands of configurations as your microservice footprint " \
+                    "scales? Tired of config files, environment variables, poorly managed secrets, and " \
+                    " constantly crashing containers due to configuration mismanagement? There’s a better way. Figgy!"
 
 with open('figcli/config/constants.py') as file:
     contents = file.read()

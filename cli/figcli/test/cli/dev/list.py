@@ -28,7 +28,7 @@ class DevList(FiggyTest):
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(list_com)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}', timeout=10, encoding='utf-8')
         child.logfile = sys.stdout
-        child.delaybeforesend(.25)
+        child.delaybeforesend = .25
         child.expect('.*Please input a namespace prefix.*')
         child.sendline("")
         child.expect('.*Please input a namespace prefix.*')
@@ -56,7 +56,7 @@ class DevList(FiggyTest):
                               f'--skip-upgrade {self.extra_args}',
                               timeout=10, encoding='utf-8')
         child.logfile = sys.stdout
-        child.delaybeforesend(.25)
+        child.delaybeforesend = .25
 
         child.expect('.*Please input a namespace prefix.*')
         child.sendline(dump_prefix)
