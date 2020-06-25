@@ -208,10 +208,8 @@ jobs:
           AWS_REGION: us-east-1
         shell: bash
         run: |
-          VERSION=$(../scripts/get_version.sh)
+          VERSION=$(.scripts/get_version.sh)
           echo "Setting release version to $VERSION"
-
-          mkdir -p ~/.aws
           cd src/
 
           echo "Deploying windows figgy to s3://figgy-website/releases/cli/latest/windows/figgy.zip"
