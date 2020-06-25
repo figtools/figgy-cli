@@ -5,8 +5,6 @@
 
 [Figgy Docs](https://www.figgy.dev/docs/)
 
-### Figgy is not ready yet, it's still under active development :)
-
 Cloud native config management.
 
 ## **What's Figgy?**
