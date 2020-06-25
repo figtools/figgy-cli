@@ -57,7 +57,7 @@ jobs:
         run: |
           cd src
           # Parse version
-          VERSION=$(./scripts/get_version.sh)
+          VERSION=$(../scripts/get_version.sh)
           echo "Setting release version to $VERSION"
           echo "::set-env name=RELEASE_VERSION::$VERSION"
 
@@ -137,7 +137,7 @@ jobs:
         run: |
           cd src
           # Parse version
-          VERSION=$(./scripts/get_version.sh)
+          VERSION=$(../scripts/get_version.sh)
           echo "Setting release version to $VERSION"
           echo "::set-env name=RELEASE_VERSION::$VERSION"
 
@@ -209,7 +209,7 @@ jobs:
           AWS_REGION: us-east-1
         shell: bash
         run: |
-          VERSION=$(./scripts/get_version.sh)
+          VERSION=$(../scripts/get_version.sh)
           echo "Setting release version to $VERSION"
 
           mkdir -p ~/.aws

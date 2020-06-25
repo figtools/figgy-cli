@@ -1,4 +1,7 @@
 #! /bin/sh
 
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
-python src/setup.py install
+cd ${SCRIPTPATH}../src
+
+python setup.py install
