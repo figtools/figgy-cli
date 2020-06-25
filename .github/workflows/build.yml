@@ -209,7 +209,7 @@ jobs:
           AWS_REGION: us-east-1
         shell: bash
         run: |
-          VERSION=$(./cli/scripts/get_version.sh)
+          VERSION=$(./scripts/get_version.sh)
           echo "Setting release version to $VERSION"
 
           mkdir -p ~/.aws

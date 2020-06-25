@@ -2,4 +2,4 @@
 
 source /Users/jordanmance/venv/figgy-homebrew/bin/activate
 
-python setup.py sdist bdist_wheel
+python src/setup.py sdist bdist_wheel
