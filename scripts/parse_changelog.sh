@@ -1,5 +1,9 @@
 #!/bin/sh
 
-python src/setup.py install > /dev/null 2>&1
+SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
-python scripts/parse_changelog.py
+cd ${SCRIPTPATH}/../src
+
+python setup.py install > /dev/null 2>&1
+
+python ../scripts/parse_changelog.py

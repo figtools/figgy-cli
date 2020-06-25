@@ -28,7 +28,7 @@ jobs:
       run: |
         echo "${PYPI_RC}" > ~/.pypirc
         cd src
-        ./scripts/deploy-pypi.sh
+        ../scripts/deploy-pypi.sh
 
     - name: Prep Release
       id: prep
