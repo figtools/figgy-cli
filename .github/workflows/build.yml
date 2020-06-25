@@ -208,7 +208,7 @@ jobs:
           AWS_REGION: us-east-1
         shell: bash
         run: |
-          VERSION=$(.scripts/get_version.sh)
+          VERSION=$(./scripts/get_version.sh)
           echo "Setting release version to $VERSION"
           cd src/
 
