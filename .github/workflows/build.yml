@@ -63,13 +63,12 @@ jobs:
 
       - name: Deploy
         env:
-          RELEASE_MGR_CONFIG_FILE: ${{ secrets.RELEASE_MGR_CONFIG_FILE }}
-          RELEASE_MGR_CREDENTIALS_FILE: ${{ secrets.RELEASE_MGR_CREDENTIALS_FILE }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
           VERSION: ${{ env.RELEASE_VERSION }}
         run: |
           mkdir -p ~/.aws
-          echo "$RELEASE_MGR_CONFIG_FILE" > ~/.aws/config
-          echo "$RELEASE_MGR_CREDENTIALS_FILE" > ~/.aws/credentials
 
           dest="s3://figgy-website/releases/cli/latest/darwin/figgy.zip"
           aws s3 cp cli/figgy.zip $dest
@@ -144,13 +143,11 @@ jobs:
 
       - name: Deploy
         env:
-          RELEASE_MGR_CONFIG_FILE: ${{ secrets.RELEASE_MGR_CONFIG_FILE }}
-          RELEASE_MGR_CREDENTIALS_FILE: ${{ secrets.RELEASE_MGR_CREDENTIALS_FILE }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
           VERSION: ${{ env.RELEASE_VERSION }}
         run: |
-          mkdir -p ~/.aws
-          echo "$RELEASE_MGR_CONFIG_FILE" > ~/.aws/config
-          echo "$RELEASE_MGR_CREDENTIALS_FILE" > ~/.aws/credentials
 
           echo "Deploying linux figgy to $dest"
           aws s3 cp cli/figgy.zip s3://figgy-website/releases/cli/latest/linux/figgy.zip
