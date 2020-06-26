@@ -1,5 +1,6 @@
 import time
 import logging
+import platform
 from dataclasses import dataclass, field
 import requests
 from typing import List, Dict
@@ -37,6 +38,7 @@ class AnonymousUsageTracker:
     _METRICS_KEY = 'metrics'
     _USER_KEY = 'user_id'
     _VERSION_KEY = 'version'
+    _PLATFORM_KEY = 'platform'
     REPORT_FREQUENCY = 60  # Report daily
     # REPORT_FREQUENCY = 1000 * 60 * 60 * 24  # Report daily
 
@@ -47,6 +49,7 @@ class AnonymousUsageTracker:
             metrics_json[AnonymousUsageTracker._METRICS_KEY][key] = val.get(FiggyMetrics.COUNT_KEY, 0)
 
         metrics_json[AnonymousUsageTracker._VERSION_KEY] = VERSION
+        metrics_json[AnonymousUsageTracker._PLATFORM_KEY] = platform.system()
 
         requests.post(url=FIGGY_LOG_METRICS_URL, json=metrics_json)
 
