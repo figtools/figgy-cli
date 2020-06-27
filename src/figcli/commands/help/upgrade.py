@@ -97,7 +97,8 @@ class Upgrade(HelpCommand):
             selection = True
 
         if selection:
-            return self.upgrade_mgr.install_onedir(install_path, latest_version.version, MAC)
+            self.upgrade_mgr.install_onedir(install_path, latest_version.version, MAC)
+            return True
         else:
             print(f'\n{self.c.fg_bl}Auto-upgrade aborted. To upgrade through brew run:{self.c.rs} \n'
                   f'-> brew upgrade figtools/figgy/figgy')

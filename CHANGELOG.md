@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.43
+- More auto-upgrade testing / releases
+
 ## 0.0.42
 - Fixing more install issues.
 
