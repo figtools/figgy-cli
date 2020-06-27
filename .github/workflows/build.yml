@@ -128,8 +128,8 @@ jobs:
           echo "PATH: $PATH"
           cd ../../
 
-          echo "Testing Linux binary as bastion user"
-          python run_tests.py bastion
+          #echo "Testing Linux binary as bastion user"
+          #python run_tests.py bastion
 
       - name: Get Version
         id: version
