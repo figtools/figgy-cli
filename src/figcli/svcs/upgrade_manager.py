@@ -2,6 +2,7 @@ import os
 import readline
 import stat
 import sys
+import logging
 from typing import Optional
 from urllib.request import urlopen
 
@@ -15,6 +16,7 @@ from figcli.config import HOME, CLI_NAME
 from figcli.svcs.observability.version_tracker import FiggyVersionDetails, VersionTracker
 from figcli.utils.utils import Utils
 
+log = logging.getLogger(__name__)
 
 class UpgradeManager:
     def __init__(self, colors_enabled: bool):
@@ -36,12 +38,16 @@ class UpgradeManager:
 
     def is_pip_install(self) -> bool:
         install_path = self.install_path
-        if install_path:
-            with open(install_path, 'r') as file:
-                contents = file.read()
+        try:
+            if install_path:
+                with open(install_path, 'r') as file:
+                    contents = file.read()
 
-            return 'EASY-INSTALL' in contents or 'console_scripts' in contents
-        else:
+                return 'EASY-INSTALL' in contents or 'console_scripts' in contents
+            else:
+                return False
+        except UnicodeDecodeError as e:
+            log.info(f"Error decoding {install_path}, file must be binary.")
             return False
 
     def install_onedir(self, install_path: str, latest_version: str, platform: str):

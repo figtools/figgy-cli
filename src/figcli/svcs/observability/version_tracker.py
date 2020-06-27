@@ -94,7 +94,7 @@ class VersionTracker:
             print(f"Current Version: {c.fg_yl}{VERSION}{c.rs}")
             print(f"New Version: {c.fg_bl}{new_details.version}{c.rs}")
             print(f"To see what the new version has in store for you, run `{CLI_NAME} --version`")
-            print(f"To upgrade, run `brew upgrade {BREW_FORMULA}` or `pip install figgy-cli --upgrade`")
+            print(f"To upgrade, run `{CLI_NAME} --upgrade`")
             print(f'{c.fg_bl}------------------------------------------{c.rs}')
         else:
             print(f'\n{c.fg_bl}------------------------------------------{c.rs}')
