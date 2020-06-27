@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.41
+- Addressing issue auto-upgrade on brew-based installations
+
 ## 0.0.40
 - Releasing to test auto-upgrade and roll-back features
 
