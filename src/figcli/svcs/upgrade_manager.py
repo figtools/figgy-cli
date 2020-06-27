@@ -19,6 +19,7 @@ from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
 
+
 class UpgradeManager:
     def __init__(self, colors_enabled: bool):
         self._utils = Utils(colors_enabled=colors_enabled)
@@ -52,6 +53,7 @@ class UpgradeManager:
             return False
 
     def install_onedir(self, install_path: str, latest_version: str, platform: str):
+        old_path = f'{install_path}.OLD'
         zip_path = f"{HOME}/.figgy/figgy.zip"
         install_dir = f'{HOME}/.figgy/installations/{latest_version}/{str(uuid.uuid4())[:4]}'
         remote_path = f'http://www.figgy.dev/releases/cli/{latest_version}/{platform.lower()}/figgy.zip'
@@ -62,8 +64,11 @@ class UpgradeManager:
         with ZipFile(zip_path, 'r') as zipObj:
             zipObj.extractall(install_dir)
 
+        if self._utils.file_exists(old_path):
+            os.remove(old_path)
+
         if self._utils.file_exists(install_path):
-            os.rename(install_path, f'{install_path}.OLD')
+            os.rename(install_path, old_path)
 
         executable_path = f'{install_dir}/{CLI_NAME}{suffix}'
         st = os.stat(executable_path)
@@ -76,7 +81,6 @@ class UpgradeManager:
             log.error(f"Received error when attempting to cleanup install.")
             pass
 
-        print(f'{CLI_NAME} has been installed at path `{install_path}`.')
 
     def _get_executable_path(self):
         return

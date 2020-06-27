@@ -66,8 +66,9 @@ class Upgrade(HelpCommand):
                 print(f"{self.c.fg_gr}Installation successful! Exiting. Rerun `{CLI_NAME}` "
                       f"to use the latest version!{self.c.rs}")
             else:
-                print(f"{self.c.fg_yl}Upgrade may not have been successful. Check by re-running `{CLI_NAME}` --version"
-                      f" to see if it was. If it wasn't, please reinstall `{CLI_NAME}`. See {INSTALL_URL}.")
+                print(f"\n{self.c.fg_yl}Upgrade may not have been successful. Check by re-running "
+                      f"`{CLI_NAME}` --version to see if it was. If it wasn't, please reinstall `{CLI_NAME}`. "
+                      f"See {INSTALL_URL}.")
         else:
             print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
             print(f'Your version: {self.c.rs}{self.c.fg_gr}{latest_version.version}{self.c.rs} is more '
@@ -92,14 +93,17 @@ class Upgrade(HelpCommand):
                   f'brew upgrade figtools/figgy/figgy')
             print(f"\n\n{self.c.fg_yl}You may continue to manage {CLI_NAME} through homebrew. Doing so will limit some "
                   f" upcoming functionality around release rollbacks and dynamic version-swapping. ")
+            return False
 
     def install_linux(self, latest_version: FiggyVersionDetails) -> bool:
         install_path = self.upgrade_mgr.install_path
-        return self.upgrade_mgr.install_onedir(install_path, latest_version.version, LINUX)
+        self.upgrade_mgr.install_onedir(install_path, latest_version.version, LINUX)
+        return True
 
     def install_windows(self, latest_version: FiggyVersionDetails) -> bool:
         install_path = self.upgrade_mgr.install_path
-        return self.upgrade_mgr.install_onedir(install_path, latest_version.version, WINDOWS)
+        self.upgrade_mgr.install_onedir(install_path, latest_version.version, WINDOWS)
+        return True
 
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
