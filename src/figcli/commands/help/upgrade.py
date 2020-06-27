@@ -22,7 +22,7 @@ class Upgrade(HelpCommand):
 
     def upgrade(self):
         latest_version: FiggyVersionDetails = self.tracker.get_version()
-        install_success = False
+        install_success, upgrade_it = False, True
 
         if self.upgrade_mgr.is_pip_install():
             print(f"{self.c.fg_rd}Figgy appears to have been installed with pip. Please upgrade {CLI_NAME} with "
@@ -42,8 +42,6 @@ class Upgrade(HelpCommand):
             self._utils.error_exit(f"Unable to detect local figgy installation. Please reinstall figgy and follow one "
                                    f"of the recommended installation procedures.")
 
-        print(f"\n{self.c.fg_bl}Detected local installation path:{self.c.rs} {install_path}")
-
         if latest_version.version == VERSION:
             print(f'{self.c.fg_bl}You are currently using the latest version of {CLI_NAME}: {self.c.rs}'
                   f'{self.c.fg_gr}{VERSION}{self.c.rs}')
@@ -54,6 +52,17 @@ class Upgrade(HelpCommand):
                   f'recent than your version: {self.c.fg_gr}{VERSION}{self.c.rs}')
             print(f'{self.c.fg_yl}--------------------------------------------------------------{self.c.rs}')
 
+        else:
+            print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
+            print(f'Your version: {self.c.rs}{self.c.fg_gr}{VERSION}{self.c.rs} is more '
+                  f'recent than the current recommended version of {CLI_NAME}: {self.c.fg_gr}'
+                  f'{latest_version.version}{self.c.rs}')
+            print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
+
+            upgrade_it = Input.y_n_input(f'Would you like to revert to the current recommended version '
+                                         f'of {CLI_NAME}?')
+
+        if upgrade_it:
             if self._utils.is_mac():
                 print(f"\nMacOS auto-upgrade is supported. Performing auto-upgrade.")
                 install_success = self.install_mac(latest_version)
@@ -71,24 +80,17 @@ class Upgrade(HelpCommand):
                 print(f"\n{self.c.fg_yl}Upgrade may not have been successful. Check by re-running "
                       f"`{CLI_NAME}` --version to see if it was. If it wasn't, please reinstall `{CLI_NAME}`. "
                       f"See {INSTALL_URL}.")
-        else:
-            print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
-            print(f'Your version: {self.c.rs}{self.c.fg_gr}{latest_version.version}{self.c.rs} is more '
-                  f'recent than the current recommended version of {CLI_NAME}: {self.c.fg_gr}{VERSION}{self.c.rs}')
-            print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
-
-            if self._utils.is_mac():
-                selection = Input.y_n_input(f'Would you like to revert to the current recommended version '
-                                            f'of {CLI_NAME}?')
-                if selection:
-                    self.install_mac(latest_version)
 
     def install_mac(self, latest_version: FiggyVersionDetails) -> bool:
         if self.upgrade_mgr.is_brew_install():
-            selection = Input.y_n_input(f"Homebrew installation detected. This upgrade process will not remove your "
-                                        f"brew installation but will instead unlink it. Going forward you will no "
-                                        f"longer need homebrew to manage {CLI_NAME}. Continuing is recommended."
-                                        f"Continue? ", default_yes=True)
+            print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
+            print(f'{self.c.fg_bl} Homebrew installation detected! {self.c.rs}')
+            print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
+
+            print(f"This upgrade process will not remove your brew installation but will instead unlink it. "
+                  f"Going forward you will no longer need homebrew to manage {CLI_NAME}. Continuing is recommended.\n")
+
+            selection = Input.y_n_input(f"Continue? ", default_yes=True)
             install_path = '/usr/local/bin/figgy'
         else:
             install_path = self.upgrade_mgr.install_path

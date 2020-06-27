@@ -183,9 +183,9 @@ jobs:
       - name: Zip
         run: |
           echo "Zipping!"
-          cd src/dist/figgy/
-          Compress-Archive * figgy.zip
-          mv figgy.zip ../../
+          cd src/dist/
+          Compress-Archive figgy figgy.zip
+          mv figgy.zip ../
 
       - name: Test Artifact
         run: |

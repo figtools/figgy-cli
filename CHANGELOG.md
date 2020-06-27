@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.42
+- Fixing more install issues.
+
 ## 0.0.41
 - Addressing issue auto-upgrade on brew-based installations
 
