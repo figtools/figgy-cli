@@ -45,6 +45,7 @@ class Upgrade(HelpCommand):
         if latest_version.version == VERSION:
             print(f'{self.c.fg_bl}You are currently using the latest version of {CLI_NAME}: {self.c.rs}'
                   f'{self.c.fg_gr}{VERSION}{self.c.rs}')
+            #todo set upgrade_it = False here
 
         elif self.tracker.upgrade_available(VERSION, latest_version.version):
             print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
@@ -82,6 +83,8 @@ class Upgrade(HelpCommand):
                       f"See {INSTALL_URL}.")
 
     def install_mac(self, latest_version: FiggyVersionDetails) -> bool:
+        install_path = '/usr/local/bin/figgy'
+
         if self.upgrade_mgr.is_brew_install():
             print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
             print(f'{self.c.fg_bl}    Homebrew installation detected! {self.c.rs}')
@@ -91,7 +94,6 @@ class Upgrade(HelpCommand):
                   f"Going forward you will no longer need homebrew to manage {CLI_NAME}. Continuing is recommended.\n")
 
             selection = Input.y_n_input(f"Continue? ", default_yes=True)
-            install_path = '/usr/local/bin/figgy'
         else:
             install_path = self.upgrade_mgr.install_path
             selection = True

@@ -103,6 +103,10 @@ class Utils:
         return Path(path).is_file()
 
     @staticmethod
+    def is_symlink(path: str):
+        return os.path.islink(path)
+
+    @staticmethod
     def is_set_true(attr: frozenset, args) -> bool:
         attr_name = Utils.clean_attr_name(attr)
 
