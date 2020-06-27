@@ -95,7 +95,6 @@ class Upgrade(HelpCommand):
 
             selection = Input.y_n_input(f"Continue? ", default_yes=True)
         else:
-            install_path = self.upgrade_mgr.install_path
             selection = True
 
         if selection:

@@ -92,7 +92,6 @@ class UpgradeManager:
 
         os.symlink(executable_path, install_path)
 
-
     def _get_executable_path(self):
         return
 

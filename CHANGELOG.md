@@ -1,5 +1,13 @@
 Figgy Changelog:
 
+## 0.0.49
+- Forcing mac installs to `/usr/local/bin/figgy`. 
+
+There is no good work-around that I have found that prevents issues with automatic upgrade symlink chaining on MacOs. 
+Essentialy `os.path.dirname(sys.executable)` does not return the directory of the symlink on MacOs 
+like it does on Windows/Linux. It instead follows the chain of links and returns actual executable's directory. Which 
+seems like the right thing to do, except I'd prefer to locate the link instead.
+
 ## 0.0.48
 - More testing for auto-upgrade. 
 
