@@ -1,5 +1,11 @@
 Figgy Changelog:
 
+## 0.0.38
+- Forcing a new version to test homebrew versioning support.
+
+## 0.0.37
+- Fixing a packaging issue with homebrew installations
+
 ## 0.0.36
 - Improving ergonoimcs and clarity of the --configure command. 
 

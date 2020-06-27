@@ -25,10 +25,10 @@ jobs:
 
       - name: Install figgy
         run: |
-          cd cli
+          cd src
           pip install -r requirements.txt
           pip install -r requirements-linux.txt
-          scripts/install.sh
+          ../scripts/install.sh
 
       - name: Run E2E Test Suite
         env:
@@ -37,7 +37,7 @@ jobs:
         run: |
           export TERM=linux
           export TERMINFO=/etc/terminfo
-          cd cli
+          cd src
           python run_tests.py bastion
 
 #  test_google:
@@ -59,10 +59,10 @@ jobs:
 #
 #      - name: Install figgy
 #        run: |
-#          cd cli
+#          cd src
 #          pip install -r requirements.txt
 #          pip install -r requirements-linux.txt
-#          scripts/install.sh
+#          ../scripts/install.sh
 #      - name: Run E2E Test Suite
 #        env:
 #          FIGGY_DISABLE_KEYRING: true
@@ -74,7 +74,7 @@ jobs:
 #        run: |
 #          export TERM=linux
 #          export TERMINFO=/etc/terminfo
-#          cd cli
+#          cd src
 #          python run_tests.py google
 
   test_okta:
@@ -96,10 +96,10 @@ jobs:
 
       - name: Install figgy
         run: |
-          cd cli
+          cd src
           pip install -r requirements.txt
           pip install -r requirements-linux.txt
-          scripts/install.sh
+          ../scripts/install.sh
 
       - name: Run E2E Test Suite
         env:
@@ -112,7 +112,7 @@ jobs:
         run: |
           export TERM=linux
           export TERMINFO=/etc/terminfo
-          cd cli
+          cd src
           python run_tests.py okta
 
   test_profile:
@@ -132,10 +132,10 @@ jobs:
 
       - name: Install figgy
         run: |
-          cd cli
+          cd src
           pip install -r requirements.txt
           pip install -r requirements-linux.txt
-          scripts/install.sh
+          ../scripts/install.sh
 
       - name: Run E2E Test Suite
         env:
@@ -152,5 +152,5 @@ jobs:
           cat ~/.aws/config
           export TERM=linux
           export TERMINFO=/etc/terminfo
-          cd cli
+          cd src
           python run_tests.py profile figgy-qa-tester

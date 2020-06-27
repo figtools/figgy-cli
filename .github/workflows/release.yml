@@ -27,20 +27,20 @@ jobs:
         PYPI_RC: ${{ secrets.PYPI_FIGGY_CLI }}
       run: |
         echo "${PYPI_RC}" > ~/.pypirc
-        cd cli
-        ./scripts/deploy-pypi.sh
+        cd src
+        ../scripts/deploy-pypi.sh
 
     - name: Prep Release
       id: prep
       run: |
-        cd cli
+        cd src
         # Parse version
-        VERSION=$(./scripts/get_version.sh)
+        VERSION=$(../scripts/get_version.sh)
         echo "Setting release version to $VERSION"
         echo "::set-env name=RELEASE_VERSION::$VERSION"
 
         # Parse changelog
-        CHANGELOG=$(./scripts/parse_changelog.sh)
+        CHANGELOG=$(../scripts/parse_changelog.sh)
         CHANGELOG="${CHANGELOG//'%'/'%25'}"
         CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
         CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"

@@ -18,7 +18,7 @@ jobs:
       - name: Build
         run: |
           echo "MacOs build is happening!!!"
-          cd cli
+          cd src
           pip3 install pyinstaller
           pip3 install -r requirements.txt
           pip3 install -r requirements-darwin.txt
@@ -28,8 +28,8 @@ jobs:
           pyinstaller figgy.spec
 
           mv dist/__main__/__main__ dist/__main__/figgy
-          scripts/zip_it.sh
-          scripts/tar_it.sh $(scripts/get_version.sh)
+          ../scripts/zip_it.sh
+          ../scripts/tar_it.sh $(../scripts/get_version.sh)
 
       - name: Test Artifact
         env:
@@ -43,7 +43,7 @@ jobs:
           DEV_SYNC_DISABLED: true
         run: |
           echo "Adding figgy binary to path"
-          cd cli/dist/__main__/
+          cd src/dist/__main__/
           export PATH="$PATH:$(PWD)"
           figgy --version
 
@@ -55,33 +55,31 @@ jobs:
       - name: Get Version
         id: version
         run: |
-          cd cli
+          cd src
           # Parse version
-          VERSION=$(./scripts/get_version.sh)
+          VERSION=$(../scripts/get_version.sh)
           echo "Setting release version to $VERSION"
           echo "::set-env name=RELEASE_VERSION::$VERSION"
 
       - name: Deploy
         env:
-          RELEASE_MGR_RELEASE_MGR_CONFIG_FILE: ${{ secrets.CONFIG_DEFAULT }}
-          RELEASE_MGR_CREDENTIALS_FILE: ${{ secrets.RELEASE_MGR_CREDENTIALS_FILE }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
           VERSION: ${{ env.RELEASE_VERSION }}
         run: |
-          mkdir -p ~/.aws
-          echo "$RELEASE_MGR_CONFIG_FILE" > ~/.aws/config
-          echo "$RELEASE_MGR_CREDENTIALS_FILE" > ~/.aws/credentials
 
           dest="s3://figgy-website/releases/cli/latest/darwin/figgy.zip"
-          aws s3 cp cli/figgy.zip $dest
+          aws s3 cp src/figgy.zip $dest
 
           echo "Deploying darwin figgy to s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.zip"
-          aws s3 cp cli/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.zip"
+          aws s3 cp src/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.zip"
 
           echo "Deploying darwin figgy to s3://figgy-website/releases/cli/latest/darwin/figgy.tar.gz"
-          aws s3 cp cli/figgy.tar.gz s3://figgy-website/releases/cli/latest/darwin/figgy.tar.gz
+          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/latest/darwin/figgy.tar.gz
 
           echo "Deploying darwin figgy to s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.tar.gz"
-          aws s3 cp cli/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.tar.gz"
+          aws s3 cp src/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.tar.gz"
 
   build_linux:
     runs-on: ubuntu-latest
@@ -103,7 +101,7 @@ jobs:
           echo "Linux build is happening!!!"
           # install requirements
 
-          cd cli
+          cd src
           pip3 install pyinstaller
           pip3 install -r requirements.txt
           pip3 install -r requirements-linux.txt
@@ -111,8 +109,8 @@ jobs:
           pyinstaller figgy.spec
 
           mv dist/__main__/__main__ dist/__main__/figgy
-          scripts/zip_it.sh
-          scripts/tar_it.sh $(scripts/get_version.sh)
+          ../scripts/zip_it.sh
+          ../scripts/tar_it.sh $(../scripts/get_version.sh)
 
 
       - name: Test Artifact
@@ -124,7 +122,7 @@ jobs:
           export TERMINFO=/etc/terminfo
 
           echo "Adding figgy binary to path"
-          cd cli/dist/__main__/
+          cd src/dist/__main__/
           echo "PATH: $PATH"
           export "PATH=$PATH:$(pwd)"
           echo "PATH: $PATH"
@@ -136,33 +134,31 @@ jobs:
       - name: Get Version
         id: version
         run: |
-          cd cli
+          cd src
           # Parse version
-          VERSION=$(./scripts/get_version.sh)
+          VERSION=$(../scripts/get_version.sh)
           echo "Setting release version to $VERSION"
           echo "::set-env name=RELEASE_VERSION::$VERSION"
 
       - name: Deploy
         env:
-          RELEASE_MGR_CONFIG_FILE: ${{ secrets.CONFIG_DEFAULT }}
-          RELEASE_MGR_CREDENTIALS_FILE: ${{ secrets.RELEASE_MGR_CREDENTIALS_FILE }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
           VERSION: ${{ env.RELEASE_VERSION }}
         run: |
-          mkdir -p ~/.aws
-          echo "$RELEASE_MGR_CONFIG_FILE" > ~/.aws/config
-          echo "$RELEASE_MGR_CREDENTIALS_FILE" > ~/.aws/credentials
 
           echo "Deploying linux figgy to $dest"
-          aws s3 cp cli/figgy.zip s3://figgy-website/releases/cli/latest/linux/figgy.zip
+          aws s3 cp src/figgy.zip s3://figgy-website/releases/cli/latest/linux/figgy.zip
 
           echo "Deploying linux figgy to s3://figgy-website/releases/cli/${VERSION}/linux/figgy.zip"
-          aws s3 cp cli/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/linux/figgy.zip"
+          aws s3 cp src/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/linux/figgy.zip"
 
           echo "Deploying linux figgy to s3://figgy-website/releases/cli/latest/linux/figgy.tar.gz"
-          aws s3 cp cli/figgy.tar.gz s3://figgy-website/releases/cli/latest/linux/figgy.tar.gz
+          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/latest/linux/figgy.tar.gz
 
           echo "Deploying linux figgy to s3://figgy-website/releases/cli/${VERSION}/linux/figgy.tar.gz"
-          aws s3 cp cli/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/linux/figgy.tar.gz"
+          aws s3 cp src/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/linux/figgy.tar.gz"
 
 
   build_windows:
@@ -179,7 +175,7 @@ jobs:
           echo "Windows build is happening!!!"
           # install requirements
 
-          cd cli
+          cd src
           pip3 install pyinstaller
           pip3 install -r requirements.txt
           pip3 install -r requirements-windows.txt
@@ -187,19 +183,19 @@ jobs:
           pyinstaller figgy.spec
 
           mv dist/__main__/__main__.exe dist/__main__/figgy.exe
-          scripts/tar_it.sh $(scripts/get_version.sh)
+          ../scripts/tar_it.sh $(../scripts/get_version.sh)
 
       - name: Zip
         run: |
           echo "Zipping!"
-          cd cli/dist/__main__/
+          cd src/dist/__main__/
           Compress-Archive . figgy.zip
           mv figgy.zip ../../
 
       - name: Test Artifact
         run: |
           echo "Adding figgy binary to path"
-          cd cli/dist/__main__/
+          cd src/dist/__main__/
           $env:path += ";."
 
           echo "NORMAL VERSION NOW"
@@ -212,11 +208,9 @@ jobs:
           AWS_REGION: us-east-1
         shell: bash
         run: |
-          VERSION=$(./cli/scripts/get_version.sh)
+          VERSION=$(./scripts/get_version.sh)
           echo "Setting release version to $VERSION"
-
-          mkdir -p ~/.aws
-          cd cli/
+          cd src/
 
           echo "Deploying windows figgy to s3://figgy-website/releases/cli/latest/windows/figgy.zip"
           aws s3 cp figgy.zip "s3://figgy-website/releases/cli/latest/windows/figgy.zip"
