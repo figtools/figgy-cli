@@ -2,6 +2,7 @@ import os
 import readline
 import stat
 import sys
+import time
 import logging
 import uuid
 from typing import Optional
@@ -28,7 +29,7 @@ class UpgradeManager:
         print("Downloading file....")
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
-            with open(local_path, 'wb') as f:
+            with open(local_path, 'wb+') as f:
                 for chunk in r.iter_content(chunk_size=1024):
                     f.write(chunk)
 
@@ -46,6 +47,8 @@ class UpgradeManager:
             for data in resp.iter_content(chunk_size=1024):
                 size = file.write(data)
                 bar.update(size)
+
+        return True
 
     def is_symlink(self, install_path: str):
         return os.path.islink(install_path)
@@ -75,6 +78,7 @@ class UpgradeManager:
         os.makedirs(os.path.dirname(install_dir), exist_ok=True)
         suffix = ".exe" if Utils.is_windows() else ""
         self._cleanup_file(zip_path)
+
         self.download_with_progress(url, zip_path)
 
         with ZipFile(zip_path, 'r') as zipObj:
@@ -107,9 +111,9 @@ class UpgradeManager:
         """
         Prompts the user to get their local installation path.
         """
-        abs_path = os.path.dirname(sys.executable)
-        suffix = ".exe" if self._utils.is_windows() else ""
-        binary_path = f'{abs_path}/{CLI_NAME}{suffix}'
+        binary_path = sys.executable
+        suffix = ".exe" if self._utils.is_windows() and not binary_path.endswith(".exe") else ""
+        binary_path = f'{binary_path}{suffix}'
 
         if not os.path.exists(binary_path):
             return None

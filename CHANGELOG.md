@@ -1,5 +1,9 @@
 Figgy Changelog:
 
+## 0.0.50
+- Troubleshooting issues with auto-upgrade when the binary is built via get actions, I have no problem for locally
+built binaries.
+
 ## 0.0.49
 - Forcing mac installs to `/usr/local/bin/figgy`. 
 
