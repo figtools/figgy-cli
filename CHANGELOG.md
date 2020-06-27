@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.45
+- More auto-upgrade testing
+
 ## 0.0.44
 - More auto-upgrade testing
 
