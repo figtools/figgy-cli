@@ -5,8 +5,6 @@ import sys
 import logging
 import uuid
 from typing import Optional
-from urllib.request import urlopen
-
 import requests
 from zipfile import ZipFile
 
@@ -27,12 +25,11 @@ class UpgradeManager:
         self.current_version: FiggyVersionDetails = VersionTracker.get_version()
 
     def download(self, remote_path: str, local_path: str):
-        eg_link = remote_path
-        response = requests.get(eg_link, stream=True)
-        with tqdm.wrapattr(open(local_path, "wb"), "write",
-                           miniters=1, desc=eg_link.split('/')[-1],
+        response = requests.get(remote_path, stream=True)
+        with tqdm.wrapattr(open(local_path, "wb+"), "write",
+                           miniters=1, desc=remote_path.split('/')[-1],
                            total=int(response.headers.get('content-length', 0))) as fout:
-            for chunk in response.iter_content(chunk_size=4096):
+            for chunk in response.iter_content(chunk_size=1024):
                 fout.write(chunk)
 
     def is_symlink(self, install_path: str):
@@ -62,6 +59,7 @@ class UpgradeManager:
         remote_path = f'http://www.figgy.dev/releases/cli/{latest_version}/{platform.lower()}/figgy.zip'
         os.makedirs(os.path.dirname(install_dir), exist_ok=True)
         suffix = ".exe" if Utils.is_windows() else ""
+        self._cleanup_file(zip_path)
         self.download(remote_path, zip_path)
 
         with ZipFile(zip_path, 'r') as zipObj:
@@ -78,14 +76,18 @@ class UpgradeManager:
         os.chmod(executable_path, st.st_mode | stat.S_IEXEC)
         os.symlink(executable_path, install_path)
 
+        self._cleanup_file(zip_path)
+
+    def _get_executable_path(self):
+        return
+
+    def _cleanup_file(self, file_path: str):
         try:
-            os.remove(zip_path)
+            os.remove(file_path)
         except Exception as e:
             log.error(f"Received error when attempting to cleanup install.")
             pass
 
-    def _get_executable_path(self):
-        return
 
     @property
     def install_path(self) -> Optional[str]:

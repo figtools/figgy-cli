@@ -47,10 +47,10 @@ class Upgrade(HelpCommand):
                   f'{self.c.fg_gr}{VERSION}{self.c.rs}')
 
         elif self.tracker.upgrade_available(VERSION, latest_version.version):
-            print(f'{self.c.fg_yl}--------------------------------------------------------------{self.c.rs}')
+            print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
             print(f' New version: {self.c.rs}{self.c.fg_gr}{latest_version.version}{self.c.rs} is more '
                   f'recent than your version: {self.c.fg_gr}{VERSION}{self.c.rs}')
-            print(f'{self.c.fg_yl}--------------------------------------------------------------{self.c.rs}')
+            print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
 
         else:
             print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
@@ -84,7 +84,7 @@ class Upgrade(HelpCommand):
     def install_mac(self, latest_version: FiggyVersionDetails) -> bool:
         if self.upgrade_mgr.is_brew_install():
             print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
-            print(f'{self.c.fg_bl} Homebrew installation detected! {self.c.rs}')
+            print(f'{self.c.fg_bl}    Homebrew installation detected! {self.c.rs}')
             print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
 
             print(f"This upgrade process will not remove your brew installation but will instead unlink it. "
