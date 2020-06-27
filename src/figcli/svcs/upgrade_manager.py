@@ -67,7 +67,7 @@ class UpgradeManager:
         executable_path = f'{install_dir}/{CLI_NAME}{suffix}'
         st = os.stat(executable_path)
         os.chmod(executable_path, st.st_mode | stat.S_IEXEC)
-        os.symlink(f'{install_dir}/{CLI_NAME}', install_path)
+        os.symlink(executable_path, install_path)
 
         try:
             os.remove(zip_path)
