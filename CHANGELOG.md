@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.39
+- Adding auto-upgrade feature to `figgy`
+
 ## 0.0.38
 - Forcing a new version to test homebrew versioning support.
 
