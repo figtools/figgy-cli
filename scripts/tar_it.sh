@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. scripts/utils.sh
+. ../scripts/utils.sh
 
 SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
@@ -12,6 +12,6 @@ cd ${SCRIPTPATH}../src/
 
 mkdir -p "figgy/${version}/bin"
 
-cp -R dist/__main__/* "figgy/${version}/bin/"
+cp -R dist/figgy/* "figgy/${version}/bin/"
 
 tar -czvf figgy.tar.gz "figgy/${version}/bin/"
