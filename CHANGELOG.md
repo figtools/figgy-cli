@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.51
+- Testing python 3.7.4 instead of 3.8. There may be cython issues with 3.8.
+
 ## 0.0.50
 - Troubleshooting issues with auto-upgrade when the binary is built via get actions, I have no problem for locally
 built binaries.
