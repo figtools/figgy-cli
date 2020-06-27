@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.40
+- Releasing to test auto-upgrade and roll-back features
+
 ## 0.0.39
 - Adding auto-upgrade feature to `figgy`
 
