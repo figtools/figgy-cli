@@ -9,7 +9,7 @@ from u2flib_host.constants import APDU_USE_NOT_SATISFIED
 
 """
 Taken from: https://github.com/cevoaustralia/aws-google-auth/blob/master/aws_google_auth/u2f.py
-We can't use aws_google_auth b/c of issues with homberw installations 
+We can't use aws_google_auth b/c of issues with homebrew installations 
 """
 
 def __appid_verifier__fetch_json(app_id):

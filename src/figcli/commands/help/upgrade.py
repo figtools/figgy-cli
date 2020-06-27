@@ -80,26 +80,26 @@ class Upgrade(HelpCommand):
                 if selection:
                     self.install_mac(latest_version)
 
-    def install_mac(self, latest_version: FiggyVersionDetails):
+    def install_mac(self, latest_version: FiggyVersionDetails) -> bool:
         selection = Input.y_n_input(f"Have {CLI_NAME} auto-update? Figgy will overwrite any homebrew-created {CLI_NAME} "
                                     f"symlink. Going forward you will no longer need homebrew to manage Figgy. "
                                     f"Continue (recommended)? ", default_yes=True)
         if selection:
             install_path = self.upgrade_mgr.install_path
-            self.upgrade_mgr.install_onedir(install_path, latest_version.version, MAC)
+            return self.upgrade_mgr.install_onedir(install_path, latest_version.version, MAC)
         else:
             print(f'\n{self.c.fg_bl}Auto-upgrade aborted. To upgrade through brew:{self.c.rs} '
                   f'brew upgrade figtools/figgy/figgy')
             print(f"\n\n{self.c.fg_yl}You may continue to manage {CLI_NAME} through homebrew. Doing so will limit some "
                   f" upcoming functionality around release rollbacks and dynamic version-swapping. ")
 
-    def install_linux(self, latest_version: FiggyVersionDetails):
+    def install_linux(self, latest_version: FiggyVersionDetails) -> bool:
         install_path = self.upgrade_mgr.install_path
-        self.upgrade_mgr.install_onedir(install_path, latest_version.version, LINUX)
+        return self.upgrade_mgr.install_onedir(install_path, latest_version.version, LINUX)
 
-    def install_windows(self, latest_version: FiggyVersionDetails):
+    def install_windows(self, latest_version: FiggyVersionDetails) -> bool:
         install_path = self.upgrade_mgr.install_path
-        self.upgrade_mgr.install_onedir(install_path, latest_version.version, WINDOWS)
+        return self.upgrade_mgr.install_onedir(install_path, latest_version.version, WINDOWS)
 
     @AnonymousUsageTracker.track_command_usage
     def execute(self):

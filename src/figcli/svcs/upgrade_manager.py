@@ -3,6 +3,7 @@ import readline
 import stat
 import sys
 import logging
+import uuid
 from typing import Optional
 from urllib.request import urlopen
 
@@ -52,7 +53,7 @@ class UpgradeManager:
 
     def install_onedir(self, install_path: str, latest_version: str, platform: str):
         zip_path = f"{HOME}/.figgy/figgy.zip"
-        install_dir = f'{HOME}/.figgy/installations/{latest_version}'
+        install_dir = f'{HOME}/.figgy/installations/{latest_version}/{str(uuid.uuid4())[:4]}'
         remote_path = f'http://www.figgy.dev/releases/cli/{latest_version}/{platform.lower()}/figgy.zip'
         os.makedirs(os.path.dirname(install_dir), exist_ok=True)
         suffix = ".exe" if Utils.is_windows() else ""
