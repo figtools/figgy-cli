@@ -33,6 +33,7 @@ class Config:
             COLORS_ENABLED = 'colors_enabled'
             REPORT_ERRORS = 'report_errors'
             AWS_REGION = 'aws_region'
+            AUTO_UPGRADE = 'auto_upgrade'
             USAGE_TRACKING = 'anonymous_metrics_enabled'
 
 

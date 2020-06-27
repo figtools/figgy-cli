@@ -47,8 +47,6 @@ class ConfigureOkta(FiggyTest):
         self._child.sendline('dev')
         self._child.expect('.*region.*')
         self._child.sendline('y')
-        self._child.expect('.*colors.*')
-        self._child.sendline('n')
         self._child.expect('.*weirdness.*')
         self._child.sendline('n')
         self._child.expect('.*overwrite.*')
