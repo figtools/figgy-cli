@@ -42,7 +42,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='__main__',
+          name='figgy',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -55,6 +55,6 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='__main__')
+               name='figgy')
 
 

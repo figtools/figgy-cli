@@ -64,7 +64,7 @@ class UpgradeManager:
         if self._utils.file_exists(install_path):
             os.remove(install_path)
 
-        executable_path = f'{install_dir}/{CLI_NAME}{suffix}'
+        executable_path = f'{install_dir}/figgy/{CLI_NAME}{suffix}'
         st = os.stat(executable_path)
         os.chmod(executable_path, st.st_mode | stat.S_IEXEC)
         os.symlink(f'{install_dir}/{CLI_NAME}', install_path)

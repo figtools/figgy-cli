@@ -58,10 +58,16 @@ class Upgrade(HelpCommand):
             elif self._utils.is_linux():
                 print(f"\nLinux auto-upgrade is supported. Performing auto-upgrade.")
                 install_success = self.install_linux(latest_version)
+            elif self._utils.is_windows():
+                print(f"\nWindows auto-upgrade is supported. Performing auto-upgrade.")
+                install_success = self.install_windows(latest_version)
 
             if install_success:
                 print(f"{self.c.fg_gr}Installation successful! Exiting. Rerun `{CLI_NAME}` "
                       f"to use the latest version!{self.c.rs}")
+            else:
+                print(f"{self.c.fg_yl}Upgrade may not have been successful. Check by re-running `{CLI_NAME}` --version"
+                      f" to see if it was. If it wasn't, please reinstall `{CLI_NAME}`. See {INSTALL_URL}.")
         else:
             print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
             print(f'Your version: {self.c.rs}{self.c.fg_gr}{latest_version.version}{self.c.rs} is more '
@@ -90,6 +96,10 @@ class Upgrade(HelpCommand):
     def install_linux(self, latest_version: FiggyVersionDetails):
         install_path = self.upgrade_mgr.install_path
         self.upgrade_mgr.install_onedir(install_path, latest_version.version, LINUX)
+
+    def install_windows(self, latest_version: FiggyVersionDetails):
+        install_path = self.upgrade_mgr.install_path
+        self.upgrade_mgr.install_onedir(install_path, latest_version.version, WINDOWS)
 
     @AnonymousUsageTracker.track_command_usage
     def execute(self):

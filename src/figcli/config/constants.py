@@ -13,6 +13,10 @@ FIGGY_ERROR_REPORTING_URL = f"{FIGGY_OBS_API_BASE_URL}/v1/log-error"
 FIGGY_GET_VERSION_URL = f"{FIGGY_OBS_API_BASE_URL}/v1/version"
 FIGGY_LOG_METRICS_URL = f"{FIGGY_OBS_API_BASE_URL}/v1/log-metrics"
 
+# DOCS URLS
+DOCS_URL = 'https://www.figgy.dev/docs'
+INSTALL_URL = f'{DOCS_URL}/getting-started/install/'
+
 # Homebrew
 BREW_FORMULA = 'figtools/figgy/figgy'
 

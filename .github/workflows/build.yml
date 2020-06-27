@@ -24,10 +24,8 @@ jobs:
           pip3 install -r requirements-darwin.txt
 
           echo "Building figgy onedir"
-          # pyinstaller figcli/__main__.py --onedir --hiddenimport configparser --hiddenimport keyrings --hiddenimport keyring.backends  --hiddenimport pkg_resources.py2_warn
           pyinstaller figgy.spec
 
-          mv dist/__main__/__main__ dist/__main__/figgy
           ../scripts/zip_it.sh
           ../scripts/tar_it.sh $(../scripts/get_version.sh)
 
@@ -43,7 +41,7 @@ jobs:
           DEV_SYNC_DISABLED: true
         run: |
           echo "Adding figgy binary to path"
-          cd src/dist/__main__/
+          cd src/dist/
           export PATH="$PATH:$(PWD)"
           figgy --version
 
@@ -108,7 +106,6 @@ jobs:
 
           pyinstaller figgy.spec
 
-          mv dist/__main__/__main__ dist/__main__/figgy
           ../scripts/zip_it.sh
           ../scripts/tar_it.sh $(../scripts/get_version.sh)
 
@@ -122,7 +119,7 @@ jobs:
           export TERMINFO=/etc/terminfo
 
           echo "Adding figgy binary to path"
-          cd src/dist/__main__/
+          cd src/dist/figgy/
           echo "PATH: $PATH"
           export "PATH=$PATH:$(pwd)"
           echo "PATH: $PATH"
@@ -182,22 +179,19 @@ jobs:
 
           pyinstaller figgy.spec
 
-          mv dist/__main__/__main__.exe dist/__main__/figgy.exe
           ../scripts/tar_it.sh $(../scripts/get_version.sh)
 
       - name: Zip
         run: |
           echo "Zipping!"
-          cd src/dist/__main__/
-          Compress-Archive . figgy.zip
+          cd src/dist/figgy/
+          Compress-Archive * figgy.zip
           mv figgy.zip ../../
 
       - name: Test Artifact
         run: |
           echo "Adding figgy binary to path"
-          cd src/dist/__main__/
-          echo "IN DIR:"
-          pwd
+          cd src/dist/figgy/
           $env:path += ";."
 
           echo "NORMAL VERSION NOW"

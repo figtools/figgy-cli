@@ -1,5 +1,5 @@
-!#/bin/bash
+#!/bin/bash
 
-cd dist/__main__/
+cd dist/
 zip -r figgy.zip .
-mv figgy.zip ../../
+mv figgy.zip ../
