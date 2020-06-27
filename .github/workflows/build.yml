@@ -196,6 +196,8 @@ jobs:
         run: |
           echo "Adding figgy binary to path"
           cd src/dist/__main__/
+          echo "IN DIR:"
+          pwd
           $env:path += ";."
 
           echo "NORMAL VERSION NOW"

@@ -21,8 +21,6 @@ class Upgrade(HelpCommand):
         self._utils = Utils(colors_enabled=help_context.defaults.colors_enabled)
 
     def upgrade(self):
-        # self._utils.error_exit("This command has been deprecated and disabled. Please use the standard upgrade process"
-        #                        "through `homebrew` or `pip`.")
         latest_version: FiggyVersionDetails = self.tracker.get_version()
         install_success = False
 

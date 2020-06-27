@@ -89,20 +89,20 @@ class VersionTracker:
     @staticmethod
     def print_new_version_msg(c: Color, new_details: FiggyVersionDetails):
         if not VersionTracker.is_rollback(VERSION, new_details.version):
-            print(f'\n{c.fg_bl}------------------------------------------{c.rs}')
+            print(f'\n{c.fg_bl}----------------------------------------------{c.rs}')
             print(f'A new version of figgy is available!')
             print(f"Current Version: {c.fg_yl}{VERSION}{c.rs}")
             print(f"New Version: {c.fg_bl}{new_details.version}{c.rs}")
             print(f"To see what the new version has in store for you, run `{CLI_NAME} --version`")
             print(f"To upgrade, run `{CLI_NAME} --upgrade`")
-            print(f'{c.fg_bl}------------------------------------------{c.rs}')
+            print(f'{c.fg_bl}------------------------------------------------{c.rs}')
         else:
-            print(f'\n{c.fg_bl}------------------------------------------{c.rs}')
+            print(f'\n{c.fg_bl}----------------------------------------------{c.rs}')
             print(f'Figgy was rolled back due to an issue and you\'re on a bad version!')
             print(f"Current Version: {c.fg_yl}{VERSION}{c.rs}")
             print(f"Recommended Version: {c.fg_bl}{new_details.version}{c.rs}")
-            print(f"To roll-back, run `brew upgrade {BREW_FORMULA}` or `pip install figgy-cli --upgrade`")
-            print(f'{c.fg_bl}------------------------------------------{c.rs}')
+            print(f"To roll-back, run `{CLI_NAME} --upgrade` (upgrade will roll-back your install)")
+            print(f'{c.fg_bl}-----------------------------------------------{c.rs}')
 
     @staticmethod
     def is_rollback(current_version: str, new_version: str):
