@@ -41,7 +41,7 @@ jobs:
           DEV_SYNC_DISABLED: true
         run: |
           echo "Adding figgy binary to path"
-          cd src/dist/
+          cd src/dist/figgy/
           export PATH="$PATH:$(PWD)"
           figgy --version
 
@@ -120,10 +120,9 @@ jobs:
 
           echo "Adding figgy binary to path"
           cd src/dist/figgy/
-          echo "PATH: $PATH"
           export "PATH=$PATH:$(pwd)"
-          echo "PATH: $PATH"
           cd ../../
+          figgy --version
 
           #echo "Testing Linux binary as bastion user"
           #python run_tests.py bastion
