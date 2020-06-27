@@ -29,9 +29,11 @@ class Upgrade(HelpCommand):
                   f"`pip` instead.{self.c.rs}")
             print(f"\n\n{self.c.fg_bl}Try this command:{self.c.rs} pip install figgy-cli --upgrade")
 
-            print(f"\n\n{self.c.fg_bl}Figgy supports automatic figgy-managed upgrades. Installing Figgy with brew or "
-                  f"via the manual installation process (still easy) supports this feature. Only pip installations "
-                  f"require pip-managed upgrades.")
+            print(f"\n\n{self.c.fg_bl}Figgy supports automatic figgy-managed upgrades. Homebrew and manual "
+                  f"installations support this feature. Python pip installations require pip-managed upgrades. "
+                  f"Please consider installing figgy through one of these methods to take advantage of this feature. "
+                  f"It will save you time, help keep you up-to-date, and enable important features like "
+                  f"release-rollbacks and canary releases! https://www.figgy.dev/docs/getting-started/install/")
             sys.exit(0)
 
         install_path = self.upgrade_mgr.install_path
@@ -82,17 +84,23 @@ class Upgrade(HelpCommand):
                     self.install_mac(latest_version)
 
     def install_mac(self, latest_version: FiggyVersionDetails) -> bool:
-        selection = Input.y_n_input(f"Have {CLI_NAME} auto-update? Figgy will overwrite any homebrew-created {CLI_NAME} "
-                                    f"symlink. Going forward you will no longer need homebrew to manage Figgy. "
-                                    f"Continue (recommended)? ", default_yes=True)
-        if selection:
+        if self.upgrade_mgr.is_brew_install():
+            selection = Input.y_n_input(f"Homebrew installation detected. This upgrade process will not remove your "
+                                        f"brew installation but will instead unlink it. Going forward you will no "
+                                        f"longer need homebrew to manage {CLI_NAME}. Continuing is recommended."
+                                        f"Continue? ", default_yes=True)
+            install_path = '/usr/local/bin/figgy'
+        else:
             install_path = self.upgrade_mgr.install_path
+            selection = True
+
+        if selection:
             return self.upgrade_mgr.install_onedir(install_path, latest_version.version, MAC)
         else:
-            print(f'\n{self.c.fg_bl}Auto-upgrade aborted. To upgrade through brew:{self.c.rs} '
-                  f'brew upgrade figtools/figgy/figgy')
-            print(f"\n\n{self.c.fg_yl}You may continue to manage {CLI_NAME} through homebrew. Doing so will limit some "
-                  f" upcoming functionality around release rollbacks and dynamic version-swapping. ")
+            print(f'\n{self.c.fg_bl}Auto-upgrade aborted. To upgrade through brew run:{self.c.rs} \n'
+                  f'-> brew upgrade figtools/figgy/figgy')
+            print(f"\n\n{self.c.fg_yl}You may continue to manage {CLI_NAME} through homebrew, but doing so will limit some "
+                  f" upcoming functionality around canary releases, rollbacks, and dynamic version-swapping.{self.c.rs}")
             return False
 
     def install_linux(self, latest_version: FiggyVersionDetails) -> bool:

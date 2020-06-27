@@ -52,6 +52,9 @@ class UpgradeManager:
             log.info(f"Error decoding {install_path}, file must be binary.")
             return False
 
+    def is_brew_install(self) -> bool:
+        return "Cellar" in self.install_path
+
     def install_onedir(self, install_path: str, latest_version: str, platform: str):
         old_path = f'{install_path}.OLD'
         zip_path = f"{HOME}/.figgy/figgy.zip"
@@ -80,7 +83,6 @@ class UpgradeManager:
         except Exception as e:
             log.error(f"Received error when attempting to cleanup install.")
             pass
-
 
     def _get_executable_path(self):
         return
