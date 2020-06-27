@@ -24,13 +24,19 @@ class UpgradeManager:
         self.c = Utils.default_colors(enabled=colors_enabled)
         self.current_version: FiggyVersionDetails = VersionTracker.get_version()
 
-    def download(self, remote_path: str, local_path: str):
-        response = requests.get(remote_path, stream=True)
-        with tqdm.wrapattr(open(local_path, "wb+"), "write",
-                           miniters=1, desc=remote_path.split('/')[-1],
-                           total=int(response.headers.get('content-length', 0))) as fout:
-            for chunk in response.iter_content(chunk_size=1024):
-                fout.write(chunk)
+    def download(self, url: str, local_path: str):
+        resp = requests.get(url, stream=True)
+        total = int(resp.headers.get('content-length', 0))
+        with open(local_path, 'wb+') as file, tqdm(
+                desc=local_path,
+                total=total,
+                unit='iB',
+                unit_scale=True,
+                unit_divisor=1024,
+        ) as bar:
+            for data in resp.iter_content(chunk_size=1024):
+                size = file.write(data)
+                bar.update(size)
 
     def is_symlink(self, install_path: str):
         return os.path.islink(install_path)
@@ -56,11 +62,11 @@ class UpgradeManager:
         old_path = f'{install_path}.OLD'
         zip_path = f"{HOME}/.figgy/figgy.zip"
         install_dir = f'{HOME}/.figgy/installations/{latest_version}/{str(uuid.uuid4())[:4]}'
-        remote_path = f'http://www.figgy.dev/releases/cli/{latest_version}/{platform.lower()}/figgy.zip'
+        url = f'http://www.figgy.dev/releases/cli/{latest_version}/{platform.lower()}/figgy.zip'
         os.makedirs(os.path.dirname(install_dir), exist_ok=True)
         suffix = ".exe" if Utils.is_windows() else ""
         self._cleanup_file(zip_path)
-        self.download(remote_path, zip_path)
+        self.download(url, zip_path)
 
         with ZipFile(zip_path, 'r') as zipObj:
             zipObj.extractall(install_dir)
@@ -76,8 +82,6 @@ class UpgradeManager:
         os.chmod(executable_path, st.st_mode | stat.S_IEXEC)
         os.symlink(executable_path, install_path)
 
-        self._cleanup_file(zip_path)
-
     def _get_executable_path(self):
         return
 
@@ -87,7 +91,6 @@ class UpgradeManager:
         except Exception as e:
             log.error(f"Received error when attempting to cleanup install.")
             pass
-
 
     @property
     def install_path(self) -> Optional[str]:
