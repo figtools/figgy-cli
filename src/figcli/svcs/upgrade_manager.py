@@ -62,12 +62,20 @@ class UpgradeManager:
             zipObj.extractall(install_dir)
 
         if self._utils.file_exists(install_path):
-            os.remove(install_path)
+            os.rename(install_path, f'{install_path}.OLD')
 
         executable_path = f'{install_dir}/figgy/{CLI_NAME}{suffix}'
         st = os.stat(executable_path)
         os.chmod(executable_path, st.st_mode | stat.S_IEXEC)
         os.symlink(f'{install_dir}/{CLI_NAME}', install_path)
+
+
+        try:
+            os.remove(zip_path)
+        except Exception as e:
+            log.error(f"Received error when attempting to cleanup install.")
+            pass
+
         print(f'{CLI_NAME} has been installed at path `{install_path}`.')
 
     def _get_executable_path(self):
@@ -89,14 +97,5 @@ class UpgradeManager:
 
         if not os.path.exists(binary_path):
             return None
-
-        # install_path = input(f'Input path to your existing installation. Default: {abs_path} : ') or abs_path
-        #
-
-        #
-        #     install_path = f"{install_path}/{CLI_NAME}{suffix}"
-        #
-        # if not self._utils.file_exists(install_path):
-        #     self._utils.error_exit("Invalid install path specified, try providing the full path to the binary.")
 
         return binary_path
