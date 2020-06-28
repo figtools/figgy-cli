@@ -63,7 +63,7 @@ class Login(HelpCommand, ABC):
 
         # Todo fix this, make it look good later
         if self.context.role.role == "unconfigured":
-            role = Input.select("Please select a role to impersonate: ", valid_options=SANDBOX_ROLES)
+            role = Input.select("\n\nPlease select a role to impersonate: ", valid_options=SANDBOX_ROLES)
         else:
             role = self.context.role.role
 
