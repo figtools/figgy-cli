@@ -105,8 +105,8 @@ class FiggySetup:
 
         # Get assertion and parse out account -> role -> run_env mappings.
         assumable_roles: List[AssumableRole] = session_provider.get_assumable_roles()
-        print(f"\n{self.c.fg_bl}The following roles were detected for user: {current_defaults.user} "
-              f"- if something is missing, contact your system administrator.{self.c.rs}\n")
+        print(f"\n{self.c.fg_bl}The following assumable roles were detected for user: {current_defaults.user} "
+              f"- if something is missing, contact your system administrator.{self.c.rs}\n\n")
 
         if assumable_roles:
             self.print_role_table(assumable_roles)
@@ -121,6 +121,9 @@ class FiggySetup:
         if not run_env:
             run_env: RunEnv = Input.select_default_account(valid_envs=valid_envs)
             print("\n")
+        else:
+            print(f"\nYour default environment has been set to: {run_env}. Commands without the "
+                  f"--{Utils.get_first(env)} option will run against this account.")
 
         updated_defaults.run_env = run_env
         updated_defaults.valid_envs = valid_envs

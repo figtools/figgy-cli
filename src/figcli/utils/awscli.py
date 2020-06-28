@@ -73,6 +73,7 @@ class AWSCLIUtils:
         """
         if profile_header in contents:
             default_index = contents.index(profile_header)
+
             del contents[default_index]
             while "[" not in contents[default_index]:
                 del contents[default_index]

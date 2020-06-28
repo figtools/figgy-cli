@@ -206,7 +206,7 @@ class CommandFactory(Factory):
         elif self._context.find_matching_optional_arguments(help_commands) or self._context.resource in help_commands:
             optional_args = self._context.find_matching_optional_arguments(help_commands)
             context = HelpContext(self._context.resource, self._context.command, optional_args, self._context.run_env,
-                                  defaults=self._cli_defaults)
+                                  defaults=self._cli_defaults, role=self._context.role)
             factory = HelpFactory(self._context.command, context)
         else:
             if self._context.command is None or self._context.resource:

@@ -16,13 +16,22 @@ class AssumableRole:
     profile: Optional[str]
 
     def tabulate_data(self) -> List[str]:
-        return [f'{self.account_id[0:5]} REDACTED', self.run_env.env, self.role.role]
+        return [f'{str(self.account_id)[0:5]} REDACTED', self.run_env.env, self.role.role]
 
     def tabulate_header(self):
         return ["Account #", "Environment", "Role"]
 
     def print(self):
         print(self.__dict__)
+
+    @staticmethod
+    def default_from_role_env(role: Role, env: RunEnv):
+        return AssumableRole(
+            account_id=1234567899,
+            run_env=env,
+            profile=None,
+            role=role,
+            provider_name=Provider.UNSELECTED.value)
 
     @staticmethod
     def from_profile(profile: str):

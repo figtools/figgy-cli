@@ -88,7 +88,7 @@ class FiggyCLI:
             else:
                 return Input.select_aws_cli_profile()
 
-    def get_role(self, prompt: bool, role_override: str = None) -> Role:
+    def get_role(self, prompt: bool, role_override: str = None, is_setup: bool = False) -> Role:
         """
         Returns a string of the user's selected role.
 
@@ -104,8 +104,7 @@ class FiggyCLI:
         if defaults is not None and not prompt:
 
             if role_override:
-                if role_override in [role.role.role for role in defaults.assumable_roles]:
-                    print(f'Role override selected: {role_override}\n')
+                if role_override in [role.role.role for role in defaults.assumable_roles] or is_setup:
                     return Role(role_override)
                 else:
                     self._utils.error_exit(f"Invalid role override provided of: {role_override}. "
@@ -154,7 +153,10 @@ class FiggyCLI:
         if matching_role:
             matching_role = matching_role.pop()
         else:
-            matching_role = None
+            if not skip:
+                matching_role = None
+            else:
+                matching_role = AssumableRole.default_from_role_env(role, env)
 
         return matching_role
 
@@ -166,6 +168,11 @@ class FiggyCLI:
 
     @staticmethod
     def is_setup_command(args):
+        """
+        Returns True for 'special' commands that configure figgy itself or follow non-normal executiion paths.
+        Needed to skip past steps that are not necessary because figgy isn't set up yet, or to support a special
+        use case (like sandbox logins).
+        """
         return Utils.is_set_true(configure, args) \
                or Utils.command_set(sandbox, args) \
                or Utils.is_set_true(version, args) \
@@ -191,7 +198,7 @@ class FiggyCLI:
         self._defaults: CLIDefaults = FiggySetup.stc_get_defaults(skip=self._is_setup_command, profile=self._profile)
         self._run_env = self._defaults.run_env
         role_override = Utils.attr_if_exists(role, args)
-        self._role: Role = self.get_role(args.prompt, role_override=role_override)
+        self._role: Role = self.get_role(args.prompt, role_override=role_override, is_setup=self._is_setup_command)
 
         if not self._is_setup_command:
             if not hasattr(args, 'env') or args.env is None:
@@ -207,7 +214,6 @@ class FiggyCLI:
         self._assumable_role = self.find_assumable_role(self._run_env, self._role, skip=self._is_setup_command,
                                                         profile=self._profile)
         # Todo validate this role?
-
         command_val = Utils.attr_if_exists(command, args)
         resource_val = Utils.attr_if_exists(resource, args)
         found_command: frozenset = frozenset({Utils.attr_if_exists(command, args)}) if command_val else None

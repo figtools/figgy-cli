@@ -227,6 +227,7 @@ arg_options = {
             info: {action: store_true, required: False},
             skip_upgrade: {action: store_true, required: False},
             debug: {action: store_true, required: False},
+            role: {action: None, required: False},
         }
     }
 }

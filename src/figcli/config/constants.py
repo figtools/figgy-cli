@@ -132,6 +132,7 @@ GET_SANDBOX_CREDS_URL = "https://q39v8f3u13.execute-api.us-east-1.amazonaws.com/
 FIGGY_SANDBOX_REGION = 'us-east-1'
 FIGGY_SANDBOX_PROFILE = 'figgy-sandbox'
 DISABLE_KEYRING = 'disable-keyring'
+SANDBOX_DEV_ACCOUNT_ID = '880864869599'
 
 # Guaranteed Namespaces
 shared_ns = '/shared'

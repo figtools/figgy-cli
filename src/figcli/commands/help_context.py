@@ -2,6 +2,7 @@ from typing import Optional, List, Set
 
 from figcli.commands.command_context import CommandContext
 from figcli.models.defaults.defaults import CLIDefaults
+from figcli.models.role import Role
 from figcli.models.run_env import RunEnv
 
 
@@ -11,9 +12,11 @@ class HelpContext(CommandContext):
     often don't have standard "resource" or "command" blocks, instead they may ONLY have --optional parameters
     """
     def __init__(self, resource: Optional[frozenset], command: Optional[frozenset],
-                 options: Optional[Set[frozenset]], run_env: Optional[RunEnv], defaults: Optional[CLIDefaults]):
+                 options: Optional[Set[frozenset]], run_env: Optional[RunEnv], defaults: Optional[CLIDefaults],
+                 role: Optional[Role]):
         super().__init__(run_env, resource, defaults=defaults)
 
         self.resource = resource
         self.command = command
         self.options = options
+        self.role = role

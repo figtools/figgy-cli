@@ -10,6 +10,7 @@ from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider
 from figcli.models.role import Role
+from figcli.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config_manager import ConfigManager
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
@@ -50,13 +51,21 @@ class Login(HelpCommand, ABC):
         print(f"{self.c.fg_gr}Login successful. All sessions are cached.{self.c.rs}")
 
     def login_sandbox(self):
+        """
+        If user provides --role flag, skip role & env selection for a smoother user experience.
+        """
+
         Utils.wipe_vaults() or Utils.wipe_defaults() or Utils.wipe_config_cache()
+
         print(f"{self.c.fg_bl}Logging you into the Figgy Sandbox environment.{self.c.rs}")
         user = Input.input("Please input a user name: ", min_length=2)
         colors = Input.select_enable_colors()
-        print()
 
-        role = Input.select("Please select a role to impersonate: ", valid_options=SANDBOX_ROLES)
+        if not self.context.role:
+            role = Input.select("Please select a role to impersonate: ", valid_options=SANDBOX_ROLES)
+        else:
+            role = self.context.role.role
+
         params = {'role': role, 'user': user}
         result = requests.get(GET_SANDBOX_CREDS_URL, params=params)
 
@@ -73,10 +82,12 @@ class Login(HelpCommand, ABC):
         defaults = CLIDefaults.sandbox(user=user, role=role, colors=colors)
         self._setup.save_defaults(defaults)
 
+        run_env = RunEnv(env='dev', account_id=SANDBOX_DEV_ACCOUNT_ID) if self.context.role else None
+
         config_mgr = ConfigManager.figgy()
         config_mgr.set(Config.Section.Bastion.PROFILE, FIGGY_SANDBOX_PROFILE)
         defaults = self._setup.configure_extras(defaults)
-        defaults = self._setup.configure_roles(current_defaults=defaults, role=Role(role))
+        defaults = self._setup.configure_roles(current_defaults=defaults, role=Role(role), run_env=run_env)
         defaults = self._setup.configure_figgy_defaults(defaults)
         self._setup.save_defaults(defaults)
 

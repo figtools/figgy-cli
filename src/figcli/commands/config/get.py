@@ -9,6 +9,7 @@ from figcli.data.dao.ssm import SsmDao
 from figcli.input import Input
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
+from figcli.utils.output import Output
 from figcli.utils.utils import *
 
 
@@ -60,4 +61,6 @@ class Get(ConfigCommand):
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
+        o = Output(True)
+        o.notify("This is a test notification! And I am really concerned about new line breaks and stuff!!! ")
         self._get_param()
