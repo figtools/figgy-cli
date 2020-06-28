@@ -1,4 +1,3 @@
-
 class Role:
 
     def __init__(self, role: str, full_name: str = None):

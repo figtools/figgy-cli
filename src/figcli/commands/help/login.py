@@ -61,7 +61,8 @@ class Login(HelpCommand, ABC):
         user = Input.input("Please input a user name: ", min_length=2)
         colors = Input.select_enable_colors()
 
-        if not self.context.role:
+        # Todo fix this, make it look good later
+        if self.context.role.role == "unconfigured":
             role = Input.select("Please select a role to impersonate: ", valid_options=SANDBOX_ROLES)
         else:
             role = self.context.role.role
