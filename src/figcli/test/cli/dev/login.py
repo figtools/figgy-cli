@@ -20,6 +20,4 @@ class DevLogin(FiggyTest):
         self.sendline('n')
         self.expect('.*Options.*devops.*')
         self.sendline('dev')
-        self.expect('.*default account.*')
-        self.sendline(self.env)
         self.expect('.*Login successful.*')
