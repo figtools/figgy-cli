@@ -18,6 +18,4 @@ class DataLogin(FiggyTest):
         self.sendline('n')
         self.expect('.*Options.*devops.*')
         self.sendline('data')
-        self.expect('.*default account.*')
-        self.sendline('stage')
         self.expect('.*Login successful.*')
