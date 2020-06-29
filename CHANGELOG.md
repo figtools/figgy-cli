@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.52
+- Disabling "always upgrade" that was used for testing.
+
 ## 0.0.51
 - Testing python 3.7.4 instead of 3.8. There may be cython issues with 3.8.
 

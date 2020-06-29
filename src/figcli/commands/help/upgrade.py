@@ -45,7 +45,7 @@ class Upgrade(HelpCommand):
         if latest_version.version == VERSION:
             print(f'{self.c.fg_bl}You are currently using the latest version of {CLI_NAME}: {self.c.rs}'
                   f'{self.c.fg_gr}{VERSION}{self.c.rs}')
-            #todo set upgrade_it = False here
+            upgrade_it = False
 
         elif self.tracker.upgrade_available(VERSION, latest_version.version):
             print(f'{self.c.fg_yl}------------------------------------------{self.c.rs}')
