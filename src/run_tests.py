@@ -128,7 +128,7 @@ def dev_tests(profile=None, key_down_to_shared=4):
     run_test("Dev Get", DevGet(extra_args=extra_args))
     run_test("Dev Delete", DevDelete(extra_args=extra_args))
     run_test("Dev Dump", DevDump(extra_args=extra_args))
-    run_test("Dev List", DevList(extra_args=extra_args))
+    # run_test("Dev List", DevList(extra_args=extra_args))
     run_test("Dev Audit", DevAudit(extra_args=extra_args))
     run_test("Dev Sync", DevSync(extra_args=extra_args))
     run_test("Dev Cleanup", DevCleanup(extra_args=extra_args))
