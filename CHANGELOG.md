@@ -1,5 +1,10 @@
 Figgy Changelog:
 
+## 0.0.53
+- Adding automatic-backup of long-lived access keys that could be overwritten by `iam export` command.
+- Adding `iam restore` command to restore those access keys to the default profile
+- Adding support for ${VARIABLES} in `sync` command with `--replicaion-only` flag. 
+
 ## 0.0.52
 - Disabling "always upgrade" that was used for testing.
 
