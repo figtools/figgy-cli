@@ -1,0 +1,8 @@
+{
+  "replicate_figs": {
+    "/data/test/${app_name}/${secret_name}": "/app/ci-test-2/replicated/${app_name}/test/${secret_name}",
+    "/shared/test/${app_name}/${secret_name}" : "/app/ci-test-2/replicated/${app_name}/test/${secret_name}",
+    "/data/test/jordan/3" : "/app/ci-test-2/replicated/jordan/test/3",
+    "/data/mongo/replicasets/default" : "/app/ci-test-2/replicated/jordan/test/4"
+  }
+}

@@ -74,13 +74,14 @@ LOGIN_HELP_TEXT = "Logs you in to all viable AWS accounts and caches session loc
 VALIDATE_HELP_TEXT = "Validates a `figgy.json` file and ensures all required configurations exist in ParameterStore. " \
                      "Exits with an error code if any defined configuration is missing."
 LOGIN_SANDBOX_HELP_TEXT = "Get a temporary session from the free figgy sandbox and have fun, experiment, do whatever" \
-                          "you want!"
+                          " you want!"
 
 MISSING_PS_NAME_MESSAGE = "Your application is missing at least one ParameterStore name that it expects to exist as " \
                           "defined in your figgy.json file. To resolve this issue, first try running your `figgy` " \
                           " `sync` command to validate and synchronize your expected configs."
 PROFILE_HELP_TEXT = "Overrides all other figgy configurations and instead pulls ALL credentials from your local " \
                     "~/.aws/credentials file and uses that for all types of authorization. Ideal for CICD pipelines."
+IAM_RESTORE_HELP_TEXT = "Restores any credentials in ~/.aws/credentials that were automatically backed up by figgy."
 
 # Point in time (--point-in-time)
 POINT_IN_TIME = "Restore all parameters to a point in time."
@@ -128,7 +129,8 @@ HELP_TEXT_MAP = {
     sandbox: LOGIN_SANDBOX_HELP_TEXT,
     validate: VALIDATE_HELP_TEXT,
     profile: PROFILE_HELP_TEXT,
-    upgrade: UPGRADE_HELP_TEXT
+    upgrade: UPGRADE_HELP_TEXT,
+    iam_restore: IAM_RESTORE_HELP_TEXT
 }
 
 # Other

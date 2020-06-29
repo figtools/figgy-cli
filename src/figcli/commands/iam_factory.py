@@ -1,5 +1,6 @@
 from figcli.commands.factory import Factory
 from figcli.commands.iam.export import Export
+from figcli.commands.iam.restore import Restore
 from figcli.commands.iam_context import IAMContext
 from figcli.utils.utils import *
 from figcli.config import *
@@ -23,6 +24,8 @@ class IAMFactory(Factory):
     def get(self, command: frozenset):
         if command == export:
             return Export(self._iam_context, self._env_session, self._all_sessions)
+        elif command == iam_restore:
+            return Restore(self._iam_context)
         else:
             self._utils.error_exit(f"{command} is not a valid IAM command. You must select from: "
                                    f"[{CollectionUtils.printable_set(iam_commands)}]. Try using --help for more info.")

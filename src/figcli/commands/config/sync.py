@@ -10,6 +10,7 @@ from figcli.commands.types.config import ConfigCommand
 from figcli.data.dao.config import ConfigDao
 from figcli.data.dao.ssm import SsmDao
 from figcli.extras.key_utils import KeyUtils
+from figcli.input import Input
 from figcli.models.replication_config import ReplicationConfig, ReplicationType
 from figcli.config import *
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
@@ -349,6 +350,37 @@ class Sync(ConfigCommand):
 
         return False
 
+    def _fill_repl_conf_variables(self, repl_conf: Dict) -> Dict:
+        repl_copy = {}
+        all_vars = []
+        for key, val in repl_conf.items():
+            all_vars = all_vars + re.findall(r'\${(\w+)}', key)
+            all_vars = all_vars + re.findall(r'\${(\w+)}', key)
+
+        all_vars = set(all_vars)
+        if all_vars:
+            print(f"{self.c.fg_bl}{len(all_vars)} variables detected in: {self.c.rs}{self.c.fg_yl}"
+                  f"{self._config_path}{self.c.rs}\n")
+
+        template_vals = {}
+        for var in all_vars:
+            print(f"Template variable: {self.c.fg_bl}{var}{self.c.rs} found.")
+            input_val = Input.input(f"Please input a value for {self.c.fg_bl}{var}{self.c.rs}: ", min_length=1)
+            template_vals[var] = input_val
+
+        for key, val in repl_conf.items():
+            updated_key = key
+            updated_val = val
+
+            for template_key, template_val in template_vals.items():
+                updated_key = updated_key.replace(f"${{{template_key}}}", template_val)
+                updated_val = updated_val.replace(f"${{{template_key}}}", template_val)
+
+            repl_copy[updated_key] = updated_val
+            repl_copy[updated_key] = updated_val
+
+        return repl_copy
+
     def run_ci_sync(self) -> None:
         """
             Orchestrates a standard `sync` command WITHOUT The `--replication-only` flag set.
@@ -400,6 +432,8 @@ class Sync(ConfigCommand):
         Orchestrates sync when the user passes in the `--replication-only` flag.
         """
         repl_conf = self._utils.get_repl_config(self._config_path)
+
+        repl_conf = self._fill_repl_conf_variables(repl_conf)
         self._validate_replication_config(repl_conf, app_conf=False)
         self._sync_repl_configs(repl_conf)
         self._notify_of_data_repl_orphans(repl_conf)

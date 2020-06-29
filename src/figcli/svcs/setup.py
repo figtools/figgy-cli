@@ -230,7 +230,7 @@ class FiggySetup:
                 ]
                 for account_id in printable_roles.keys()
             ],
-            headers=['Account #', 'Environment', 'Roles'],
+            headers=['Account #', 'Environment', 'Role'],
             tablefmt="grid",
             numalign="center",
             stralign="left",

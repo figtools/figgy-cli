@@ -196,7 +196,7 @@ class Utils:
             conf = json.loads(contents)
             self.validate(REPLICATION_KEY in conf, f"{REPLICATION_KEY} is missing from replication config: "
                                                    f"{repl_config_path}. This file is invalid.")
-            return self.get_config_key_safe(REPLICATION_KEY, conf, default=[])
+            return conf.get(REPLICATION_KEY, {})
 
     def get_ci_config(self, ci_config_path: str) -> Dict:
         self.validate(ci_config_path.endswith('.json'),
@@ -326,7 +326,7 @@ class Utils:
         return [x for n, x in enumerate(lst) if x in lst[:n]]
 
     def error_exit(self, error_msg: str):
-        print(f"{self.c.fg_rd}ERROR: >> {error_msg}{self.c.rs}")
+        print(f"\n{self.c.fg_rd}ERROR: >> {error_msg}{self.c.rs}")
         exit(1)
 
     @staticmethod

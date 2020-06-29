@@ -11,6 +11,8 @@ from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider
 from figcli.models.role import Role
 from figcli.models.run_env import RunEnv
+import figcli.config.commands as commands
+from figcli.svcs.aws_cfg import AWSConfig
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config_manager import ConfigManager
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
@@ -19,7 +21,6 @@ from figcli.svcs.setup import FiggySetup
 from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
 from figcli.models.sandbox.login_response import SandboxLoginResponse
 
-from figcli.utils.awscli import AWSCLIUtils
 
 
 class Login(HelpCommand, ABC):
@@ -33,6 +34,8 @@ class Login(HelpCommand, ABC):
         self._setup = figgy_setup
         self._defaults: CLIDefaults = figgy_setup.get_defaults()
         self._utils = Utils(self._defaults.colors_enabled)
+        self._aws_cfg = AWSConfig(color=self.c)
+
         self.example = f"\n\n{self.c.fg_bl}{CLI_NAME} {Utils.get_first(login)} \n" \
                        f"{self.c.rs}{self.c.fg_yl}  --or--{self.c.rs}\n" \
                        f"{self.c.fg_bl}{CLI_NAME} {Utils.get_first(login)} {Utils.get_first(sandbox)}{self.c.rs}"
@@ -54,18 +57,19 @@ class Login(HelpCommand, ABC):
         """
         If user provides --role flag, skip role & env selection for a smoother user experience.
         """
-
         Utils.wipe_vaults() or Utils.wipe_defaults() or Utils.wipe_config_cache()
 
         print(f"{self.c.fg_bl}Logging you into the Figgy Sandbox environment.{self.c.rs}")
         user = Input.input("Please input a user name: ", min_length=2)
         colors = Input.select_enable_colors()
 
-        # Todo fix this, make it look good later
-        if self.context.role.role == "unconfigured":
+        # Prompt user for role if --role not provided
+        if commands.role not in self.context.options:
             role = Input.select("\n\nPlease select a role to impersonate: ", valid_options=SANDBOX_ROLES)
         else:
             role = self.context.role.role
+            self._utils.validate(role in SANDBOX_ROLES, f"Provided role: >>>`{role}`<<< is not a valid sandbox role."
+                                                        f" Please choose from {SANDBOX_ROLES}")
 
         params = {'role': role, 'user': user}
         result = requests.get(GET_SANDBOX_CREDS_URL, params=params)
@@ -76,9 +80,9 @@ class Login(HelpCommand, ABC):
 
         data = result.json()
         response = SandboxLoginResponse(**data)
-        AWSCLIUtils.write_credentials(access_key=response.AWS_ACCESS_KEY_ID, secret_key=response.AWS_SECRET_ACCESS_KEY,
+        self._aws_cfg.write_credentials(access_key=response.AWS_ACCESS_KEY_ID, secret_key=response.AWS_SECRET_ACCESS_KEY,
                                       token=response.AWS_SESSION_TOKEN, region=FIGGY_SANDBOX_REGION,
-                                      profile_name=FIGGY_SANDBOX_PROFILE, color=self.c)
+                                      profile_name=FIGGY_SANDBOX_PROFILE)
 
         defaults = CLIDefaults.sandbox(user=user, role=role, colors=colors)
         self._setup.save_defaults(defaults)
@@ -96,7 +100,7 @@ class Login(HelpCommand, ABC):
               f"{self.c.fg_bl}1 hour.{self.c.rs}")
 
         print(
-            f"\nIf your session expires, feel free to rerun `{CLI_NAME} login sandbox` to get another sandbox session. "
+            f"\nIf your session expires, you may rerun `{CLI_NAME} login sandbox` to get another sandbox session. "
             f"\nAll previous figgy sessions have been disabled, you'll need to run {CLI_NAME} "
             f"--configure to leave the sandbox.")
 

@@ -49,9 +49,10 @@ profile = frozenset({'profile'})
 
 # IAM sub commands
 export = frozenset({'export'})
+iam_restore = frozenset({'restore'})
+
 all_profiles = frozenset({'all-profiles'})
 role = frozenset({'role'})
-
 # argparse options
 help = frozenset({'help'})
 required = frozenset({'required'})
@@ -215,6 +216,10 @@ arg_options = {
             debug: {action: store_true, required: False},
             profile: {action: None, required: False},
         },
+        iam_restore: {
+            info: {action: store_true, required: False},
+            debug: {action: store_true, required: False},
+        },
     },
     login: {
         login: {
@@ -240,8 +245,8 @@ merge_suffixes = [merge_uri_suffix, empty_uri_suffix]
 # Supported commands by resource
 config_commands = [sync, put, edit, delete, cleanup, get, share, generate,
                    list_com, browse, audit, dump, restore, promote, validate]
-iam_commands = [export]
-help_commands = [configure, version, login, sandbox, upgrade]
+iam_commands = [export, iam_restore]
+help_commands = [configure, version, login, sandbox, upgrade, role]
 
 # Used to build out parser, map of resource to sub-commands
 resource_map = {

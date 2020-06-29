@@ -115,6 +115,53 @@ class ConfigManager:
         except Exception as e:
             print(e)
 
+    def has_section(self, section: str):
+        return self.config.has_section(section)
+
+    def has_option(self, section: str, option: str):
+        return self.config.has_option(section, option)
+
+    def sections(self):
+        return self.config.sections()
+
+    def options(self, section: str):
+        return self.config.options(section)
+
+    def delete(self, section: str, option: str):
+        self.config.remove_option(section, option)
+
+    def save(self):
+        with self._lock:
+            with open(self.config_file, "w") as file:
+                self.config.write(file)
+
+    def get_option(self, section: str, option: str, default=None):
+        try:
+            if self.config.has_option(section, option):
+                return self.config[section][option]
+            else:
+                return default
+        except Exception as e:
+            print(e)
+
+    def set_config(self, section: str, option: str, value):
+        # Update in case file changed on FS.
+        with self._lock:
+            self._load()
+
+        if not self.config.has_section(section):
+            self.config.add_section(section)
+
+        if isinstance(value, bool):
+            value = str(value).lower()
+        else:
+            value = str(value)
+
+        self.config.set(section, option, value)
+
+        with open(self.config_file, "w") as file:
+            self.config.write(file)
+
     @staticmethod
     def figgy() -> "ConfigManager":
         """

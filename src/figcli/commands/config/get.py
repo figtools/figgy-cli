@@ -61,6 +61,4 @@ class Get(ConfigCommand):
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
-        o = Output(True)
-        o.notify("This is a test notification! And I am really concerned about new line breaks and stuff!!! ")
         self._get_param()
