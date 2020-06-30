@@ -1,4 +1,5 @@
 import re
+import os
 from typing import *
 
 from botocore.exceptions import ClientError
@@ -431,6 +432,8 @@ class Sync(ConfigCommand):
         """
         Orchestrates sync when the user passes in the `--replication-only` flag.
         """
+        self._utils.validate(os.path.exists(self._config_path), f"Path {self._config_path} is invalid. "
+                                                                f"That file does not exist.")
         repl_conf = self._utils.get_repl_config(self._config_path)
 
         repl_conf = self._fill_repl_conf_variables(repl_conf)

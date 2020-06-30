@@ -188,6 +188,9 @@ class Utils:
         return a
 
     def get_repl_config(self, repl_config_path: str):
+        if not os.path.exists(repl_config_path):
+            raise ValueError(f"Invalid replication config specified: {repl_config_path}")
+
         with open(repl_config_path, "r") as file:
             contents = file.read()
             self.validate(contents != '', f"File provided at: {repl_config_path} "
