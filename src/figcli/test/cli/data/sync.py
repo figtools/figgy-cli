@@ -38,7 +38,7 @@ class DataSync(FiggyTest):
             child.expect('.*added successfully.*')
 
         self.step("Waiting for replication propagation")
-        time.sleep(15)
+        time.sleep(50)
 
         self.step("Verifying successful replication")
         destinations = list(content.values())
