@@ -81,9 +81,9 @@ class Input:
         selection = ''
         c = TerminalFactory(True).instance().get_colors()
         while selection.lower() != 'y' and selection.lower() != 'n':
-            selection = input(f'\nEnable colored output? (Colors: {c.fg_rd}RED{c.rs} {c.fg_bl}BLUE{c.rs} '
-                              f'{c.fg_gr}GREEN{c.rs} <-- If you see weirdness, select N\n'
-                              f' (Y/n?): -> ')
+            print(f'\nEnable colored output? (Colors: {c.fg_rd}RED{c.rs} {c.fg_bl}BLUE{c.rs} '
+                  f'{c.fg_gr}GREEN{c.rs} <-- If you see weirdness, select N')
+            selection = input(f' (Y/n?): -> ')
             selection = selection.lower() if selection != '' else 'y'
         return selection == 'y'
 
