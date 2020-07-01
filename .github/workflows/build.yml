@@ -100,7 +100,7 @@ jobs:
           # install requirements
 
           cd src
-          pip3 install pyinstaller
+          pip3 install pyinstaller==3.5
           pip3 install -r requirements.txt
           pip3 install -r requirements-linux.txt
 
