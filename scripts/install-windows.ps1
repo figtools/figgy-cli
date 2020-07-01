@@ -1,5 +1,5 @@
 # powershell
-# Reference: https://codingbee.net/powershell/powershell-make-a-permanent-change-to-the-path-environment-variable
+# Feel free to suggest improvements, my powershell is quite "meh".
 
 $INSTALL_DIR=".figgy/installations/first"
 
@@ -17,13 +17,12 @@ Invoke-WebRequest -Uri https://www.figgy.dev/releases/cli/latest/windows/figgy.z
 echo "Unzipping figgy archive..."
 Expand-Archive .\figgy.zip
 
-# Create symlink for figgy.exe
-New-Item -ItemType SymbolicLink -Path "figgy" -Target "figgy.exe"
-
-
 # Add DIR to path
 cd figgy/figgy
 $DIR=pwd
+
+# Create symlink for figgy.exe
+New-Item -ItemType SymbolicLink -Path "figgy" -Target "figgy.exe"
 
 ## Add Dir to path
 echo "Adding installation directory [$DIR] to path."
