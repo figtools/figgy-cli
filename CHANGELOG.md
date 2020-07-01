@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.55
+- Release for testing auto-install script auto-matic upgrades
+
 ## 0.0.54
 - Working around weird visual artifact issue when selecting colors in 0.0.53
 
