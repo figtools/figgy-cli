@@ -18,7 +18,7 @@ echo "Unzipping figgy archive..."
 Expand-Archive .\figgy.zip
 
 # Add DIR to path
-cd figgy/figgy
+cd figgy/figgy/figgy
 $DIR=pwd
 
 # Create symlink for figgy.exe
