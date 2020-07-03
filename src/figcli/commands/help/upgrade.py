@@ -2,7 +2,7 @@ import sys
 from figcli.commands.help_context import HelpContext
 from figcli.commands.types.help import HelpCommand
 from figcli.config import *
-from figcli.input import Input
+from figcli.io.input import Input
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker, FiggyVersionDetails
 from figcli.svcs.upgrade_manager import UpgradeManager

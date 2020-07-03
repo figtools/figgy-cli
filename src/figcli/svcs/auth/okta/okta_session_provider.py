@@ -6,7 +6,7 @@ from abc import ABC
 from json import JSONDecodeError
 from typing import List
 from figcli.config import *
-from figcli.input import Input
+from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.role import Role

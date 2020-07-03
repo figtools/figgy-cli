@@ -6,7 +6,7 @@ from typing import Callable, List, Dict, Optional
 from tabulate import tabulate
 from figcli.config import *
 from figcli.data.dao.ssm import SsmDao
-from figcli.input import Input
+from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider

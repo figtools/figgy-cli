@@ -7,7 +7,7 @@ import datetime
 import re
 from figcli.config import *
 from figcli.config.style.terminal_factory import TerminalFactory
-from figcli.input import Input
+from figcli.io.input import Input
 from figcli.utils.utils import Utils
 
 from figcli.models.defaults.defaults import CLIDefaults

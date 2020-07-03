@@ -2,7 +2,7 @@ import logging
 import os
 
 from figcli.config.style.color import Color
-from figcli.input import Input
+from figcli.io.input import Input
 from figcli.svcs.config_manager import ConfigManager
 from figcli.config.aws import *
 from figcli.config.constants import *
