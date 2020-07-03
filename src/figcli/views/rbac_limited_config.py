@@ -14,19 +14,22 @@ from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
 
+
 class RBACLimitedConfigView:
     """
     Returns limited sets of configuration names based on the user's role's access
     """
 
-    def __init__(self, role: Role, cache_mgr: CacheManager, ssm: SsmDao, config_svc: ConfigService):
+    def __init__(self, role: Role, cache_mgr: CacheManager, ssm: SsmDao, config_svc: ConfigService, profile: str):
         self._role = role
         self._cache_mgr = cache_mgr
         self._config_svc = config_svc
         self._ssm = ssm
         self.rbac_role_ns_path = f'{figgy_ns}/rbac/{self._role.role}/namespaces'
         self.rbac_role_kms_path = f'{figgy_ns}/rbac/{self._role.role}/keys'
+        self.rbac_profile_kms_keys_path = f'{figgy_ns}/rbac/profile/keys'
         self._config_completer = None
+        self._profile = profile
 
     def get_authorized_namespaces(self) -> List[str]:
         """
@@ -49,7 +52,8 @@ class RBACLimitedConfigView:
             es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._config_svc.get_root_namespaces)
 
         if not isinstance(authed_nses, list):
-            raise ValueError(f"Invalid value found at path: {self.rbac_role_ns_path}. It must be a valid json List[str]")
+            raise ValueError(
+                f"Invalid value found at path: {self.rbac_role_ns_path}. It must be a valid json List[str]")
 
         return authed_nses
 
@@ -62,13 +66,17 @@ class RBACLimitedConfigView:
         """
         cache_key = f'{self._role.role}-authed-keys'
 
-        es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter, self.rbac_role_kms_path)
+        if self._profile:
+            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter, self.rbac_profile_kms_keys_path)
+        else:
+            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter, self.rbac_role_kms_path)
 
         if authed_nses:
             authed_nses = json.loads(authed_nses)
 
         if not isinstance(authed_nses, list):
-            raise ValueError(f"Invalid value found at path: {self.rbac_role_kms_path}. It must be a valid json List[str]")
+            raise ValueError(
+                f"Invalid value found at path: {self.rbac_role_kms_path}. It must be a valid json List[str]")
 
         return authed_nses
 

@@ -55,7 +55,7 @@ class DevSync(FiggyTest):
         child.sendline('desc')
         child.expect('.*value a secret.*')
         child.sendline('n')
-        child.expect('.*Sync completed with no errors!')
+        child.expect('.*Sync completed with no errors.*')
 
     def sync_multi_level_success(self):
         missing_key = '/app/dev/thing/ci-test2/app/ci-test/v1/config12'
@@ -82,7 +82,7 @@ class DevSync(FiggyTest):
         child.sendline('desc')
         child.expect('.*value a secret.*')
         child.sendline('n')
-        child.expect('.*Sync completed with no errors!')
+        child.expect('.*Sync completed with no errors.*')
 
     def sync_with_orphans(self):
         delete = DevDelete(extra_args=self.extra_args)
