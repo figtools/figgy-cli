@@ -12,7 +12,7 @@ class DevDelete(FiggyTest):
         super().__init__(
             pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV} '
                           f'{extra_args} --skip-upgrade',
-                          timeout=5, encoding='utf-8'), extra_args=extra_args)
+                          timeout=10, encoding='utf-8'), extra_args=extra_args)
         self._child.delayafterread = .01
         self._child.delaybeforesend = .5
 

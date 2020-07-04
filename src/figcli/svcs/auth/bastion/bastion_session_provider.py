@@ -9,7 +9,7 @@ from botocore.exceptions import NoCredentialsError, ClientError, ParamValidation
 
 from figcli.config.constants import *
 from figcli.data.dao.ssm import SsmDao
-from figcli.input import Input
+from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.aws_session import FiggyAWSSession
 from figcli.models.defaults.defaults import CLIDefaults

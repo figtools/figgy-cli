@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Union
 
 from pexpect.exceptions import TIMEOUT
 from figcli.utils.utils import Utils
@@ -26,9 +26,9 @@ class FiggyTest(ABC):
         print(f'Expecting: {regexes}')
         return self._child.expect(regexes)
 
-    def expect(self, regex: str):
+    def expect(self, regex: Union[List[str], str]):
         print(f'Expecting: {regex}')
-        self._child.expect(regex)
+        return self._child.expect(regex)
 
     def sendline(self, line: str):
         print(f'Sending: {line}')

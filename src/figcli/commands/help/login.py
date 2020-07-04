@@ -5,7 +5,7 @@ from typing import List
 from figcli.commands.help_context import HelpContext
 from figcli.commands.types.help import HelpCommand
 from figcli.config import *
-from figcli.input.input import Input, Utils
+from figcli.io.input import Input, Utils
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider

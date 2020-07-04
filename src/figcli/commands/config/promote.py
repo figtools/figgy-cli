@@ -5,14 +5,14 @@ from prompt_toolkit.completion import WordCompleter
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
 from figcli.data.dao.ssm import SsmDao
-from figcli.input import Input
+from figcli.io.input import Input
+from figcli.models.run_env import RunEnv
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.utils.utils import *
 
 
-# Todo: FIX - Prompt user for next environment since we can no longer assume what the next environment is
 class Promote(ConfigCommand):
 
     def __init__(self, source_ssm: SsmDao, config_completer_init: WordCompleter,
@@ -24,14 +24,12 @@ class Promote(ConfigCommand):
         self._config_completer = config_completer_init
         self._utils = Utils(colors_enabled)
 
-
     def _promote(self):
         repeat = True
         parameters: List[Dict] = []
         while repeat:
-            namespace = prompt(f"Please input a namespace prefix to promote:"
-                               f" (i.e. {self.context.defaults.service_ns}/foo/): ",
-                               completer=self._config_completer)
+            namespace = Input.input("Please input a namespace prefix to promote:"
+                               f" (i.e. {self.context.defaults.service_ns}/foo/): ", completer=self._config_completer)
             if not self._utils.is_valid_input(namespace, "namespace", notify=False):
                 continue
 
@@ -73,7 +71,6 @@ class Promote(ConfigCommand):
                     description = param.get('Description', "")
                     dest_ssm.set_parameter(param['Name'], val, description, SSM_STRING)
                     print(f"Successfully promoted {self.c.fg_bl}{param['Name']}{self.c.rs} to {next_env}.\r\n")
-
 
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage

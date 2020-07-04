@@ -75,21 +75,18 @@ class Delete(ConfigCommand):
                     return False
 
         else:
-            delete_msg = f"{self.c.fg_gr}{key} deleted successfully.{self.c.rs}\r\n"
             try:
-                print(f"Trying delete {key}")
                 self._ssm.delete_parameter(key)
             except ClientError as e:
                 if e.response['Error']['Code'] == 'ParameterNotFound':
-                    print(delete_msg)
-                    return True
+                    pass
                 elif "AccessDeniedException" == e.response['Error']['Code']:
                     print(f"{self.c.fg_rd}You do not have permissions to delete: {key}{self.c.rs}")
                     return False
                 else:
                     raise
 
-            print(delete_msg)
+            print(f"{self.c.fg_gr}{key} deleted successfully.{self.c.rs}\r\n")
             return True
 
     def _delete_param(self):

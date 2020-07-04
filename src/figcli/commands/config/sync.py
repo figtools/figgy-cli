@@ -11,7 +11,8 @@ from figcli.commands.types.config import ConfigCommand
 from figcli.data.dao.config import ConfigDao
 from figcli.data.dao.ssm import SsmDao
 from figcli.extras.key_utils import KeyUtils
-from figcli.input import Input
+from figcli.io import Output
+from figcli.io.input import Input
 from figcli.models.replication_config import ReplicationConfig, ReplicationType
 from figcli.config import *
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
@@ -35,6 +36,7 @@ class Sync(ConfigCommand):
         self._get: Get = get
         self._put: Put = put
         self._FILE_PREFIX = "file://"
+        self._out = Output(colors_enabled)
 
     def _load_file(self, file_path: str) -> str:
         try:
@@ -165,10 +167,10 @@ class Sync(ConfigCommand):
                         notify = True
 
         for orphan in orphans:
-            print(f"{self.c.fg_rd}Orphaned replication mapping detected: {self.c.rs}"
+            print(f"{self.c.fg_yl}Orphaned replication mapping detected: {self.c.rs}"
                   f" {self.c.fg_bl}{orphan.source} -> {orphan.destination}{self.c.rs}.")
         if notify:
-            print(f"To cleanup the now orphaned replication configs, "
+            print(f"To cleanup orphaned replication configs, "
                   f"delete the destination, THEN the source with the `figgy config delete` command")
 
     def _sync_replication(self, config_repl: Dict, expected_destinations: Set, namespace: str):
@@ -451,6 +453,6 @@ class Sync(ConfigCommand):
             self.run_ci_sync()
 
         if self._errors_detected:
-            print(f"\r\n{self.c.fg_rd}Sync failed. Please address the outputted errors.{self.c.rs}")
+            self._out.error('Sync failed. Please address the outputted errors.')
         else:
-            print(f"\r\n{self.c.fg_gr}Sync completed with no errors!{self.c.rs}")
+            self._out.success('Sync completed with no errors!')

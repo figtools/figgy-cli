@@ -5,7 +5,7 @@ from typing import List, Tuple
 import boto3
 from botocore.exceptions import ClientError
 
-from figcli.input import Input
+from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.utils.secrets_manager import SecretsManager

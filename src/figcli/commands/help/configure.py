@@ -9,7 +9,7 @@ from figcli.commands.types.help import HelpCommand
 from figcli.config import *
 from figcli.config.style.terminal_factory import TerminalFactory
 from figcli.utils.utils import Utils
-from figcli.input.input import Input
+from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.role import Role

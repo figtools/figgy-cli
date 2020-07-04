@@ -11,6 +11,7 @@ from figcli.test.cli.dev.audit import DevAudit
 from figcli.test.cli.dev.validate import DevValidate
 from figcli.test.cli.dev.browse import DevBrowse
 from figcli.test.cli.dev.cleanup import DevCleanup
+from figcli.test.cli.dev.promote import DevPromote
 from figcli.test.cli.dev.delete import DevDelete
 from figcli.test.cli.dev.dump import DevDump
 from figcli.test.cli.dev.edit import DevEdit
@@ -95,8 +96,8 @@ def main():
     elif auth_type == 'bastion':
         # Login to DEV Role
         # print_test("Bastion DEV Login")
-        # DevLogin(BASTION_ENV).run()
-        # dev_tests(key_down_to_shared=1)
+        DevLogin(BASTION_ENV).run()
+        dev_tests(key_down_to_shared=1)
 
         clear_cache()
         # Login to data role
@@ -128,6 +129,10 @@ def dev_tests(profile=None, key_down_to_shared=4):
     run_test("Dev Get", DevGet(extra_args=extra_args))
     run_test("Dev Delete", DevDelete(extra_args=extra_args))
     run_test("Dev Dump", DevDump(extra_args=extra_args))
+
+    if not profile:
+        run_test("Dev Promote", DevPromote(extra_args=extra_args))
+
     # run_test("Dev List", DevList(extra_args=extra_args))
     run_test("Dev Audit", DevAudit(extra_args=extra_args))
     run_test("Dev Sync", DevSync(extra_args=extra_args))

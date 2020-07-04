@@ -31,6 +31,25 @@ class DevPut(FiggyTest):
         else:
             self.sendline('n')
 
+    def add_encrypt_app(self, key, value, desc, add_more=False):
+        self.expect('.*Please input a PS Name.*')
+        self.sendline(key)
+        self.expect('.*Please input a value.*')
+        self.sendline(value)
+        self.expect('.*Please input an optional.*')
+        self.sendline(desc)
+        self.expect('.*secret?.*')
+        self.sendline('y')
+        index = self.expect(['.*key.*', '.*another.*'])
+        if index == 0:
+            self.sendline('app')
+            self.expect('.*another.*')
+
+        if add_more:
+            self.sendline('y')
+        else:
+            self.sendline('n')
+
     def add_another(self, key, value, desc, add_more=True):
         print(f"Adding another: {key} -> {value}")
         self.expect('.*PS Name.*')

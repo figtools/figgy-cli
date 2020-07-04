@@ -5,7 +5,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
 from figcli.config import Config, CONFIG_OVERRIDE_FILE_PATH, SUPPORTED_OKTA_FACTOR_TYPES, FAKE_GOOGLE_IDP_ID, FAKE_GOOGLE_SP_ID, FAKE_OKTA_APP_LINK
-from figcli.input.input import Input, List
+from figcli.io.input import Input, List
 from figcli.svcs.config_manager import ConfigManager
 from figcli.utils.utils import Utils, Color
 from figcli.config.communication import *

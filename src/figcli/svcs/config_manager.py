@@ -4,7 +4,7 @@ from typing import Type, Union, Optional, Callable, Any
 
 from figcli.config import CONFIG_OVERRIDE_FILE_PATH, Config, EMPTY_CONFIG
 from figcli.config.style.terminal_factory import TerminalFactory
-from figcli.input import Input
+from figcli.io.input import Input
 from figcli.utils.utils import Utils
 from threading import Lock
 from os import path

@@ -159,7 +159,8 @@ class CommandFactory(Factory):
     def __rbac_config_view(self) -> RBACLimitedConfigView:
         if not self._rbac_config_view:
             self._rbac_config_view = RBACLimitedConfigView(self._context.role, self.__cache_mgr(),
-                                                           self.__ssm(), self.__config_service())
+                                                           self.__ssm(), self.__config_service(),
+                                                           self._context.profile)
         return self._rbac_config_view
 
     def __init_sessions(self):
