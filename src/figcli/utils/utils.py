@@ -72,7 +72,7 @@ class Utils:
 
     @staticmethod
     def get_os():
-        return platform.system().lower()
+        return platform.system()
 
     @staticmethod
     def not_windows():
