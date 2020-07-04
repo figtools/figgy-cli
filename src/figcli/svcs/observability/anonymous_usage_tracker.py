@@ -39,7 +39,7 @@ class AnonymousUsageTracker:
     _USER_KEY = 'user_id'
     _VERSION_KEY = 'version'
     _PLATFORM_KEY = 'platform'
-    REPORT_FREQUENCY = 60  # Report daily
+    REPORT_FREQUENCY = 1000 * 5  # Report every minute
     # REPORT_FREQUENCY = 1000 * 60 * 60 * 24  # Report daily
 
     @staticmethod
