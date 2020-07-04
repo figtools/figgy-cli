@@ -10,5 +10,6 @@ FIGGY_STYLE = Style.from_dict({
     colors.bl: colors.bl_val,
     colors.gr: colors.gr_val,
     colors.rd: colors.rd_val,
-    colors.yl: colors.yl_val
+    colors.yl: colors.yl_val,
+    colors.og: colors.og_val
 })

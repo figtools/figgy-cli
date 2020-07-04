@@ -1,5 +1,15 @@
 Figgy Changelog:
 
+## 0.0.57
+- Adding 'version' as a parameter in anonymous error reporting.
+
+## 0.0.56
+- Fixing bug with promote command when using --profile
+- Minor tweaks / improvements to the output of some command
+
+## 0.0.55
+- Release for testing auto-install script auto-matic upgrades
+
 ## 0.0.54
 - Working around weird visual artifact issue when selecting colors in 0.0.53
 

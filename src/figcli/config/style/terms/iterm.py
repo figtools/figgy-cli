@@ -11,6 +11,7 @@ class iTerm(Term):
     GREEN = (51, 222, 136)
     RED = (240, 70, 87)
     YELLOW = (240, 240, 70)
+    ORANGE = (232, 149, 39)
 
     def get_colors(self) -> Color:
         return Color(
@@ -19,6 +20,7 @@ class iTerm(Term):
                 blue=iTerm.BLUE,
                 green=iTerm.GREEN,
                 red=iTerm.RED,
-                yellow=iTerm.YELLOW
+                yellow=iTerm.YELLOW,
+                orange = iTerm.ORANGE
             )
         )

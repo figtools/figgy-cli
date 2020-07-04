@@ -61,4 +61,5 @@ class Get(ConfigCommand):
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
+        raise ValueError('dkajfad')
         self._get_param()
