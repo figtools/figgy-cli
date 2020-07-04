@@ -44,7 +44,7 @@ class DevRestore(FiggyTest):
         restore_breakpoint_2 = int(time.time() * 1000)
         print(f"Second restore breakpoint: {restore_breakpoint_1} - would expect val of {second_val}")
 
-        time.sleep(15)
+        time.sleep(25)
 
         restore_prefix = f'{param_test_prefix}{self._guuid}/'
         self.step(f"Attempting restore to time: {restore_breakpoint_1} with prefix: {restore_prefix}")
@@ -59,7 +59,7 @@ class DevRestore(FiggyTest):
         child.expect('.*Are you sure.*')
         child.sendline('y')
         print("Checking restore output...\r\n\r\n")
-        child.expect(f'.*Value.*{param_test_prefix}{self._guuid}/test_param.*current.*Skipping.*')
+        child.expect(f'.*Value.*{param_test_prefix}{self._guuid}/test_param.*')
 
         self.step("Validating values were rolled back...")
         time.sleep(5)
