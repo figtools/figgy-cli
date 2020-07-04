@@ -1,5 +1,9 @@
 Figgy Changelog:
 
+## 0.0.56
+- Fixing bug with promote command when using --profile
+- Minor tweaks / improvements to the output of some command
+
 ## 0.0.55
 - Release for testing auto-install script auto-matic upgrades
 
