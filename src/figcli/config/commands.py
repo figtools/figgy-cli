@@ -185,7 +185,6 @@ arg_options = {
             role: {action: None, required: False},
             skip_upgrade: {action: store_true, required: False},
             debug: {action: store_true, required: False},
-            profile: {action: None, required: False},
         },
         generate: {
             info: {action: store_true, required: False},

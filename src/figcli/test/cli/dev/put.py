@@ -40,7 +40,11 @@ class DevPut(FiggyTest):
         self.sendline(desc)
         self.expect('.*secret?.*')
         self.sendline('y')
-        self.expect('.*another.*')
+        index = self.expect(['.*key.*', '.*another.*'])
+        if index == 0:
+            self.sendline('app')
+            self.expect('.*another.*')
+
         if add_more:
             self.sendline('y')
         else:

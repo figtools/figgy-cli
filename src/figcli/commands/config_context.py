@@ -35,3 +35,4 @@ class ConfigContext(CommandContext):
         self.skip_upgrade = Utils.is_set_true(skip_upgrade, args)
         self.replication_only = Utils.is_set_true(replication_only, args)
         self.point_in_time = Utils.is_set_true(point_in_time, args)
+        self.profile = Utils.attr_if_exists(profile)
