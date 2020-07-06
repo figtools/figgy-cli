@@ -59,10 +59,9 @@ class Sync(ConfigCommand):
         for key in config_keys:
             try:
                 if not self._get.get(key):
-                    print(f"Name {self.c.fg_bl}{key}{self.c.rs} does not exist in ParameterStore for the "
-                          f"{self.c.fg_bl}{self.run_env}{self.c.rs} environment. It must be added before this "
-                          f"build can continue.\n")
-                    self._put.put_param(key=key, display_hints=count == 0)
+                    print(f"Fig: {self.c.fg_bl}{key}{self.c.rs} missing from PS in environment: "
+                          f"{self.c.fg_yl}{self.run_env}{self.c.rs}.")
+                    self._put.put_param(key=key, display_hints=False)
                     count = count + 1
                 else:
                     validate_msg(key)
@@ -123,7 +122,7 @@ class Sync(ConfigCommand):
             remote_cfg = self._config.get_config_repl(l_cfg.destination, self.run_env)
 
             # Should never happen, except when someone manually deletes source / destination without going through CLI
-            missing_from_ps = self._ssm.get_parameter_encrypted(l_cfg.source) is None
+            missing_from_ps = self.__get_param_encrypted(l_cfg.source) is None
 
             if not remote_cfg or remote_cfg != l_cfg or missing_from_ps:
                 try:
@@ -265,7 +264,7 @@ class Sync(ConfigCommand):
         print_resolution_message = False
         merged_confs = {**repl_conf, **merge_conf}
         for name in all_names:
-            if self._ssm.get_parameter_encrypted(name) is None:
+            if self.__get_param_encrypted(name) is None:
                 awaiting_repl = False
                 for cnf in merged_confs:
                     if name == cnf or name in list(repl_conf.values()):
@@ -286,7 +285,7 @@ class Sync(ConfigCommand):
 
     def _can_replicate_from(self, source: str):
         try:
-            if self._ssm.get_parameter_encrypted(source) is not None:
+            if self.__get_param_encrypted(source) is not None:
                 return True
             else:
                 print(f"{self.c.fg_yl}Replication source: {source} is missing from ParameterStore. "
@@ -302,6 +301,19 @@ class Sync(ConfigCommand):
             else:
                 raise
         return False
+
+    def __get_param_encrypted(self, source: str) -> Optional[str]:
+        try:
+             return self._ssm.get_parameter_encrypted(source)
+        except ClientError as e:
+            denied = "AccessDeniedException" == e.response['Error']['Code']
+            if denied and "AWSKMS; Status Code: 400;" in e.response['Error']['Message']:
+                print(f"{self.c.fg_rd}You do not have access to decrypt the value of Name: {source}{self.c.rs}")
+                return None
+            elif denied:
+                self._utils.error_exit(f"{self.c.fg_rd}You do not have access to Parameter: {source}{self.c.rs}")
+            else:
+                raise
 
     def _validate_replication_config(self, config_repl: Dict, app_conf: bool = True):
         """
@@ -402,7 +414,6 @@ class Sync(ConfigCommand):
 
         repl_conf = KeyUtils.merge_repl_and_repl_from_blocks(repl_conf, repl_from_conf, namespace)
         # Add missing config values
-        print()
         print(f"{self.c.fg_gr}Validating all configuration keys exist in ParameterStore.{self.c.rs}")
         self._input_config_values(config_keys)
 

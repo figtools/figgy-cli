@@ -5,11 +5,11 @@ from sty import fg, FgRegister
 @dataclass
 class Palette:
     # Default pallete colors
-    BLUE = (52, 213, 235)
+    BLUE = (5, 156, 205)
     GREEN = (51, 222, 136)
     RED = (240, 70, 87)
-    YELLOW = (240, 240, 70)
-    ORANGE = (232, 149, 39)
+    YELLOW = (249, 149, 72)
+    ORANGE = (249, 149, 72)
 
     def __init__(self, blue=BLUE, green=GREEN, red=RED, yellow=YELLOW, orange=ORANGE):
         self.fg_bl: FgRegister = fg(*blue)

@@ -14,7 +14,7 @@ Figgy Changelog:
 - Working around weird visual artifact issue when selecting colors in 0.0.53
 
 ## 0.0.53
-- Adding automatic-backup of long-lived access keys that could be overwritten by `iam export` command.
+- Adding automatic-backup of long-lived ****access keys that could be overwritten by `iam export` command.
 - Adding `iam restore` command to restore those access keys to the default profile
 - Adding support for ${VARIABLES} in `sync` command with `--replicaion-only` flag. 
 
