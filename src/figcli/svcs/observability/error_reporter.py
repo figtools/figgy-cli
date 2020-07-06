@@ -72,7 +72,8 @@ class FiggyErrorReporter:
         payload = {
             'command': command,
             'os': os,
-            'stacktrace': printable_exception
+            'stacktrace': printable_exception,
+            'version': VERSION
         }
 
         result = requests.post(FIGGY_ERROR_REPORTING_URL, json=payload)

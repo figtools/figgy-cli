@@ -11,6 +11,7 @@ class DefaultTerm(Term):
     GREEN = Palette.GREEN
     RED = Palette.RED
     YELLOW = Palette.YELLOW
+    ORANGE = Palette.ORANGE
 
     def get_colors(self) -> Color:
         return Color(
@@ -19,6 +20,7 @@ class DefaultTerm(Term):
                 blue=DefaultTerm.BLUE,
                 green=DefaultTerm.GREEN,
                 red=DefaultTerm.RED,
-                yellow=DefaultTerm.YELLOW
+                yellow=DefaultTerm.YELLOW,
+                orange=DefaultTerm.ORANGE,
             )
         )

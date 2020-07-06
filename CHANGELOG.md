@@ -1,5 +1,11 @@
 Figgy Changelog:
 
+## 0.0.57
+- Adding 'version' as a parameter in anonymous error reporting.
+- Tweaking figgy color palette
+- Fixing bug with `sync` command with `--replication-only` flag when run under the wrong role the user could receive
+a stack trace and not a specific error message as intended.
+
 ## 0.0.56
 - Fixing bug with promote command when using --profile
 - Minor tweaks / improvements to the output of some command
@@ -11,7 +17,7 @@ Figgy Changelog:
 - Working around weird visual artifact issue when selecting colors in 0.0.53
 
 ## 0.0.53
-- Adding automatic-backup of long-lived access keys that could be overwritten by `iam export` command.
+- Adding automatic-backup of long-lived ****access keys that could be overwritten by `iam export` command.
 - Adding `iam restore` command to restore those access keys to the default profile
 - Adding support for ${VARIABLES} in `sync` command with `--replicaion-only` flag. 
 

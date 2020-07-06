@@ -265,7 +265,7 @@ class SsmDao:
                 raise
 
     @Utils.retry
-    def get_parameter_encrypted(self, key):
+    def get_parameter_encrypted(self, key) -> Optional[str]:
         """
             Returns the parameter without decrypting the value. If parameter isn't encrypted, it returns the value.
         Args:
