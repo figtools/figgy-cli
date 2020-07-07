@@ -259,6 +259,8 @@ def main():
 
     except AssertionError as e:
         Utils.stc_error_exit(e.args[0])
+    except KeyboardInterrupt:
+        exit(1)
     except Exception as e:
         try:
             error_reporter = FiggyErrorReporter(FiggySetup.stc_get_defaults(skip=True, profile=None))
@@ -266,8 +268,6 @@ def main():
         except Exception as e:
             print(e)
             print(f"\n\nUnable to log or report this exception. Please submit a Github issue to: {FIGGY_GITHUB}")
-    except KeyboardInterrupt:
-        exit(1)
 
 
 if __name__ == '__main__':
