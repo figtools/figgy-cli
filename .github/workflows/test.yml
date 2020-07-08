@@ -28,6 +28,7 @@ jobs:
           cd src
           pip install -r requirements.txt
           pip install -r requirements-linux.txt
+          pip install -r requirements-test.txt
           ../scripts/install.sh
 
       - name: Run E2E Test Suite
