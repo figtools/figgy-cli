@@ -21,7 +21,7 @@ put = frozenset({'put'})
 restore = frozenset({'restore'})
 point_in_time = frozenset({'point-in-time'})
 delete = frozenset({'delete'})
-cleanup = frozenset({'cleanup'})
+prune = frozenset({'prune'})
 get = frozenset({'get'})
 edit = frozenset({'edit'})
 list_com = frozenset({'list'})
@@ -66,7 +66,7 @@ upgrade = frozenset({'upgrade'})
 # Maps CLI `--options` for each argument, and sets flags if necessary
 arg_options = {
     config: {
-        cleanup: {
+        prune: {
             config: {action: None, required: False},
             info: {action: store_true, required: False},
             prompt_com: {action: store_true, required: False},
@@ -242,7 +242,7 @@ empty_uri_suffix = ''
 merge_suffixes = [merge_uri_suffix, empty_uri_suffix]
 
 # Supported commands by resource
-config_commands = [sync, put, edit, delete, cleanup, get, share, generate,
+config_commands = [sync, put, edit, delete, prune, get, share, generate,
                    list_com, browse, audit, dump, restore, promote, validate]
 iam_commands = [export, iam_restore]
 help_commands = [configure, version, login, sandbox, upgrade, role]
@@ -269,7 +269,7 @@ cve = "cve"
 
 # Command to option requirement map
 REQ_OPTION_MAP = {
-    cleanup: [ci_path],
+    prune: [ci_path],
     delete: [],
     get: [],
     list_com: [],

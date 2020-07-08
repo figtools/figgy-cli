@@ -103,7 +103,7 @@ class UpgradeManager:
         try:
             os.remove(file_path)
         except Exception as e:
-            log.error(f"Received error when attempting to cleanup install.")
+            log.error(f"Received error when attempting to prune install.")
             pass
 
     @property

@@ -15,16 +15,16 @@ from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import *
 
 
-class Cleanup(ConfigCommand):
+class Prune(ConfigCommand):
     """
-    Detects orphaned ParameterStore names, replication configurations, and merge keys, then
+    Detects stray ParameterStore names, replication configurations, and merge keys, then
     prompts the user to delete them. This is typically run after the `sync` command informs
-    the user that there are orphaned configurations.
+    the user that there are stray configurations.
     """
 
     def __init__(self, ssm: SsmDao, ddb: ConfigDao, context: ConfigContext,
                  config_completer_init: WordCompleter, colors_enabled: bool, delete: Delete, args=None):
-        super().__init__(cleanup, colors_enabled, context)
+        super().__init__(prune, colors_enabled, context)
         self._ssm = ssm  # type: SsmDao
         self._config_dao = ddb  # type: ConfigDao
         self._config_completer = config_completer_init  # type: WordCompleter
@@ -55,13 +55,13 @@ class Cleanup(ConfigCommand):
     # Prompts for this file
     def _cleanup_parameters(self, config_keys: Set):
         """
-        Prompts user for cleanup of orphaned ParameterStore names.
+        Prompts user for prune of stray ParameterStore names.
         Args:
             config_keys: set() -> Set of parameters that are found as defined in the figgy.json file for a svc
         """
 
-        print(f"{self.c.fg_gr}Checking for orphaned config names.{self.c.rs}\r\n")
-        # Find & Cleanup orphaned keys
+        print(f"{self.c.fg_gr}Checking for stray config names.{self.c.rs}\r\n")
+        # Find & Prune stray keys
         ps_keys = set(list(map(lambda x: x['Name'], self._ssm.get_all_parameters([self._namespace]))))
         ps_only_keys = ps_keys.difference(config_keys)
         for key in ps_only_keys:
@@ -77,11 +77,11 @@ class Cleanup(ConfigCommand):
                 if selection.strip().lower() == "y":
                     self._delete_command.delete_param(key)
         if not ps_only_keys:
-            print(f"{self.c.fg_bl}No orphaned keys found.{self.c.rs}")
+            print(f"{self.c.fg_bl}No stray keys found.{self.c.rs}")
 
     def _cleanup_replication(self) -> None:
         """
-        Cleans up orphaned replication and merge configurations.
+        Cleans up stray replication and merge configurations.
         Args:
             config_repl: The replication config dictionary as parsed from the figgy.json file
             shared_names: Expected parameters as defined in the figgy.json
@@ -90,7 +90,7 @@ class Cleanup(ConfigCommand):
             namespace: str -> /app/service-name as defined or parsed from the figgy.json file.
         """
 
-        print(f"{self.c.fg_gr}Checking for orphaned replication configs.{self.c.rs}")
+        print(f"{self.c.fg_gr}Checking for stray replication configs.{self.c.rs}")
         remote_cfgs = self._config_dao.get_all_configs(self.run_env, self._namespace)
         notify = True
         if remote_cfgs:
@@ -113,16 +113,16 @@ class Cleanup(ConfigCommand):
                             self._config_dao.delete_config(cfg.destination, self.run_env)
         if notify:
             print(
-                f"{self.c.fg_bl}No remote replication configs found available for cleanup under namespace: {self.c.rs}"
+                f"{self.c.fg_bl}No remote replication configs found available for prune under namespace: {self.c.rs}"
                 f"{self.c.fg_gr}{self._namespace}{self.c.rs}")
 
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
-        # cleanup service configs
+        # prune service configs
         print()
         self._cleanup_parameters(set(self._all_keys))
 
         print()
-        # cleanup replication configs
+        # prune replication configs
         self._cleanup_replication()

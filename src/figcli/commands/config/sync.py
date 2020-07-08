@@ -73,15 +73,15 @@ class Sync(ConfigCommand):
 
     def _sync_keys(self, config_namespace: str, all_keys: Set):
         """
-        Looks for orphaned parameters (keys) under the namespace provided and prints out information about
+        Looks for stray parameters (keys) under the namespace provided and prints out information about
         missing parameters that are not defined in the figgy.json file
         Args:
             config_namespace: Namespace to query PS under.
             all_keys: All keys that exist in figgy.json to compare against.
         """
-        print(f"{self.c.fg_gr}Checking for orphaned config names.{self.c.rs}")
+        print(f"{self.c.fg_gr}Checking for stray config names.{self.c.rs}")
 
-        # Find & Cleanup orphaned keys
+        # Find & Prune stray keys
         ps_keys = set(list(map(lambda x: x['Name'], self._ssm.get_all_parameters([config_namespace]))))
         ps_only_keys = ps_keys.difference(all_keys)
 
@@ -94,7 +94,7 @@ class Sync(ConfigCommand):
             print(f"Unused Parameter: {self.c.fg_bl}{key}{self.c.rs}")
 
         if not ps_only_keys:
-            print(f"{self.c.fg_bl}No orphaned names found.{self.c.rs}")
+            print(f"{self.c.fg_bl}No stray names found.{self.c.rs}")
 
     def _sync_repl_configs(self, config_repl: Dict, namespace: str = None) -> None:
         """
@@ -147,10 +147,10 @@ class Sync(ConfigCommand):
 
     def _notify_of_data_repl_orphans(self, config_repl: Dict) -> None:
         """
-        Notify user of detected orphaned replication configurations when using the --replication-only flag.
+        Notify user of detected stray replication configurations when using the --replication-only flag.
         :param config_repl: replication configuration block.
         """
-        orphans: Set[ReplicationConfig] = set()
+        strays: Set[ReplicationConfig] = set()
         notify = False
         for repl in config_repl:
             namespace = self._utils.parse_namespace(config_repl[repl])
@@ -162,20 +162,20 @@ class Sync(ConfigCommand):
                             and cfg.type == REPL_TYPE_APP \
                             and not cfg.source.startswith(shared_ns) \
                             and not cfg.source.startswith(self.context.defaults.service_ns):
-                        orphans.add(cfg)
+                        strays.add(cfg)
                         notify = True
 
-        for orphan in orphans:
-            print(f"{self.c.fg_yl}Orphaned replication mapping detected: {self.c.rs}"
-                  f" {self.c.fg_bl}{orphan.source} -> {orphan.destination}{self.c.rs}.")
+        for stray in strays:
+            print(f"{self.c.fg_yl}stray replication mapping detected: {self.c.rs}"
+                  f" {self.c.fg_bl}{stray.source} -> {stray.destination}{self.c.rs}.")
         if notify:
-            print(f"To cleanup orphaned replication configs, "
+            print(f"To prune stray replication configs, "
                   f"delete the destination, THEN the source with the `figgy config delete` command")
 
     def _sync_replication(self, config_repl: Dict, expected_destinations: Set, namespace: str):
         """
-        Calls sync_repl_configs which adds/removes repl configs. Then searches for orphaned configurations and notifies
-        the user of detected orphaned configurations.
+        Calls sync_repl_configs which adds/removes repl configs. Then searches for stray configurations and notifies
+        the user of detected stray configurations.
         Args:
             config_repl: Dict of KV Pairs for a repl config. Source -> Dest
             expected_destinations: expected replication destinations, as defined in merge key sources,
@@ -186,7 +186,7 @@ class Sync(ConfigCommand):
         print(f"{self.c.fg_gr}Validating replication for all parameters.{self.c.rs}")
 
         self._sync_repl_configs(config_repl, namespace=namespace)
-        print(f"\n{self.c.fg_gr}Checking for orphaned replication configurations.{self.c.rs}")
+        print(f"\n{self.c.fg_gr}Checking for stray replication configurations.{self.c.rs}")
         remote_cfgs = self._config.get_all_configs(self.run_env, namespace)
         notify = True
         if remote_cfgs:
@@ -197,11 +197,11 @@ class Sync(ConfigCommand):
                         and (isinstance(cfg.source, list)
                              or cfg.source.startswith(shared_ns) or cfg.source.startswith(
                             self.context.defaults.service_ns)):
-                    print(f"{self.c.fg_rd}Orphaned replication mapping detected: {self.c.rs}"
+                    print(f"{self.c.fg_rd}stray replication mapping detected: {self.c.rs}"
                           f" {self.c.fg_bl}{cfg.source} -> {cfg.destination}{self.c.rs}.")
                     notify = False
         if notify:
-            print(f"{self.c.fg_bl}No orphaned replication configs found for: "
+            print(f"{self.c.fg_bl}No stray replication configs found for: "
                   f"{self.c.rs}{self.c.fg_gr}{namespace}{self.c.rs}")
         else:
             print(f"{self.c.fg_bl}{CLEANUP_REPLICA_ORPHANS}{self.c.rs}")
@@ -353,7 +353,7 @@ class Sync(ConfigCommand):
                       f"{self.c.fg_bl}{SHARED_KEY}{self.c.rs} section of your figgy.json. This is also not "
                       f"referenced in any defined merge parameter. Please add "
                       f"{self.c.fg_bl}{cfg.destination}{self.c.rs} to your figgy.json, or delete this parameter "
-                      f"and the replication config with the cleanup command.")
+                      f"and the replication config with the prune command.")
 
     def _in_merge_value(self, dest: str, merge_conf: Dict):
         for key in merge_conf:

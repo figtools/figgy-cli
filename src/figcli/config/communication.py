@@ -4,8 +4,8 @@ from figcli.config.figgy import *
 from figcli.utils.collection_utils import CollectionUtils
 
 # User communication text
-CLEANUP_REPLICA_ORPHANS = "Some orphaned replication mappings were discovered for your service. " \
-                          "Once they are no longer necessary please clean them up using the `cleanup` command."
+CLEANUP_REPLICA_ORPHANS = "Some stray replication mappings were discovered for your service. " \
+                          "Once they are no longer necessary please clean them up using the `prune` command."
 SHARED_NAME_RESOLUTION_MESSAGE = f"Your application is missing at least one ParameterStore name that it expects to " \
                                  f"exist as defined in either the {SHARED_KEY} block of your configuration, or as a " \
                                  f"dependency of a merge key. To resolve " \
@@ -19,7 +19,7 @@ COMMAND_PARSER_DESC = "Provides utilities to help manage application configs and
 CONFIG_REQ_TEXT = f"--config is a requirement argument."
 CI_CONFIG_HELP_TEXT = f"Path to your project's figgy.json file."
 UNUSED_CONFIG_DETECTED = f"%%red%%The following Names were found in PS but are not referenced in your configurations. \n" \
-                         f"Use the %%rs%%%%blue%%`cleanup`%%rs%%%%red%% command to clean them up once all " \
+                         f"Use the %%rs%%%%blue%%`prune`%%rs%%%%red%% command to clean them up once all " \
                          f"deployed application versions no longer use these configurations: %%rs%%"
 
 # Help Text
@@ -43,8 +43,8 @@ LIST_HELP_TEXT = f"Lists all matching configuration Names based on a namespace p
 PUT_HELP_TEXT = f"Store (or update) an arbitrary configuration in ParameterStore."
 SHARE_HELP_TEXT = f"Share a parameter from a source to an arbitrary destination path in Parameter Store via config " \
                   f"replication."
-CLEANUP_HELP_TEXT = 'Cleanup will compare your config desired state as defined in your figgy.json with the current ' \
-                    'config state in AWS. You will be prompted on whether or not you wish to delete orphaned ' \
+CLEANUP_HELP_TEXT = 'Prune will compare your config desired state as defined in your figgy.json with the current ' \
+                    'config state in AWS. You will be prompted on whether or not you wish to delete stray ' \
                     'configurations (configs that exist in AWS but not in your figgy.json file).'
 MIGRATE_HELP_TEXT = f"Walks a user through migrating application configs from Consul into Parameter Store"
 SYNC_HELP_TEXT = "Synchronizes your defined figgy.json configurations with those in Parameter Store. " \
@@ -104,7 +104,7 @@ HELP_TEXT_MAP = {
     list_com: LIST_HELP_TEXT,
     put: PUT_HELP_TEXT,
     share: SHARE_HELP_TEXT,
-    cleanup: CLEANUP_HELP_TEXT,
+    prune: CLEANUP_HELP_TEXT,
     sync: SYNC_HELP_TEXT,
     get: GET_HELP_TEXT,
     browse: BROWSE_HELP_TEXT,

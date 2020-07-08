@@ -28,23 +28,23 @@ class DevCleanup(FiggyTest):
 
     def cleanup_success(self):
         self.prep_success()
-        self.step(f"Testing: {CLI_NAME} config {Utils.get_first(cleanup)} --env {DEFAULT_ENV} "
+        self.step(f"Testing: {CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/success/figgy.json --skip-upgrade ")
         time.sleep(30)
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(cleanup)} --env {DEFAULT_ENV} '
+        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} '
                                     f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}',
                                     encoding='utf-8', timeout=10)
-        child.expect('.*No orphaned keys.*No remote replication configs.*')
+        child.expect('.*No stray keys.*No remote replication configs.*')
         child.logfile = sys.stdout
-        print("Empty cleanup, success!")
+        print("Empty prune, success!")
 
     def cleanup_with_orphans(self):
         self.prep_with_orphans()
-        self.step(f"Testing: {CLI_NAME} config {Utils.get_first(cleanup)} --env {DEFAULT_ENV} "
+        self.step(f"Testing: {CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/error/figgy.json")
 
         time.sleep(30)
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(cleanup)} --env {DEFAULT_ENV} '
+        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} '
                                     f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}',
                                     encoding='utf-8', timeout=10)
         child.logfile = sys.stdout
@@ -52,4 +52,4 @@ class DevCleanup(FiggyTest):
         child.sendline('n')
         child.expect('.*does not exist in your.*')
         child.sendline('n')
-        print("Cleanup with orphans success!")
+        print("Prune with strays successful!")

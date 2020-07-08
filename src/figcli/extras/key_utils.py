@@ -51,7 +51,7 @@ class KeyUtils(object):
     def merge_repl_and_repl_from_blocks(repl_conf: Dict, repl_from: Dict, dest_namespace: str) -> Dict:
         """
         Parses the repl_from block and merges it into the standard 'replication' block. This simplifies
-        configuring replication and detecting orphans.
+        configuring replication and detecting strays.
         Args:
             repl_conf: Dict representing the `replicate_figs` block in figgy.json file
             repl_from: Dict representing the `replicate_frorm` block in figgy.json file

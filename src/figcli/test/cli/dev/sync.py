@@ -26,7 +26,7 @@ class DevSync(FiggyTest):
         self.sync_success()
         self.step("Testing multi-level sync")
         self.sync_multi_level_success()
-        self.step("Testing sync with known orphaned parameters.")
+        self.step("Testing sync with known stray parameters.")
         self.sync_with_orphans()
 
     def prep_sync(self):
@@ -87,11 +87,11 @@ class DevSync(FiggyTest):
     def sync_with_orphans(self):
         delete = DevDelete(extra_args=self.extra_args)
         delete.delete(self.missing_key)
-        print("Successful sync + cleanup passed!")
+        print("Successful sync + prune passed!")
 
         print(f"Testing: {CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/error/figgy.json")
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} '
                               f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}', timeout=10)
         child.expect('.*Unused Parameter:.*/app/ci-test/v1/config11.*')
-        print("Sync with orphaned configs passed!")
+        print("Sync with stray configs passed!")

@@ -50,7 +50,7 @@ class DevPromote(FiggyTest):
         child.expect('.*Skipping param.*config13.*promote.*9.*')
         child.sendline('y')
 
-    def cleanup(self):
+    def prune(self):
         delete = DevDelete(extra_args=self.extra_args)
         delete.delete('/app/test-promote/v1/config9', delete_another=True)
         delete.delete('/app/test-promote/v1/config11', delete_another=True)

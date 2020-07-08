@@ -3,7 +3,7 @@ from boto3.resources.base import ServiceResource
 from figcli.commands.config.list import List as FigList
 from figcli.commands.config.audit import Audit
 from figcli.commands.config.browse import Browse
-from figcli.commands.config.cleanup import Cleanup
+from figcli.commands.config.prune import Prune
 from figcli.commands.config.delete import Delete
 from figcli.commands.config.dump import Dump
 from figcli.commands.config.edit import Edit
@@ -51,8 +51,8 @@ class ConfigFactory(Factory):
         if command == sync:
             return Sync(self._ssm, self._config, self._colors_enabled, self._config_context, self.get(get),
                         self.get(put))
-        elif command == cleanup:
-            return Cleanup(self._ssm, self._config, self._config_context, self._config_completer,
+        elif command == prune:
+            return Prune(self._ssm, self._config, self._config_context, self._config_completer,
                            self._colors_enabled, self.get(delete), args=self._args)
         elif command == put:
             return Put(self._ssm, self._colors_enabled, self._config_context, self._config_view, self.get(get))
