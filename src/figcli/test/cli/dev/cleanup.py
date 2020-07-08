@@ -6,7 +6,7 @@ from figcli.test.cli.figgy import FiggyTest
 from figcli.utils.utils import *
 
 
-class DevCleanup(FiggyTest):
+class DevPrune(FiggyTest):
 
     def __init__(self, extra_args=""):
         super().__init__(None, extra_args=extra_args)

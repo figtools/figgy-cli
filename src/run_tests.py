@@ -10,7 +10,7 @@ from figcli.test.cli.data.sync import DataSync
 from figcli.test.cli.dev.audit import DevAudit
 from figcli.test.cli.dev.validate import DevValidate
 from figcli.test.cli.dev.browse import DevBrowse
-from figcli.test.cli.dev.prune import DevCleanup
+from figcli.test.cli.dev.prune import DevPrune
 from figcli.test.cli.dev.promote import DevPromote
 from figcli.test.cli.dev.delete import DevDelete
 from figcli.test.cli.dev.dump import DevDump
@@ -136,7 +136,7 @@ def dev_tests(profile=None, key_down_to_shared=4):
     # run_test("Dev List", DevList(extra_args=extra_args))
     run_test("Dev Audit", DevAudit(extra_args=extra_args))
     run_test("Dev Sync", DevSync(extra_args=extra_args))
-    run_test("Dev Prune", DevCleanup(extra_args=extra_args))
+    run_test("Dev Prune", DevPrune(extra_args=extra_args))
     print(f"Key down: {key_down_to_shared}")
     run_test("Dev Browse", DevBrowse(extra_args=extra_args, key_down_to_shared=key_down_to_shared))
     run_test("Dev Restore", DevRestore(extra_args=extra_args))
