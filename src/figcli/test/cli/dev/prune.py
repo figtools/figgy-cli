@@ -33,7 +33,7 @@ class DevPrune(FiggyTest):
         time.sleep(30)
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} '
                                     f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}',
-                                    encoding='utf-8', timeout=10)
+                                    encoding='utf-8', timeout=20)
         child.expect('.*No stray keys.*No remote replication configs.*')
         child.logfile = sys.stdout
         print("Empty prune, success!")
@@ -46,7 +46,7 @@ class DevPrune(FiggyTest):
         time.sleep(30)
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} '
                                     f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}',
-                                    encoding='utf-8', timeout=10)
+                                    encoding='utf-8', timeout=20)
         child.logfile = sys.stdout
         child.expect('.*/app/ci-test/v1/config11.* exists.*but does not exist.*')
         child.sendline('n')

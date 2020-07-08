@@ -27,7 +27,7 @@ class DevEdit(FiggyTest):
         # Get Value
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(edit)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
-                              timeout=10, encoding='utf-8')
+                              timeout=20, encoding='utf-8')
 
         child.expect('.*Please input a PS Name.*')
         child.sendline(param_1)

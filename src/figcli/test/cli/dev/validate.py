@@ -32,7 +32,7 @@ class DevValidate(FiggyTest):
               f"--config figcli/test/assets/success/figgy.json {self.extra_args}")
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} '
                               f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}',
-                              encoding='utf-8', timeout=10)
+                              encoding='utf-8', timeout=20)
         child.logfile = sys.stdout
         child.expect(".*Success.*")
         print("VALIDATE SUCCESS VERIFIED")
@@ -43,6 +43,6 @@ class DevValidate(FiggyTest):
         print(f"Testing: {CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/error/figgy.json {self.extra_args}")
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} '
-                              f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}', timeout=10)
+                              f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}', timeout=20)
         child.expect('.*missing at least one.*')
         print("VALIDATE ERROR VERIFIED")

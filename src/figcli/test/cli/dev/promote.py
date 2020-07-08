@@ -37,7 +37,7 @@ class DevPromote(FiggyTest):
               f"--config figcli/test/assets/success/figgy.json")
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(promote)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
-                              encoding='utf-8', timeout=10)
+                              encoding='utf-8', timeout=20)
         child.logfile = sys.stdout
         child.expect(f'.*prefix to promote.*')
         child.sendline('/app/test-promote/')

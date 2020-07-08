@@ -7,7 +7,7 @@ class Restore:
     def __init__(self, **kwargs):
         self.env = kwargs["env"]
         super().__init__(pexpect.spawn(f'python3 {CLI_NAME} config {Utils.get_first(restore)} --env {self.env}',
-                                       encoding='utf-8', timeout=10))
+                                       encoding='utf-8', timeout=20))
 
     def choose_key(self, key: str, expect: str) -> None:
         self.expect("Please input.+: ")

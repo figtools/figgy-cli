@@ -19,7 +19,7 @@ class DataSync(FiggyTest):
 
         child = pexpect.spawn(f'{CLI_NAME} {Utils.get_first(config)} {Utils.get_first(sync)} '
                               f'--env {DEFAULT_ENV} --config figcli/test/assets/data_repl_conf.json '
-                              f'--skip-upgrade --replication-only {self.extra_args}', timeout=10, encoding='utf-8')
+                              f'--skip-upgrade --replication-only {self.extra_args}', timeout=20, encoding='utf-8')
         time.sleep(2)
         with open('figcli/test/assets/data_repl_conf.json', 'r') as file:
             content = json.loads(file.read()).get('replicate_figs')

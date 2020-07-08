@@ -11,7 +11,7 @@ class DataDelete(FiggyTest):
         print(f"Testing `{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV}`")
         super().__init__(pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV}'
                                        f' --skip-upgrade {extra_args}',
-                                    timeout=10, encoding='utf-8'), extra_args=extra_args)
+                                    timeout=20, encoding='utf-8'), extra_args=extra_args)
 
     def run(self):
         self.step(f"Testing delete for param: {param_1}")

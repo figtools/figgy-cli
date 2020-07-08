@@ -27,7 +27,7 @@ class DevDump(FiggyTest):
 
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(dump)} --env {DEFAULT_ENV} {self.extra_args}'
                               f' --skip-upgrade',
-                              encoding='utf-8', timeout=10)
+                              encoding='utf-8', timeout=20)
 
         self.step(f"Testing `{CLI_NAME} config {Utils.get_first(dump)} --env {DEFAULT_ENV}`")
         child.expect('.*to dump from.*')

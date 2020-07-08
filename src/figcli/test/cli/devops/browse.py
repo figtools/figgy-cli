@@ -45,7 +45,7 @@ class DevOpsBrowse(FiggyTest):
         # Get Value
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
-                              timeout=10, encoding='utf-8')
+                              timeout=20, encoding='utf-8')
         child.send(KEY_DOWN)
         child.send(KEY_DOWN)
         child.send(KEY_DOWN)
@@ -64,7 +64,7 @@ class DevOpsBrowse(FiggyTest):
         # Delete Value
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
-                              timeout=10, encoding='utf-8')
+                              timeout=20, encoding='utf-8')
         child.send(KEY_DOWN)
         child.send(KEY_DOWN)
         child.send(KEY_DOWN)

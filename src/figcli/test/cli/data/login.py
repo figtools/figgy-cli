@@ -9,7 +9,7 @@ import os
 class DataLogin(FiggyTest):
 
     def __init__(self, extra_args=""):
-        super().__init__(pexpect.spawn(f'{CLI_NAME} login sandbox', timeout=10, encoding='utf-8'), extra_args=extra_args)
+        super().__init__(pexpect.spawn(f'{CLI_NAME} login sandbox', timeout=20, encoding='utf-8'), extra_args=extra_args)
 
     def run(self):
         self.expect('.*user name:.*')

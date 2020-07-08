@@ -13,7 +13,7 @@ class DataShare(FiggyTest):
         super().__init__(None, extra_args=extra_args)
         self._child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(share)} --env '
                                     f'{DEFAULT_ENV} --skip-upgrade {extra_args}',
-                                    timeout=10, encoding='utf-8')
+                                    timeout=20, encoding='utf-8')
 
     def run(self):
         self.step("Adding parameters to share...")
