@@ -62,6 +62,7 @@ class DataSync(FiggyTest):
             else:
                 delete.delete(destinations[i], delete_another=False, repl_dest_delete=True)
 
+        delete = DataDelete()
         sources = list(content.keys())
         print(f"SOURCES: {sources}")
         for i in range(0, len(sources)):

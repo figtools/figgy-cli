@@ -4,8 +4,6 @@ sty==1.0.0b8
 click==7.1.2
 tqdm==4.46.1
 npyscreen==4.10.5
-pexpect==4.8.0
-mfa==0.1.1
 beautifulsoup4==4.9.1
 keyring==21.2.1
 keyrings.alt==3.4.0
@@ -17,5 +15,5 @@ python-u2flib-host==3.0.3
 cryptography==2.9.2
 requests==2.23.0
 
-# Must use git for this install b/c Cython breaks pyinstaller.
+# Must use git for this install b/c pre-compiled Cython breaks pyinstaller.
 git+https://github.com/samuelcolvin/pydantic.git@v1.5.1
