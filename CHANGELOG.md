@@ -1,5 +1,11 @@
 Figgy Changelog:
 
+## 0.0.58
+- Renaming `cleanup` command as `prune`
+- Removing references to `orphaned` parameters and replacing with `stray`.
+- E2E Test tweaks.
+- Fixing issue with Keyboard Interrupts not properly being caught and gracefully exiting.
+
 ## 0.0.57
 - Adding 'version' as a parameter in anonymous error reporting.
 - Tweaking figgy color palette
