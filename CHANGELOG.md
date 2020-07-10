@@ -5,6 +5,7 @@ Figgy Changelog:
 - Removing references to `orphaned` parameters and replacing with `stray`.
 - E2E Test tweaks.
 - Fixing issue with Keyboard Interrupts not properly being caught and gracefully exiting.
+- Beginning output standardization across the codebase.
 
 ## 0.0.57
 - Adding 'version' as a parameter in anonymous error reporting.

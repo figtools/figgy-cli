@@ -27,11 +27,15 @@ class Notification:
         while len(message) > 0 or not lines:
             split_idx = min(MAX_LINE_LENGTH, len(message) - 1)
             print()
-            while message[split_idx] != " " and " " in message and len(message) > MAX_LINE_LENGTH:
-                split_idx = split_idx - 1
+            if split_idx == MAX_LINE_LENGTH:
+                while message[split_idx] != " " and " " in message and len(message) > MAX_LINE_LENGTH:
+                    split_idx = split_idx - 1
 
-            lines.append(message[:split_idx])
-            message = message[split_idx + 1:]
+                lines.append(message[:split_idx])
+                message = message[split_idx + 1:]
+            else:
+                lines.append(message)
+                message = ''
 
         self._lines = lines
         return self._lines
@@ -49,23 +53,44 @@ class Notification:
         self._dashes = dash_str
         return self._dashes
 
-    def print_notification(self, dash_color, text_color):
+    def h2(self, dash_color, text_color):
+        """
+        Heading 2 prints.
+        """
         print(f'{dash_color}{self.dashes}{self.color.rs}')
         for line in self.lines:
             print(f'    {text_color}{line}{self.color.rs}    ')
         print(f'{dash_color}{self.dashes}{self.color.rs}')
 
+    def p(self, text_color):
+        """
+        Standard colored prints - 'p' is for 'paragraph' like in html/css
+        """
+        print(f"{text_color}{self.message}{self.color.rs}")
+
+    def notify_h2(self):
+        self.h2(self.color.fg_yl, self.color.fg_bl)
+
+    def warn_h2(self):
+        self.h2(self.color.fg_yl, self.color.fg_yl)
+
+    def success_h2(self):
+        self.h2(self.color.fg_gr, self.color.fg_bl)
+
+    def error_h2(self):
+        self.h2(self.color.fg_yl, self.color.fg_rd)
+
     def notify(self):
-        self.print_notification(self.color.fg_yl, self.color.fg_bl)
+        self.p(self.color.fg_bl)
 
     def warn(self):
-        self.print_notification(self.color.fg_yl, self.color.fg_yl)
+        self.p(self.color.fg_yl)
 
     def success(self):
-        self.print_notification(self.color.fg_gr, self.color.fg_bl)
+        self.p(self.color.fg_bl)
 
     def error(self):
-        self.print_notification(self.color.fg_yl, self.color.fg_rd)
+        self.p(self.color.fg_rd)
 
 
 class Output:
@@ -75,6 +100,18 @@ class Output:
 
     def __init__(self, colors_enabled=False):
         self.c = TerminalFactory(colors_enabled).instance().get_colors()
+
+    def notify_h2(self, message: str):
+        Notification(message=message, color=self.c).notify_h2()
+
+    def warn_h2(self, message: str):
+        Notification(message=message, color=self.c).warn_h2()
+
+    def success_h2(self, message: str):
+        Notification(message=message, color=self.c).success_h2()
+
+    def error_h2(self, message: str):
+        Notification(message=message, color=self.c).error_h2()
 
     def notify(self, message: str):
         Notification(message=message, color=self.c).notify()
@@ -87,3 +124,7 @@ class Output:
 
     def error(self, message: str):
         Notification(message=message, color=self.c).error()
+
+    def print(self, message: str):
+        print(message)
+

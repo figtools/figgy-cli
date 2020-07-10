@@ -464,6 +464,6 @@ class Sync(ConfigCommand):
             self.run_ci_sync()
 
         if self._errors_detected:
-            self._out.error('Sync failed. Please address the outputted errors.')
+            self._out.error_h2('Sync failed. Please address the outputted errors.')
         else:
-            self._out.success('Sync completed with no errors!')
+            self._out.success_h2('Sync completed with no errors!')

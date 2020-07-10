@@ -14,6 +14,7 @@ from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
 from figcli.data.dao.config import ConfigDao
 from figcli.data.dao.ssm import SsmDao
+from figcli.io import Input, Output
 from figcli.models.parameter_store_history import PSHistory
 from figcli.models.restore_config import RestoreConfig
 from figcli.svcs.kms import KmsSvc
@@ -42,6 +43,7 @@ class Restore(ConfigCommand):
         self._point_in_time = context.point_in_time
         self._config_completer = config_completer
         self._delete = delete
+        self._out = Output(colors_enabled=colors_enabled)
 
     def _client_exception_msg(self, item: RestoreConfig, e: ClientError):
         if "AccessDeniedException" == e.response["Error"]["Code"]:
@@ -77,9 +79,7 @@ class Restore(ConfigCommand):
             return
 
         for i, item in enumerate(items):
-            date = time.strftime(
-                "%Y-%m-%d %H:%M:%S", time.localtime(item.ps_time / 1000)
-            )
+            date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(item.ps_time / 1000))
 
             # we need to decrypt the value, if encrypted, in order to show it to the user
             if item.ps_key_id:
@@ -89,7 +89,7 @@ class Restore(ConfigCommand):
                 )
             table_entries.append([i, date, item.ps_value, item.ps_user])
 
-        print(
+        self._out.print(
             tabulate(
                 table_entries,
                 headers=["Item #", "Time Created", "Value", "User"],
@@ -99,42 +99,27 @@ class Restore(ConfigCommand):
             )
         )
 
-        choice = int(input("Which item number would you like to restore: "))
-
+        valid_options = [f'{x}' for x in range(0, len(items))]
+        choice = int(Input.select("Select an item number to restore: ", valid_options=valid_options))
         item = items[choice] if items[choice] else None
 
-        if not item:
-            print(f"{item} wasn't a valid choice from the list. Aborting restore")
-            return
+        restore = Input.y_n_input(f"Are you sure you want to restore item #{choice} and have it be the latest version? ",
+                        default_yes=False)
 
-        final_selection = input(
-            f"Are you sure you want to restore item #{choice} and have it be the latest version? (y/N): "
-        )
-        if final_selection.lower() != "y":
-            print("Okay, aborting restore")
-            return
+        if not restore:
+            self._utils.warn_exit("Restore aborted.")
 
         key_id = None if item.ps_type == "String" else item.ps_key_id
 
         try:
-            self._ssm.set_parameter(
-                item.ps_name,
-                item.ps_value,
-                item.ps_description,
-                item.ps_type,
-                key_id=key_id,
-            )
+            self._ssm.set_parameter(item.ps_name, item.ps_value, item.ps_description, item.ps_type, key_id=key_id)
 
             current_value = self._ssm.get_parameter(item.ps_name)
             if current_value == item.ps_value:
-                print("Restore was successful")
+                self._out.success("Restore was successful")
             else:
-                print(
-                    "Latest version in parameter store doesn't match what we restored."
-                )
-                print(
-                    f"Current value: {current_value}.  Expected value: {item.ps_value}"
-                )
+                self._out.error("Latest version in parameter store doesn't match what we restored.")
+                self._out.print(f"Current value: {current_value}.  Expected value: {item.ps_value}")
 
         except ClientError as e:
             self._client_exception_msg(item, e)
@@ -156,12 +141,8 @@ class Restore(ConfigCommand):
         ps_prefix = prompt(f"Which parameter store prefix would you like to recursively restore? "
                            f"(e.g., /app/demo-time): ", completer=self._config_completer)
 
-        choice = input(f"Are you sure you want to recursively restore from prefix: {ps_prefix}? (y/N): ")
-        if choice.lower() != "y":
-            print("Aborting restore.")
-
         time_selected: str = ""
-
+        time_converted = None
         try:
             time_selected = input("Seconds since epoch to restore latest values from: ")
             time_converted = datetime.fromtimestamp(float(time_selected))
@@ -170,35 +151,30 @@ class Restore(ConfigCommand):
                 try:
                     time_converted = datetime.fromtimestamp(float(time_selected) / 1000)
                 except ValueError as e:
-                    print(
-                        "Make sure you're using a format of either seconds or milliseconds since epoch."
-                    )
-                    return
+                    self._utils.error_exit(
+                        "Make sure you're using a format of either seconds or milliseconds since epoch.")
             elif "could not convert" in e.args[0]:
-                print(
-                    f"The format of this input should be seconds since epoch. (e.g., 1547647091)\n"
-                    f"Try using: https://www.epochconverter.com/ to convert your date to this specific format."
-                )
-                return
+                self._utils.error_exit(f"The format of this input should be seconds since epoch. (e.g., 1547647091)\n"
+                                       f"Try using: https://www.epochconverter.com/ to convert your date to this "
+                                       f"specific format.")
             else:
-                print(
-                    "An unexpected exception triggered: "
-                    f"'{e}' while trying to convert {time_selected} to 'datetime' format."
-                )
-                return
+                self._utils.error_exit("An unexpected exception triggered: "
+                                       f"'{e}' while trying to convert {time_selected} to 'datetime' format.")
 
-        choice = input(
-            f"Are you sure you want to restore latest values from date: {time_converted}? (y/N): "
+        self._utils.validate(time_converted is not None, f"`{CLI_NAME}` encountered an error parsing your input for "
+                                                         f"target rollback time.")
+        keep_going = Input.y_n_input(
+            f"Are you sure you want to restore all figs under {ps_prefix} values to their state at: "
+            f"{time_converted}? (y/N): "
         )
-        if choice.lower() != "y":
-            print("Aborting restore.")
-            return
+
+        if not keep_going:
+            self._utils.warn_exit("Aborting restore due to user selection")
 
         ps_history: PSHistory = self._config.get_parameter_history_before_time(time_converted, ps_prefix)
 
         if len(ps_history.history.values()) == 0:
-            print("No results found for time range.  Aborting.")
-            return
+            self._utils.warn_exit("No results found for time range.  Aborting.")
 
         try:
             for item in ps_history.history.values():
@@ -217,15 +193,15 @@ class Restore(ConfigCommand):
                             decrypted_value = self._decrypt_if_applicable(cfg)
                             print(f"Restoring: {cfg.ps_name} as value: {decrypted_value} with description: "
                                   f"{cfg.ps_description} and key: {cfg.ps_key_id if cfg.ps_key_id else 'Parameter was unencrypted'}")
-                            print(f"Replaying version: {cfg.ps_version} of {cfg.ps_name}")
+                            self._out.print(f"Replaying version: {cfg.ps_version} of {cfg.ps_name}")
 
-                            self._ssm.set_parameter(cfg.ps_name, decrypted_value, cfg.ps_description, cfg.ps_type,
-                                                    cfg.ps_key_id)
+                            self._ssm.set_parameter(cfg.ps_name, decrypted_value,
+                                                    cfg.ps_description, cfg.ps_type, cfg.ps_key_id)
                     else:
-                        print(f"Value for cfg: {item.name} is current. Skipping.")
+                        self._out.print(f"Value for cfg: {item.name} is current. Skipping.")
                 else:
                     # This item must have been a delete, which means this config didn't exist at that time.
-                    print(f"Checking if {item.name} exists. It was previously deleted.")
+                    self._out.print(f"Checking if {item.name} exists. It was previously deleted.")
                     self._prompt_delete(item.name)
         except ClientError as e:
             self._utils.error_exit(f"Caught error when attempting restore. {e}")
@@ -233,13 +209,10 @@ class Restore(ConfigCommand):
     def _prompt_delete(self, name):
         param = self._ssm.get_parameter_encrypted(name)
         if param:
-            selection = "unselected"
-            while selection.lower() != "y" and selection.lower() != "n":
-                selection = input(f"PS Name: {self.c.fg_bl}{name}{self.c.rs} did not exist at this restore time."
-                                  f" Delete it? (y/N)")
-                selection = selection if selection != '' else 'n'
+            selection = Input.y_n_input(f"PS Name: {self.c.fg_bl}{name}{self.c.rs} did not exist at this restore time."
+                                        f" Delete it? ", default_yes=False)
 
-            if selection.lower() == 'y':
+            if selection:
                 self._delete.delete_param(name)
 
     @VersionTracker.notify_user

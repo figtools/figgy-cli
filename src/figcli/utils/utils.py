@@ -16,6 +16,7 @@ import urllib3
 from figcli.config import *
 from figcli.config.style.color import Color
 from figcli.config.style.terminal_factory import TerminalFactory
+from figcli.io import Output
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class Utils:
 
     def __init__(self, colors_enabled=False):
         self.c = TerminalFactory(colors_enabled).instance().get_colors()
+        self._o = Output(colors_enabled)
 
     @staticmethod
     def retry(function):
@@ -44,7 +46,7 @@ class Utils:
                     if retries > MAX_RETRIES:
                         raise e
 
-                    self._utils.notify("Network connectivity issues detected. Retrying with back off...")
+                    Utils.notify("Network connectivity issues detected. Retrying with back off...")
                     retries += 1
                     time.sleep(retries * BACKOFF)
 
@@ -331,6 +333,10 @@ class Utils:
     def error_exit(self, error_msg: str):
         print(f"\n{self.c.fg_rd}ERROR: >> {error_msg}{self.c.rs}")
         exit(1)
+
+    def warn_exit(self, msg: str):
+        self._o.warn_h2(msg)
+        exit(0)
 
     @staticmethod
     def stc_error_exit(error_msg: str):
