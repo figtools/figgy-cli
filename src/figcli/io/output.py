@@ -1,6 +1,3 @@
-from dataclasses import dataclass
-from typing import Tuple, List
-
 from figcli.config.style.color import Color
 from figcli.config.style.terminal_factory import TerminalFactory
 

@@ -11,7 +11,7 @@ from figcli.commands.types.config import ConfigCommand
 from figcli.data.dao.config import ConfigDao
 from figcli.data.dao.ssm import SsmDao
 from figcli.extras.key_utils import KeyUtils
-from figcli.io import Output
+from figcli.io.output import Output
 from figcli.io.input import Input
 from figcli.models.replication_config import ReplicationConfig, ReplicationType
 from figcli.config import *

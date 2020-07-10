@@ -4,19 +4,19 @@ import os
 import platform
 import re
 import time
+import botocore
+import urllib3
+
 from collections import OrderedDict
 from json.decoder import JSONDecodeError
 from pathlib import Path
 from sys import exit
 from typing import Dict, List, Union
 
-import botocore
-import urllib3
-
 from figcli.config import *
 from figcli.config.style.color import Color
 from figcli.config.style.terminal_factory import TerminalFactory
-from figcli.io import Output
+from figcli.io.output import Output
 
 log = logging.getLogger(__name__)
 

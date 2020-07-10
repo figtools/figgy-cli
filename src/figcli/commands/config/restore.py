@@ -14,7 +14,8 @@ from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
 from figcli.data.dao.config import ConfigDao
 from figcli.data.dao.ssm import SsmDao
-from figcli.io import Input, Output
+from figcli.io.input import Input
+from figcli.io.output import Output
 from figcli.models.parameter_store_history import PSHistory
 from figcli.models.restore_config import RestoreConfig
 from figcli.svcs.kms import KmsSvc

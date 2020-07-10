@@ -1,15 +1,17 @@
-from typing import Optional
-
-from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
-from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter
-
-from figcli.models.defaults.provider import Provider
-from figcli.utils.utils import *
-from figcli.config import *
 import random
 import getpass
+
+from typing import Optional, List
+
+from figcli.config.style.color import Color
+from figcli.config.style.terminal_factory import TerminalFactory
+from figcli.models.role import Role
+from figcli.models.run_env import RunEnv
+from figcli.models.defaults.provider import Provider
+from figcli.utils.utils import Utils
+from figcli.config import *
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
 
 
 class Input:
@@ -20,8 +22,8 @@ class Input:
     @staticmethod
     def select_aws_cli_profile() -> str:
         default_value = 'bastion'
-        profile = input(
-            f'Please input the aws_cli profile name of your first.last_programmatic user in the MGMT account (Default: {default_value}): ') or default_value
+        profile = input(f'Please input the aws_cli profile name of your first.last_programmatic user in the '
+                        f'MGMT account (Default: {default_value}): ') or default_value
         Utils.stc_validate(profile != '', "You must input a valid aws_cli profile")
 
         return profile

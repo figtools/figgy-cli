@@ -3,28 +3,22 @@ import getpass
 import logging
 import os
 import sys
+from typing import List
+
 import boto3
 
-from json import JSONDecodeError
-from typing import Optional, List
-
-from figcli.svcs.setup import FiggySetup
-
+from figcli.commands.command_factory import CommandFactory
+from figcli.commands.figgy_context import FiggyContext
+from figcli.commands.types.command import Command
 from figcli.config import *
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.role import Role
 from figcli.models.run_env import RunEnv
-from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.observability.error_reporter import FiggyErrorReporter
-from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
-from figcli.svcs.auth.session_manager import SessionManager
+from figcli.svcs.setup import FiggySetup
 from figcli.utils.utils import Utils
-
-from figcli.commands.command_factory import CommandFactory
-from figcli.commands.figgy_context import FiggyContext
-from figcli.commands.types.command import Command
 
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.CRITICAL)

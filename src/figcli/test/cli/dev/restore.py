@@ -50,10 +50,9 @@ class DevRestore(FiggyTest):
         self.step(f"Attempting restore to time: {restore_breakpoint_1} with prefix: {restore_prefix}")
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(restore)} --env {DEFAULT_ENV} --skip-upgrade'
                               f' --point-in-time {self.extra_args}', timeout=20, encoding='utf-8')
+        child.logfile = sys.stdout
         child.expect('.*Which.*recursively restore.*')
         child.sendline(restore_prefix)
-        child.expect('.*Are you sure you want.*')
-        child.sendline('y')
         child.expect('.*Seconds.*restore.*')
         child.sendline(f'{restore_breakpoint_1}')
         child.expect('.*Are you sure.*')
@@ -77,10 +76,9 @@ class DevRestore(FiggyTest):
         self.step(f"Attempting restore to time: {restore_breakpoint_2} with prefix: {restore_prefix}")
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(restore)} --env {DEFAULT_ENV} --skip-upgrade'
                               f' --point-in-time {self.extra_args}', timeout=20, encoding='utf-8')
+        child.logfile = sys.stdout
         child.expect('.*Which.*recursively restore.*')
         child.sendline(restore_prefix)
-        child.expect('.*Are you sure you want.*')
-        child.sendline('y')
         child.expect('.*Seconds.*restore.*')
         child.sendline(f'{restore_breakpoint_2}')
         child.expect('.*Are you sure.*')
