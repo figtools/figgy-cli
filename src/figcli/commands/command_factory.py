@@ -152,7 +152,8 @@ class CommandFactory(Factory):
     def __config_service(self) -> ConfigService:
         """Returns a hydrated ConfigService."""
         if not self._config_svc:
-            self._config_svc = ConfigService(self.__config(), self.__cache_mgr(), self._context.run_env)
+            self._config_svc = ConfigService(self.__config(), self.__ssm(),
+                                             self.__cache_mgr(), self._context.run_env)
 
         return self._config_svc
 
@@ -194,9 +195,9 @@ class CommandFactory(Factory):
             for future in as_completed(futures):
                 pass  # Force lazy init for all futures.
 
-            factory = ConfigFactory(self._context.command, context, self.__ssm(), self.__config(), self.__kms(),
-                                    self.__s3_resource(), self._context.colors_enabled, self.__rbac_config_view(),
-                                    self.__session_manager())
+            factory = ConfigFactory(self._context.command, context, self.__ssm(), self.__config_service(),
+                                    self.__config(), self.__kms(), self.__s3_resource(), self._context.colors_enabled,
+                                    self.__rbac_config_view(), self.__session_manager())
 
         elif self._context.command in iam_commands and self._context.resource == iam:
             self.__init_sessions()

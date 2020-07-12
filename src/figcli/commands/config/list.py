@@ -1,93 +1,242 @@
-import click
-from botocore.exceptions import ClientError
-from prompt_toolkit import prompt
+import curses
+import weakref
+from typing import Callable
+
+import npyscreen
+from npyscreen import BoxTitle, MultiLine, TextCommandBox, Pager
 from prompt_toolkit.completion import WordCompleter
 
 from figcli.commands.config.get import Get
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figcli.config.style.style import FIGGY_STYLE
-from figcli.data.dao.ssm import SsmDao
+from figcli.io.output import OutUtils
+from figcli.models.run_env import RunEnv
+from figcli.svcs.config import ConfigService, ParameterUndecryptable
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import *
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
+QUIT_CODES = [':q', 'quit', 'exit', ":wq", "q", "/quit"]
+
 
 class List(ConfigCommand):
 
-    def __init__(self, config_view: RBACLimitedConfigView, config_completer_init: WordCompleter,
+    def __init__(self, config_view: RBACLimitedConfigView, cfg: ConfigService, config_completer_init: WordCompleter,
                  colors_enabled: bool, config_context: ConfigContext, get: Get):
         super().__init__(list_com, colors_enabled, config_context)
         self._view = config_view
+        self._cfg = cfg
         self._config_completer = config_completer_init
         self._get = get
         self._utils = Utils(colors_enabled)
 
-    def _list_params(self):
-        """
-        Prompts user for a namespace of parameters to query. Once queried, user may select from the outputted chart
-        of found parameters matching that namespace. This will then provide the user the selected value.
-        """
-
-        # Prompts for this file
-        select_message = [
-            (f'class:{self.c.bl}', '`[1-999]` '),
-            ('class:', 'to select a value. '),
-            (f'class:{self.c.bl}', '`continue` '),
-            ('class:', 'to query more. Anything else quits. \n\nSelection: ')
-        ]
-
-        # Add all keys
-        list_another = True
-
-        while list_another:
-            print()
-            namespace = prompt(f"Please input a namespace prefix to query: ", completer=self._config_completer)
-            if not self._utils.is_valid_input(namespace, "namespace", notify=False):
-                continue
-
-            print(f"Passing in prefix of :{namespace}")
-            parameters = self._view.get_config_names(prefix=namespace)
-            names = [['Selector', 'Name']]
-            count = 1
-            for param in parameters:
-                names.append([f'{self.c.fg_rd}{count}{self.c.rs}', param])
-                count = count + 1
-
-            # Pretty print out with columns for selection.
-            data = '\n'.join(['\t'.join([str(cell) for cell in row]) for row in names])
-            keep_getting = True
-
-            while keep_getting:
-                pagination_threshold = 30
-                if count > pagination_threshold:
-                    pagination_data = f"Find your number, then use \"q\" to quit. Then input your number.\n\n {data}"
-                    click.echo_via_pager(pagination_data)
-                else:
-                    pagination_data = data
-                    click.echo(pagination_data)
-
-                selection = prompt(select_message, style=FIGGY_STYLE)
-                if re.match('[0-9]+', selection) is not None:
-                    if int(selection) > count - 1:
-                        print(f"Invalid selection. try again")
-                        continue
-                    print(f"Name: {names[int(selection)][1]}")
-                    value, desc = self._get.get_val_and_desc(names[int(selection)][1])
-                    desc = desc if desc else DESC_MISSING_TEXT
-
-                    if value is not None:
-                        print(f"Value: {value}")
-                        print(f"{self.c.fg_gr}Description: {self.c.rs}{desc}")
-
-                    hold = input(f"\nPress ENTER when you want to look up another value.")
-                    click.clear()
-                else:
-                    list_another = selection.lower() == "continue"
-                    keep_getting = False
+    def _list(self):
+        app = ListApp(self._view, self._cfg, self.context.run_env)
+        app.run()
 
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
-        self._list_params()
+        self._list()
+
+
+class ActionControllerSearch(npyscreen.ActionControllerSimple):
+    """
+    Adds filter functionality to the select box at the bottom.
+    """
+    def create(self):
+        self.add_action('^/.*', self.set_search, True)
+
+    def set_search(self, command_line, widget_proxy, live):
+        self.parent.value.set_filter(command_line[1:])
+        self.parent.wMain.values = self.parent.value.get()
+        self.parent.wMain.display()
+
+
+class SelectBox(TextCommandBox):
+    """
+    Select box at the bottom of the list view.
+    """
+    def __init__(self, screen, *args, **keywords):
+        super().__init__(screen, *args, **keywords)
+        self.max_width = self.width / 2
+        self.value = "/"
+
+    def h_execute_command(self, *args, **keywords):
+        for val in QUIT_CODES:
+            val == self.value and exit(0)
+
+        if self.history:
+            self._history_store.append(self.value)
+            self._current_history_index = False
+        self.parent.action_controller.process_command_complete(self.value, weakref.proxy(self))
+        self.value = ''
+
+
+class SelectedValueBox(BoxTitle):
+    """Creates box around Lookup Box"""
+    _contained_widget = MultiLine
+
+class SelectableMultiline(MultiLine):
+    """
+    Main list-view display box that allows users to select options
+    """
+    def set_select_callback(self, callback: Callable):
+        self.select_callback = callback
+
+    def h_select(self, ch):
+        self.value = self.cursor_line
+        self.select_callback(self.values[self.value])
+
+        if self.select_exit:
+            self.editing = False
+            self.how_exited = True
+
+    def set_up_handlers(self):
+        super(MultiLine, self).set_up_handlers()
+        self.handlers.update({
+            curses.KEY_UP: self.h_cursor_line_up,
+            ord('s'): self.h_select,
+            ord('k'): self.h_cursor_line_up,
+            curses.KEY_LEFT: self.h_cursor_line_up,
+            curses.KEY_DOWN: self.h_cursor_line_down,
+            ord('j'): self.h_cursor_line_down,
+            curses.KEY_RIGHT: self.h_cursor_line_down,
+            curses.KEY_NPAGE: self.h_cursor_page_down,
+            curses.KEY_PPAGE: self.h_cursor_page_up,
+            curses.ascii.TAB: self.h_exit_down,
+            curses.ascii.NL: self.h_select_exit,
+            curses.KEY_HOME: self.h_cursor_beginning,
+            curses.KEY_END: self.h_cursor_end,
+            ord('g'): self.h_cursor_beginning,
+            ord('G'): self.h_cursor_end,
+            ord('x'): self.h_select,
+            # "^L":        self.h_set_filtered_to_selected,
+            curses.ascii.SP: self.h_select,
+            curses.ascii.ESC: self.h_exit_escape,
+            curses.ascii.CR: self.h_select_exit,
+        })
+
+        if self.allow_filtering:
+            self.handlers.update({
+                ord('F'): self.h_set_filter,
+                ord('L'): self.h_clear_filter,
+                ord('n'): self.move_next_filtered,
+                ord('N'): self.move_previous_filtered,
+                ord('p'): self.move_previous_filtered,
+                # "^L":        self.h_set_filtered_to_selected,
+
+            })
+
+        if self.exit_left:
+            self.handlers.update({
+                curses.KEY_LEFT: self.h_exit_left
+            })
+
+        if self.exit_right:
+            self.handlers.update({
+                curses.KEY_RIGHT: self.h_exit_right
+            })
+
+        self.complex_handlers = [
+            # (self.t_input_isprint, self.h_find_char)
+        ]
+
+class FiggyListForm(npyscreen.FormMuttActive):
+    """
+    Form wrapper for entire list view
+    """
+    ACTION_CONTROLLER = ActionControllerSearch
+    COMMAND_WIDGET_CLASS = SelectBox
+    MAIN_WIDGET_CLASS = SelectableMultiline
+
+    def __init__(self, cfg: ConfigService, *args, **keywords):
+        super().__init__(*args, **keywords)
+        relx, rely = int(self.columns / 2) * - 1, int(self.lines) * - 1
+        max_height, max_width = int(self.lines / 2) - 1, int(self.columns / 2) - 1
+        self.value_box = self.add_widget(SelectedValueBox, name="Parameter Value: ", relx=relx, rely=rely,
+                                         max_height=max_height, max_width=max_width, allow_filtering=False, editable=False)
+
+        self.wMain.set_select_callback(self.update_value_box)
+        self._cfg = cfg
+
+    def update_value_box(self, ps_name: str):
+        """
+        Lookup and update the value form when a user selects an item in the DisplayBox
+        """
+        self.value_box.name = ps_name
+        self.value_box.update()
+        try:
+            val, desc, = self._cfg.get_parameter_with_description(ps_name)
+        except ParameterUndecryptable:
+            val = "Undecryptable"
+            desc = "You do not have access to decrypt this parameter."
+
+        desc_lines = OutUtils.to_lines(desc, int(self.columns / 2) - 5)
+        self.value_box.values = ["",
+                                 "Value: ",
+                                 f"    > {val}",
+                                 "",
+                                 "Description: ",
+                                 f"---",
+                                 "",
+                                 ] + desc_lines
+
+        self.value_box.update()
+
+    def create(self):
+        MAXY, MAXX = self.lines, int(self.columns / 2)
+
+        self.wStatus1 = self.add(self.__class__.STATUS_WIDGET_CLASS, rely=0,
+                                 relx=self.__class__.STATUS_WIDGET_X_OFFSET,
+                                 editable=False,
+                                 )
+
+        if self.__class__.MAIN_WIDGET_CLASS:
+            self.wMain = self.add(self.__class__.MAIN_WIDGET_CLASS,
+                                  rely=self.__class__.MAIN_WIDGET_CLASS_START_LINE,
+                                  relx=0, max_height=-2, max_width=MAXX)
+
+        self.wStatus2 = self.add(self.__class__.STATUS_WIDGET_CLASS, rely=MAXY - 2 - self.BLANK_LINES_BASE,
+                                 relx=self.__class__.STATUS_WIDGET_X_OFFSET,
+                                 editable=False, )
+
+        if not self.__class__.COMMAND_WIDGET_BEGIN_ENTRY_AT:
+            self.wCommand = self.add(self.__class__.COMMAND_WIDGET_CLASS, name=self.__class__.COMMAND_WIDGET_NAME,
+                                     rely=MAXY - 1 - self.BLANK_LINES_BASE, relx=0, )
+        else:
+            self.wCommand = self.add(
+                self.__class__.COMMAND_WIDGET_CLASS, name=self.__class__.COMMAND_WIDGET_NAME,
+                rely=MAXY - 1 - self.BLANK_LINES_BASE, relx=0,
+                begin_entry_at=self.__class__.COMMAND_WIDGET_BEGIN_ENTRY_AT,
+                allow_override_begin_entry_at=self.__class__.COMMAND_ALLOW_OVERRIDE_BEGIN_ENTRY_AT)
+
+        self.wStatus1.important = True
+        self.wStatus2.important = True
+        self.nextrely = 2
+
+    def draw_form(self):
+        MAXY, MAXX = self.lines, int(self.columns / 2)  # self.curses_pad.getmaxyx()
+        self.curses_pad.hline(0, 0, curses.ACS_HLINE, MAXX)
+        self.curses_pad.hline(MAXY - 2 - self.BLANK_LINES_BASE, 0, curses.ACS_HLINE, MAXX)
+
+
+class ListApp(npyscreen.NPSApp):
+    """
+    List application wrapper for List form.
+    """
+    def __init__(self, view: RBACLimitedConfigView, cfg: ConfigService, env: RunEnv):
+        self._view = view
+        self._env = env
+        self._cfg = cfg
+
+    def main(self):
+        F = FiggyListForm(self._cfg)
+        F.wStatus1.value = f"<TAB> Swaps - <s, enter> Selects - < ↑, ↓, j, k> move - <F> Find"
+        F.wStatus2.value = "Filter: </search-query> <quit>"
+        F.value.set_values(self._view.get_config_names())
+        F.wMain.editable = True
+        F.wMain.values = F.value.get()
+        F.edit()
+

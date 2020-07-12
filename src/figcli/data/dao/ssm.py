@@ -134,7 +134,6 @@ class SsmDao:
                 return current_val.get('Value'), current_val.get('Description')
             else:
                 return None, None
-
         except ClientError as e:
             if "ParameterNotFound" == e.response['Error']['Code']:
                 return None, None

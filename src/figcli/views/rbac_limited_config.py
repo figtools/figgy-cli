@@ -25,6 +25,7 @@ class RBACLimitedConfigView:
         self._cache_mgr = cache_mgr
         self._config_svc = config_svc
         self._ssm = ssm
+        self.ssm = ssm
         self.rbac_role_ns_path = f'{figgy_ns}/rbac/{self._role.role}/namespaces'
         self.rbac_role_kms_path = f'{figgy_ns}/rbac/{self._role.role}/keys'
         self.rbac_profile_kms_keys_path = f'{figgy_ns}/rbac/profile/keys'
