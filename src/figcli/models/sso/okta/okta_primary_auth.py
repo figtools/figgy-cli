@@ -6,6 +6,7 @@ from figcli.models.sso.okta.okta_session import OktaSession
 from figcli.utils.utils import *
 import logging
 import requests
+import sys
 from figcli.models.sso.okta.okta_auth import OktaAuth
 
 log = logging.getLogger(__name__)
@@ -124,6 +125,7 @@ class OktaPrimaryAuth(OktaAuth):
         else:
             print("MFA required, but no supported factors enrolled! Exiting.")
             exit(1)
+
         return session_token
 
     def verify_single_factor(self, factor, state_token):

@@ -166,7 +166,7 @@ class Restore(ConfigCommand):
                                                          f"target rollback time.")
         keep_going = Input.y_n_input(
             f"Are you sure you want to restore all figs under {ps_prefix} values to their state at: "
-            f"{time_converted}? (y/N): "
+            f"{time_converted}? ", default_yes=False
         )
 
         if not keep_going:
@@ -183,6 +183,7 @@ class Restore(ConfigCommand):
 
                     cfgs_before: List[RestoreConfig] = item.cfgs_before(time_converted)
                     cfg_at: RestoreConfig = item.cfg_at(time_converted)
+                    print(f"GOt restored config: {cfg_at}")
                     ssm_value = self._ssm.get_parameter(item.name)
                     dynamo_value = self._decrypt_if_applicable(cfg_at)
 
@@ -219,6 +220,7 @@ class Restore(ConfigCommand):
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
+        print("1")
         if self._point_in_time:
             self._restore_params_to_point_in_time()
         else:
