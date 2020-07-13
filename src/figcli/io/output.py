@@ -4,6 +4,26 @@ from figcli.config.style.terminal_factory import TerminalFactory
 MAX_LINE_LENGTH = 52
 
 
+class OutUtils:
+    @staticmethod
+    def to_lines(text: str, max_length):
+        lines = []
+        while len(text) > 0 or not lines:
+            split_idx = min(max_length, len(text) - 1)
+            print()
+            if split_idx == max_length:
+                while text[split_idx] != " " and " " in text and len(text) > max_length:
+                    split_idx = split_idx - 1
+
+                lines.append(text[:split_idx])
+                text = text[split_idx + 1:]
+            else:
+                lines.append(text)
+                text = ''
+
+        return lines
+
+
 class Notification:
     message: str
     color: Color
@@ -19,22 +39,7 @@ class Notification:
         if self._lines:
             return self._lines
 
-        message = self.message
-        lines = []
-        while len(message) > 0 or not lines:
-            split_idx = min(MAX_LINE_LENGTH, len(message) - 1)
-            print()
-            if split_idx == MAX_LINE_LENGTH:
-                while message[split_idx] != " " and " " in message and len(message) > MAX_LINE_LENGTH:
-                    split_idx = split_idx - 1
-
-                lines.append(message[:split_idx])
-                message = message[split_idx + 1:]
-            else:
-                lines.append(message)
-                message = ''
-
-        self._lines = lines
+        self._lines = OutUtils.to_lines(self.message, MAX_LINE_LENGTH)
         return self._lines
 
     @property
@@ -124,4 +129,3 @@ class Output:
 
     def print(self, message: str):
         print(message)
-

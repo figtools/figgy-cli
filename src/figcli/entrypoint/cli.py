@@ -254,7 +254,7 @@ def main():
     except AssertionError as e:
         Utils.stc_error_exit(e.args[0])
     except KeyboardInterrupt:
-        exit(1)
+        pass
     except Exception as e:
         try:
             error_reporter = FiggyErrorReporter(FiggySetup.stc_get_defaults(skip=True, profile=None))

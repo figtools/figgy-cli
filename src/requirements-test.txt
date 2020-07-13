@@ -1,2 +1,2 @@
-pexpect==4.8.0
-mfa==0.1.1
+pexpect==4.8.0 # OSI ISC
+mfa==0.1.1 #

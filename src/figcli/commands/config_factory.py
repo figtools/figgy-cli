@@ -15,6 +15,7 @@ from figcli.commands.config.sync import *
 from figcli.commands.config.validate import Validate
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.factory import Factory
+from figcli.svcs.config import ConfigService
 from figcli.svcs.kms import KmsSvc
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
@@ -27,14 +28,16 @@ class ConfigFactory(Factory):
     would hypothetically be other factories.
     """
 
-    def __init__(self, command: frozenset, context: ConfigContext, ssm: SsmDao, cfg: ConfigDao, kms: KmsSvc,
-                 s3_resource: ServiceResource, colors_enabled: bool, config_view: RBACLimitedConfigView,
+    def __init__(self, command: frozenset, context: ConfigContext, ssm: SsmDao, config_svc: ConfigService,
+                 cfg: ConfigDao, kms: KmsSvc, s3_resource: ServiceResource, colors_enabled: bool,
+                 config_view: RBACLimitedConfigView,
                  session_manager: SessionManager):
 
         self._command: frozenset = command
         self._config_context: ConfigContext = context
         self._ssm: SsmDao = ssm
         self._config: ConfigDao = cfg
+        self._cfg_svc: ConfigService = config_svc
         self._kms: KmsSvc = kms
         self._colors_enabled: bool = colors_enabled
         self._config_view = config_view
@@ -64,7 +67,7 @@ class ConfigFactory(Factory):
         elif command == share:
             return Share(self._ssm, self._config, self._config_completer, self._colors_enabled, self._config_context)
         elif command == list_com:
-            return FigList(self._config_view, self._config_completer, self._colors_enabled,
+            return FigList(self._config_view, self._cfg_svc, self._config_completer, self._colors_enabled,
                            self._config_context, self.get(get))
         elif command == browse:
             return Browse(self._ssm, self._colors_enabled, self._config_context, self.get(get),

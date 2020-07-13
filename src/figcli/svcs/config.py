@@ -1,13 +1,20 @@
 import logging
-from typing import Set, List
+from typing import Set, List, Tuple, Optional
+
+from botocore.exceptions import ClientError
 
 from figcli.data.dao.config import ConfigDao
+from figcli.data.dao.ssm import SsmDao
 from figcli.data.models.config_item import ConfigState, ConfigItem
 from figcli.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
 from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
+
+
+class ParameterUndecryptable(Exception):
+    pass
 
 
 # Todo, lots more from SSMDao should be moved here.
@@ -21,10 +28,11 @@ class ConfigService:
     """
     _PS_NAME_CACHE_KEY = 'parameter_names'
 
-    def __init__(self, config_dao: ConfigDao, cache_mgr: CacheManager, run_env: RunEnv):
+    def __init__(self, config_dao: ConfigDao, ssm: SsmDao, cache_mgr: CacheManager, run_env: RunEnv):
         self._config_dao = config_dao
         self._cache_mgr = cache_mgr
         self._run_env = run_env
+        self._ssm: SsmDao = ssm
 
     def get_root_namespaces(self) -> List[str]:
         all_params = self.get_parameter_names()
@@ -61,10 +69,8 @@ class ConfigService:
             added_names, deleted_names = set(), set()
             for item in updated_items:
                 if item.state is ConfigState.ACTIVE:
-                    log.info(f"ADDING NEW: {item}")
                     added_names.add(item.name)
                 elif item.state is ConfigState.DELETED:
-                    log.info(f"ADDING DELETED: {item}")
                     deleted_names.add(item.name)
                 else:
                     # Default to add if no state set
@@ -80,3 +86,20 @@ class ConfigService:
             all_parameters = set(cached_contents) - deleted_names | added_names
 
         return all_parameters
+
+    def get_parameter_with_description(self, name: str) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Returns a parameter's value and description from its provided name. Returns `None, None` tuple
+        if no parameter exists.
+
+        This method paginates to the last page via the SSM API then grabs the last item, which will
+        be the current version.
+
+        :param name: The name of the parameter - e.g. /app/foo/bar
+        :return: Tuple[value, description] - Value & Description found. None returned if no parameter exists.
+        """
+        try:
+            return self._ssm.get_parameter_with_description(name)
+        except ClientError as e:
+            if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
+                raise ParameterUndecryptable(f'{e}')
