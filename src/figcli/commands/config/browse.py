@@ -1,9 +1,10 @@
 import curses
+from collections import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import npyscreen
 from botocore.exceptions import ClientError
-from npyscreen import MLTreeMultiSelect, NPSTreeData, NPSApp, Form, TreeLineSelectable
+from npyscreen import MLTreeMultiSelect, NPSTreeData, NPSApp, Form, TreeLineSelectable, BoxTitle, MultiLine
 
 from figcli.commands.config.delete import Delete
 from figcli.commands.config.get import Get
@@ -12,6 +13,8 @@ from figcli.commands.types.config import ConfigCommand
 from figcli.data.dao.config import ConfigDao
 from figcli.data.dao.ssm import SsmDao
 from figcli.io.input import Input
+from figcli.io.output import OutUtils
+from figcli.svcs.config import ParameterUndecryptable, ConfigService
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import *
@@ -23,11 +26,12 @@ log = logging.getLogger(__name__)
 
 class Browse(ConfigCommand, npyscreen.NPSApp):
 
-    def __init__(self, ssm_init: SsmDao, colors_enabled: bool, context: ConfigContext,
+    def __init__(self, ssm_init: SsmDao, cfg_svc: ConfigService, colors_enabled: bool, context: ConfigContext,
                  get_command: Get, delete_command: Delete, config_view: RBACLimitedConfigView):
         super().__init__(browse, colors_enabled, context)
         self._ssm = ssm_init
         self._get = get_command
+        self._cfg_svc = cfg_svc
         self._config_view = config_view
         self.selected_ps_paths = []
         self.deleted_ps_paths = []
@@ -86,11 +90,9 @@ class Browse(ConfigCommand, npyscreen.NPSApp):
                 self.add_children(child_dir, dir_node, all_children=grand_children,
                                   first_children=calculated_first_children)
 
-
-
     @AnonymousUsageTracker.track_command_usage
     def _browse(self):
-        browse_app = BrowseApp(self, self._config_view)
+        browse_app = BrowseApp(self, self._config_view, self._cfg_svc)
         browse_app.run()
 
     def _print_val(self, path, val, desc):
@@ -116,7 +118,7 @@ class Browse(ConfigCommand, npyscreen.NPSApp):
                 all_children = set(list(map(lambda x: x['Name'],
                                             self._ssm.get_all_parameters([path], option='Recursive'))))
                 delete_children = Input.y_n_input(f"You have selected a DIRECTORY to delete: {path}. "
-                      f"Do you want to delete ALL children of: {path}?", default_yes=False)
+                                                  f"Do you want to delete ALL children of: {path}?", default_yes=False)
 
                 if delete_children:
                     for child in all_children:
@@ -156,9 +158,13 @@ class Browse(ConfigCommand, npyscreen.NPSApp):
         self._print_values()
 
 
+class SelectedValueBox(BoxTitle):
+    """Creates box around Lookup Box"""
+    _contained_widget = MultiLine
+
 class DeletableNPSTreeData(NPSTreeData):
     """
-    Extends NPSTreeData class to add deleted property, so we may mark individual nodes as deleted.
+    Extends NPSTreeData class to add deleted property so we may mark individual nodes as deleted.
     """
 
     def __init__(self, content=None, parent=None, selected=False, selectable=True,
@@ -173,19 +179,31 @@ class BrowseApp(NPSApp):
     """
     Extends NPSApp class to add support for getting a list of deleted tree nodes that were marked for deletion.
     """
+    BUFFER = 3
 
-    def __init__(self, browse: Browse, config_view: RBACLimitedConfigView):
+    def __init__(self, browse: Browse, config_view: RBACLimitedConfigView, cfg: ConfigService):
         self._browse = browse
         self._config_view = config_view
+        self._cfg = cfg
+        self.value_box = None
+        self.browse_box = None
 
     def main(self):
         global npy_form
-        npy_form = Form(
-
+        self._browse_box = Form(
             name="Browse Parameters: - 'e' to expand, 'c' to collapse, <s> to select, <d> to delete, "
-                 "<Tab> & <Shift+Tab> moves cursor between `OK` and `Tree` views.", )
+                 "<Tab> & <Shift+Tab> moves cursor between `OK` and `Tree` views.")
 
-        tree = npy_form.add(LogicalMLTree)
+        # Value Box Relative Location
+        val_relx, val_rely = int(self._browse_box.columns / 2) * -1, int(self._browse_box.lines - 1) * -1
+        val_max_height = int(self._browse_box.lines / 1.5) - self.BUFFER
+        val_max_width = int(self._browse_box.columns / 2) - self.BUFFER
+
+        tree = self._browse_box.add(LogicalMLTree, on_select_callable=self.update_value_box, max_width=self._browse_box.columns + val_relx - self.BUFFER)
+
+        self.value_box = self._browse_box.add_widget(SelectedValueBox, name="Parameter Value: ", relx=val_relx, rely=val_rely,
+                                             max_height=val_max_height, max_width=val_max_width, allow_filtering=False,
+                                             editable=False)
 
         td = DeletableNPSTreeData(content='Root', selectable=True, expanded=True, ignoreRoot=True)
         start = Utils.millis_since_epoch()
@@ -213,7 +231,7 @@ class BrowseApp(NPSApp):
             pass
 
         tree.values = td
-        npy_form.edit()
+        self._browse_box.edit()
         selection_objs = tree.get_selected_objects(return_node=True)
 
         for selection in selection_objs:
@@ -230,6 +248,38 @@ class BrowseApp(NPSApp):
                 full_path = selection.content + full_path
                 selection = selection._parent
             self._browse.deleted_ps_paths.append(full_path)
+
+    def update_value_box(self, ps_name: str):
+        """
+        Lookup and update the value form when a user selects an item in the DisplayBox
+        """
+        self.value_box.name = ps_name
+        try:
+            val, desc, = self._cfg.get_parameter_with_description(ps_name)
+        except ParameterUndecryptable:
+            val = "Undecryptable"
+            desc = "You do not have access to decrypt this parameter."
+        except TypeError:
+            return  # No parameter found
+
+        val = f"> {val}" if val else ''
+        desc = f"> {desc}" if desc else ''
+
+        if val or desc:
+            line_length = int(self._browse_box.columns / 2) - self.BUFFER
+            val_lines = OutUtils.to_lines(val, line_length)
+            desc_lines = OutUtils.to_lines(desc, line_length)
+            self.value_box.values = ["",
+                                     "Value: ",
+                                     f"---",
+                                     ""] + val_lines + [
+                                     "", "",
+                                     "Description: ",
+                                     f"---",
+                                     "",
+                                     ] + desc_lines
+
+            self.value_box.update()
 
 
 class TreeLineMultiFunctionSelect(TreeLineSelectable):
@@ -287,9 +337,10 @@ class LogicalMLTree(MLTreeMultiSelect):
     Also provides ability to set `delete` on nodes, and query all deleted nodes
     """
 
-    def __init__(self, screen, select_cascades=False, *args, **keywords):
+    def __init__(self, screen, on_select_callable: Callable, select_cascades=False, *args, **keywords):
         super(MLTreeMultiSelect, self).__init__(screen, select_cascades=select_cascades, *args, **keywords)
         self.select_cascades = select_cascades
+        self._on_select_callable = on_select_callable
 
     def set_up_handlers(self):
         super(MLTreeMultiSelect, self).set_up_handlers()
@@ -303,6 +354,14 @@ class LogicalMLTree(MLTreeMultiSelect):
             ord('r'): self.h_refresh
         })
 
+    def get_path(self, value):
+        full_path = ''
+        while value._parent is not None:
+            full_path = value.content + full_path
+            value = value._parent
+
+        return full_path
+
     def h_select(self, ch):
         vl = self.values[self.cursor_line]
         vl_to_set = not vl.selected
@@ -312,6 +371,9 @@ class LogicalMLTree(MLTreeMultiSelect):
                     v.selected = vl_to_set
         else:
             vl.selected = vl_to_set
+
+        self._on_select_callable(self.get_path(vl))
+
         if self.select_exit:
             self.editing = False
             self.how_exited = True

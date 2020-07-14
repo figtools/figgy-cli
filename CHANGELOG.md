@@ -1,4 +1,5 @@
 Figgy Changelog:
+
 ## 0.0.59
 - List command has been scrapped and replaced with a much improved user experience allowing dynamic filter, automatic lookups, and sub-search
 - `click` library dependency has been removed as a result of abandoning existing List command.

@@ -70,7 +70,7 @@ class ConfigFactory(Factory):
             return FigList(self._config_view, self._cfg_svc, self._config_completer, self._colors_enabled,
                            self._config_context, self.get(get))
         elif command == browse:
-            return Browse(self._ssm, self._colors_enabled, self._config_context, self.get(get),
+            return Browse(self._ssm, self._cfg_svc, self._colors_enabled, self._config_context, self.get(get),
                           self.get(delete), self._config_view)
         elif command == audit:
             return Audit(self._ssm, self._config, self._config_completer, self._colors_enabled, self._config_context)

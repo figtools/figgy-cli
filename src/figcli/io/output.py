@@ -7,10 +7,15 @@ MAX_LINE_LENGTH = 52
 class OutUtils:
     @staticmethod
     def to_lines(text: str, max_length):
+        """Break a string along word boundaries into lines.
+           DO NOT PUT PRINT STATEMENTS IN HERE (Breaks list, and it's dumb)
+        """
+        if not text:
+            return []
+
         lines = []
         while len(text) > 0 or not lines:
             split_idx = min(max_length, len(text) - 1)
-            print()
             if split_idx == max_length:
                 while text[split_idx] != " " and " " in text and len(text) > max_length:
                     split_idx = split_idx - 1

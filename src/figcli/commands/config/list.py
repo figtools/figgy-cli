@@ -1,9 +1,11 @@
+import copy
 import curses
 import weakref
 from typing import Callable
 
 import npyscreen
 from npyscreen import BoxTitle, MultiLine, TextCommandBox, Pager
+from npyscreen.wgmultiline import MORE_LABEL
 from prompt_toolkit.completion import WordCompleter
 
 from figcli.commands.config.get import Get
@@ -17,7 +19,7 @@ from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import *
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
-QUIT_CODES = [':q', 'quit', 'exit', ":wq", "q", "/quit"]
+QUIT_CODES = [':q', 'quit', 'exit', ":wq", "q", "/quit", "/q"]
 
 
 class List(ConfigCommand):
@@ -45,6 +47,7 @@ class ActionControllerSearch(npyscreen.ActionControllerSimple):
     """
     Adds filter functionality to the select box at the bottom.
     """
+
     def create(self):
         self.add_action('^/.*', self.set_search, True)
 
@@ -58,6 +61,7 @@ class SelectBox(TextCommandBox):
     """
     Select box at the bottom of the list view.
     """
+
     def __init__(self, screen, *args, **keywords):
         super().__init__(screen, *args, **keywords)
         self.max_width = self.width / 2
@@ -75,13 +79,20 @@ class SelectBox(TextCommandBox):
 
 
 class SelectedValueBox(BoxTitle):
-    """Creates box around Lookup Box"""
+    """Creates box around Value"""
     _contained_widget = MultiLine
+
+
+class LegendBox(BoxTitle):
+    """Creates box around Legend"""
+    _contained_widget = MultiLine
+
 
 class SelectableMultiline(MultiLine):
     """
     Main list-view display box that allows users to select options
     """
+
     def set_select_callback(self, callback: Callable):
         self.select_callback = callback
 
@@ -93,6 +104,7 @@ class SelectableMultiline(MultiLine):
             self.editing = False
             self.how_exited = True
 
+
     def set_up_handlers(self):
         super(MultiLine, self).set_up_handlers()
         self.handlers.update({
@@ -103,8 +115,8 @@ class SelectableMultiline(MultiLine):
             curses.KEY_DOWN: self.h_cursor_line_down,
             ord('j'): self.h_cursor_line_down,
             curses.KEY_RIGHT: self.h_cursor_line_down,
-            curses.KEY_NPAGE: self.h_cursor_page_down,
-            curses.KEY_PPAGE: self.h_cursor_page_up,
+            'd': self.h_cursor_page_down,
+            'u': self.h_cursor_page_up,
             curses.ascii.TAB: self.h_exit_down,
             curses.ascii.NL: self.h_select_exit,
             curses.KEY_HOME: self.h_cursor_beginning,
@@ -112,7 +124,6 @@ class SelectableMultiline(MultiLine):
             ord('g'): self.h_cursor_beginning,
             ord('G'): self.h_cursor_end,
             ord('x'): self.h_select,
-            # "^L":        self.h_set_filtered_to_selected,
             curses.ascii.SP: self.h_select,
             curses.ascii.ESC: self.h_exit_escape,
             curses.ascii.CR: self.h_select_exit,
@@ -125,7 +136,6 @@ class SelectableMultiline(MultiLine):
                 ord('n'): self.move_next_filtered,
                 ord('N'): self.move_previous_filtered,
                 ord('p'): self.move_previous_filtered,
-                # "^L":        self.h_set_filtered_to_selected,
 
             })
 
@@ -143,20 +153,175 @@ class SelectableMultiline(MultiLine):
             # (self.t_input_isprint, self.h_find_char)
         ]
 
+    def update(self, clear=True):
+        if self.hidden and clear:
+            self.clear()
+            return False
+        elif self.hidden:
+            return False
+
+        if self.values == None:
+            self.values = []
+
+        # clear = None is a good value for this widget
+        display_length = len(self._my_widgets)
+        # self._remake_filter_cache()
+        self._filtered_values_cache = self.get_filtered_indexes()
+
+        if self.editing or self.always_show_cursor:
+            if self.cursor_line < 0: self.cursor_line = 0
+            if self.cursor_line > len(self.values) - 1: self.cursor_line = len(self.values) - 1
+
+            if self.slow_scroll:
+                if self.cursor_line > self.start_display_at + display_length - 1:
+                    self.start_display_at = self.cursor_line - (display_length - 1)
+
+                if self.cursor_line < self.start_display_at:
+                    self.start_display_at = self.cursor_line
+
+            else:
+
+                if self.cursor_line > self.start_display_at + (display_length - 2):
+                    self.start_display_at = self.cursor_line
+
+                if self.cursor_line < self.start_display_at:
+                    self.start_display_at = self.cursor_line - (display_length - 2)
+                    if self.start_display_at < 0: self.start_display_at = 0
+
+        # What this next bit does is to not bother updating the screen if nothing has changed.
+        no_change = False
+        try:
+            if (self._safe_to_display_cache and \
+                self._last_value is self.value) and \
+                    (self.values == self._last_values) and \
+                    (self.start_display_at == self._last_start_display_at) and \
+                    (clear != True) and \
+                    (self._last_cursor_line == self.cursor_line) and \
+                    (self._last_filter == self._filter) and \
+                    self.editing:
+                no_change = True
+
+            else:
+                no_change = False
+        except:
+            no_change = False
+        if clear:
+            no_change = False
+        if not no_change or clear or self.never_cache:
+            if clear is True:
+                self.clear()
+
+            if (self._last_start_display_at != self.start_display_at) \
+                    and clear is None:
+                self.clear()
+            else:
+                pass
+
+            self._last_start_display_at = self.start_display_at
+
+            self._before_print_lines()
+            indexer = 0 + self.start_display_at
+            for line in self._my_widgets[:-1]:
+                self._print_line(line, indexer)
+                line.task = "PRINTLINE"
+                line.update(clear=True)
+                indexer += 1
+
+            # Now do the final line
+            line = self._my_widgets[-1]
+
+            if (len(
+                    self.values) <= indexer + 1):  # or (len(self._my_widgets)*self._contained_widget_height)<self.height:
+                self._print_line(line, indexer)
+                line.task = "PRINTLINE"
+                line.update(clear=False)
+            elif len((self._my_widgets) * self._contained_widget_height) < self.height:
+                self._print_line(line, indexer)
+                line.task = "PRINTLINELASTOFSCREEN"
+                line.update(clear=False)
+                if self.do_colors():
+                    self.parent.curses_pad.addstr(self.rely + self.height - 1, self.relx, MORE_LABEL,
+                                                  self.parent.theme_manager.findPair(self, 'CONTROL'))
+                else:
+                    self.parent.curses_pad.addstr(self.rely + self.height - 1, self.relx, MORE_LABEL)
+            else:
+                # line.value = MORE_LABEL
+                line.name = MORE_LABEL
+                line.task = MORE_LABEL
+                # line.highlight = False
+                # line.show_bold = False
+                line.clear()
+                if self.do_colors():
+                    self.parent.curses_pad.addstr(self.rely + self.height - 1, self.relx, MORE_LABEL,
+                                                  self.parent.theme_manager.findPair(self, 'CONTROL'))
+                else:
+                    self.parent.curses_pad.addstr(self.rely + self.height - 1, self.relx, MORE_LABEL)
+
+            if self.editing or self.always_show_cursor:
+                self.set_is_line_cursor(self._my_widgets[(self.cursor_line - self.start_display_at)], True)
+                self._my_widgets[(self.cursor_line - self.start_display_at)].update(clear=True)
+            else:
+                # There is a bug somewhere that affects the first line.  This cures it.
+                # Without this line, the first line inherits the color of the form when not editing. Not clear why.
+                self._my_widgets[0].update()
+
+        self._last_start_display_at = self.start_display_at
+        self._last_cursor_line = self.cursor_line
+        self._last_values = copy.copy(self.values)
+        self._last_value = copy.copy(self.value)
+
+        # This will prevent the program crashing if the user has changed values, and the cursor
+        # is now on the bottom line.
+        if (self._my_widgets[self.cursor_line - self.start_display_at].task in (MORE_LABEL, "PRINTLINELASTOFSCREEN")):
+            if self.slow_scroll:
+                self.start_display_at += 1
+            else:
+                self.start_display_at = self.cursor_line
+            self.update(clear=clear)
+
+
 class FiggyListForm(npyscreen.FormMuttActive):
+    BUFFER = 1
+    BUFFER_LEFT = 3
+    LEGEND = [
+        "",
+        "< TAB > - Swap between Select / Filter",
+        "< s, ENTER > - Select + Lookup a fig.",
+        "< ↑, k > - Up",
+        "< ↓, j > - Down",
+        "< u > - Page Up",
+        "< d > - Page Down",
+        "< F > - Find - Select window only",
+        ""
+    ]
+
     """
     Form wrapper for entire list view
     """
+
     ACTION_CONTROLLER = ActionControllerSearch
     COMMAND_WIDGET_CLASS = SelectBox
     MAIN_WIDGET_CLASS = SelectableMultiline
 
     def __init__(self, cfg: ConfigService, *args, **keywords):
         super().__init__(*args, **keywords)
-        relx, rely = int(self.columns / 2) * - 1, int(self.lines) * - 1
-        max_height, max_width = int(self.lines / 2) - 1, int(self.columns / 2) - 1
-        self.value_box = self.add_widget(SelectedValueBox, name="Parameter Value: ", relx=relx, rely=rely,
-                                         max_height=max_height, max_width=max_width, allow_filtering=False, editable=False)
+
+        # Legend Box Relative Location
+        leg_relx, leg_rely = int(self.columns / 2) * -1 + self.BUFFER_LEFT, int(self.lines + self.BUFFER) * -1
+        leg_max_height = len(self.LEGEND) + 2
+        leg_max_width = int(self.columns / 2) - self.BUFFER - self.BUFFER_LEFT
+
+        # Value Box Relative Location
+        val_relx, val_rely = int(self.columns / 2) * - 1 + self.BUFFER_LEFT, int(self.lines / 2 + self.BUFFER) * -1
+        val_max_height, val_max_width = int(self.lines / 2), int(self.columns / 2) - self.BUFFER - self.BUFFER_LEFT
+
+        self.legend_box = self.add_widget(LegendBox, name="Legend", relx=leg_relx, rely=leg_rely,
+                                          max_height=leg_max_height, max_width=leg_max_width,
+                                          allow_filtering=False, editable=False, values=self.LEGEND)
+
+        self.value_box = self.add_widget(SelectedValueBox, name="Parameter Value: ", relx=val_relx, rely=val_rely,
+                                         max_height=val_max_height, max_width=val_max_width, allow_filtering=False,
+                                         editable=False)
 
         self.wMain.set_select_callback(self.update_value_box)
         self._cfg = cfg
@@ -167,16 +332,18 @@ class FiggyListForm(npyscreen.FormMuttActive):
         """
         self.value_box.name = ps_name
         self.value_box.update()
+
         try:
             val, desc, = self._cfg.get_parameter_with_description(ps_name)
         except ParameterUndecryptable:
             val = "Undecryptable"
             desc = "You do not have access to decrypt this parameter."
 
-        desc_lines = OutUtils.to_lines(desc, int(self.columns / 2) - 5)
+        desc = desc if desc else ''
+        desc_lines = OutUtils.to_lines(desc, int(self.columns / 2 - self.BUFFER - self.BUFFER_LEFT))
         self.value_box.values = ["",
                                  "Value: ",
-                                 f"    > {val}",
+                                 f"    > asdf",
                                  "",
                                  "Description: ",
                                  f"---",
@@ -196,7 +363,8 @@ class FiggyListForm(npyscreen.FormMuttActive):
         if self.__class__.MAIN_WIDGET_CLASS:
             self.wMain = self.add(self.__class__.MAIN_WIDGET_CLASS,
                                   rely=self.__class__.MAIN_WIDGET_CLASS_START_LINE,
-                                  relx=0, max_height=-2, max_width=MAXX)
+                                  relx=self.BUFFER_LEFT, max_height=-3, max_width=MAXX, editable=True
+                                  )
 
         self.wStatus2 = self.add(self.__class__.STATUS_WIDGET_CLASS, rely=MAXY - 2 - self.BLANK_LINES_BASE,
                                  relx=self.__class__.STATUS_WIDGET_X_OFFSET,
@@ -208,7 +376,7 @@ class FiggyListForm(npyscreen.FormMuttActive):
         else:
             self.wCommand = self.add(
                 self.__class__.COMMAND_WIDGET_CLASS, name=self.__class__.COMMAND_WIDGET_NAME,
-                rely=MAXY - 1 - self.BLANK_LINES_BASE, relx=0,
+                rely=MAXY - 1 - self.BLANK_LINES_BASE, relx=self.BUFFER_LEFT,
                 begin_entry_at=self.__class__.COMMAND_WIDGET_BEGIN_ENTRY_AT,
                 allow_override_begin_entry_at=self.__class__.COMMAND_ALLOW_OVERRIDE_BEGIN_ENTRY_AT)
 
@@ -226,6 +394,7 @@ class ListApp(npyscreen.NPSApp):
     """
     List application wrapper for List form.
     """
+
     def __init__(self, view: RBACLimitedConfigView, cfg: ConfigService, env: RunEnv):
         self._view = view
         self._env = env
@@ -233,10 +402,8 @@ class ListApp(npyscreen.NPSApp):
 
     def main(self):
         F = FiggyListForm(self._cfg)
-        F.wStatus1.value = f"<TAB> Swaps - <s, enter> Selects - < ↑, ↓, j, k> move - <F> Find"
+        F.wStatus1.value = f"Figs"
         F.wStatus2.value = "Filter: </search-query> <quit>"
         F.value.set_values(self._view.get_config_names())
-        F.wMain.editable = True
         F.wMain.values = F.value.get()
         F.edit()
-

@@ -39,7 +39,7 @@ INFO_HELP_TEXT = f"Prints out more detailed information about the selected subco
 CONFIGURE_HELP_TEXT = f"(Optional) Setup default configurations to reduce redundant prompts."
 EMPTY_ENV_HELP_TEXT = f"No --env parameter found. Using default: "
 DELETE_HELP_TEXT = f"Manually delete parameters from Parameter Store"
-LIST_HELP_TEXT = f"Lists all matching configuration Names based on a namespace prefix. e.g. /app/demo-time/"
+LIST_HELP_TEXT = f"List, filter, and lookup parameters."
 PUT_HELP_TEXT = f"Store (or update) an arbitrary configuration in ParameterStore."
 SHARE_HELP_TEXT = f"Share a parameter from a source to an arbitrary destination path in Parameter Store via config " \
                   f"replication."
@@ -50,7 +50,7 @@ MIGRATE_HELP_TEXT = f"Walks a user through migrating application configs from Co
 SYNC_HELP_TEXT = "Synchronizes your defined figgy.json configurations with those in Parameter Store. " \
                  "This ensures the proper configurations exist in the provided run environment for your application."
 GET_HELP_TEXT = "Retrieve an arbitrary value from ParameterStore by Name."
-BROWSE_HELP_TEXT = "Browse and look up or delete parameters through a tree structure."
+BROWSE_HELP_TEXT = "Browse, look up, and delete parameters through a tree structure."
 AUDIT_HELP_TEXT = "Audit parameter store changes to parameters."
 DUMP_HELP_TEXT = "Dump a series of PS Values by a queried prefix as JSON, or output to a file."
 PREFIX_HELP_TEXT = "The prefix (e.g. /app/demo-time) to limit results to."
