@@ -162,6 +162,7 @@ class SelectedValueBox(BoxTitle):
     """Creates box around Lookup Box"""
     _contained_widget = MultiLine
 
+
 class DeletableNPSTreeData(NPSTreeData):
     """
     Extends NPSTreeData class to add deleted property so we may mark individual nodes as deleted.
@@ -180,6 +181,8 @@ class BrowseApp(NPSApp):
     Extends NPSApp class to add support for getting a list of deleted tree nodes that were marked for deletion.
     """
     BUFFER = 3
+    SELECTED = 'SELECTED'
+    TO_DELETE = 'TO_DELETE"'
 
     def __init__(self, browse: Browse, config_view: RBACLimitedConfigView, cfg: ConfigService):
         self._browse = browse
@@ -187,6 +190,8 @@ class BrowseApp(NPSApp):
         self._cfg = cfg
         self.value_box = None
         self.browse_box = None
+        self.select_state_box = None
+        self.selected_params = {}
 
     def main(self):
         global npy_form
@@ -196,14 +201,29 @@ class BrowseApp(NPSApp):
 
         # Value Box Relative Location
         val_relx, val_rely = int(self._browse_box.columns / 2) * -1, int(self._browse_box.lines - 1) * -1
-        val_max_height = int(self._browse_box.lines / 1.5) - self.BUFFER
+        val_max_height = int(self._browse_box.lines / 2) - self.BUFFER
         val_max_width = int(self._browse_box.columns / 2) - self.BUFFER
 
-        tree = self._browse_box.add(LogicalMLTree, on_select_callable=self.update_value_box, max_width=self._browse_box.columns + val_relx - self.BUFFER)
+        # Selection Box Relative Location
+        sel_relx, sel_rely = int(self._browse_box.columns / 2) * -1, int(self._browse_box.lines / 2 + 1) * -1
+        sel_max_height = int(self._browse_box.lines / 2) - self.BUFFER
+        sel_max_width = int(self._browse_box.columns / 2) - self.BUFFER
 
-        self.value_box = self._browse_box.add_widget(SelectedValueBox, name="Parameter Value: ", relx=val_relx, rely=val_rely,
-                                             max_height=val_max_height, max_width=val_max_width, allow_filtering=False,
-                                             editable=False)
+        tree = self._browse_box.add(LogicalMLTree, on_select_callable=self.on_select,
+                                    on_delete_callable=self.on_delete,
+                                    max_width=self._browse_box.columns + val_relx - self.BUFFER)
+
+        self.value_box = self._browse_box.add_widget(SelectedValueBox, name="Parameter Value: ", relx=val_relx,
+                                                     rely=val_rely,
+                                                     max_height=val_max_height, max_width=val_max_width,
+                                                     allow_filtering=False,
+                                                     editable=False)
+
+        self.select_state_box = self._browse_box.add_widget(SelectedValueBox, name="Selections: ", relx=sel_relx,
+                                                            rely=sel_rely,
+                                                            max_height=sel_max_height, max_width=sel_max_width,
+                                                            allow_filtering=False,
+                                                            editable=False)
 
         td = DeletableNPSTreeData(content='Root', selectable=True, expanded=True, ignoreRoot=True)
         start = Utils.millis_since_epoch()
@@ -249,7 +269,25 @@ class BrowseApp(NPSApp):
                 selection = selection._parent
             self._browse.deleted_ps_paths.append(full_path)
 
-    def update_value_box(self, ps_name: str):
+    def generate_selections(self) -> List:
+        selects = [key for key in self.selected_params.keys() if self.selected_params[key] == self.SELECTED]
+        deletes = [key for key in self.selected_params.keys() if self.selected_params[key] == self.TO_DELETE]
+
+        select_prefix = ["", "Selections: ", "---"] if selects else []
+        delete_prefix = ["", "To Delete: ", "---"] if deletes else []
+
+        return select_prefix + selects + delete_prefix + deletes
+
+    def on_delete(self, ps_name):
+        if ps_name in self.selected_params.keys():
+            del self.selected_params[ps_name]
+        else:
+            self.selected_params[ps_name] = self.TO_DELETE
+
+        self.select_state_box.values = self.generate_selections()
+        self.select_state_box.update()
+
+    def on_select(self, ps_name: str):
         """
         Lookup and update the value form when a user selects an item in the DisplayBox
         """
@@ -272,14 +310,22 @@ class BrowseApp(NPSApp):
             self.value_box.values = ["",
                                      "Value: ",
                                      f"---",
-                                     ""] + val_lines + [
-                                     "", "",
-                                     "Description: ",
-                                     f"---",
-                                     "",
-                                     ] + desc_lines
+                                     ] + val_lines + [
+                                        "",
+                                        "Description: ",
+                                        f"---",
+
+                                    ] + desc_lines
 
             self.value_box.update()
+
+        if ps_name in self.selected_params.keys():
+            del self.selected_params[ps_name]
+        else:
+            self.selected_params[ps_name] = self.SELECTED
+
+        self.select_state_box.values = self.generate_selections()
+        self.select_state_box.update()
 
 
 class TreeLineMultiFunctionSelect(TreeLineSelectable):
@@ -337,10 +383,12 @@ class LogicalMLTree(MLTreeMultiSelect):
     Also provides ability to set `delete` on nodes, and query all deleted nodes
     """
 
-    def __init__(self, screen, on_select_callable: Callable, select_cascades=False, *args, **keywords):
+    def __init__(self, screen, on_select_callable: Callable, on_delete_callable: Callable,
+                 select_cascades=False, *args, **keywords):
         super(MLTreeMultiSelect, self).__init__(screen, select_cascades=select_cascades, *args, **keywords)
         self.select_cascades = select_cascades
         self._on_select_callable = on_select_callable
+        self._on_delete_callable = on_delete_callable
 
     def set_up_handlers(self):
         super(MLTreeMultiSelect, self).set_up_handlers()
@@ -396,6 +444,8 @@ class LogicalMLTree(MLTreeMultiSelect):
         if self.select_exit:
             self.editing = False
             self.how_exited = True
+
+        self._on_delete_callable(self.get_path(vl))
         self.display()
 
     def get_objects_to_delete(self, return_node=True):
