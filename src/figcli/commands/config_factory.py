@@ -60,7 +60,7 @@ class ConfigFactory(Factory):
         elif command == put:
             return Put(self._ssm, self._colors_enabled, self._config_context, self._config_view, self.get(get))
         elif command == delete:
-            return Delete(self._ssm, self._config, self._config_context, self._colors_enabled,
+            return Delete(self._ssm, self._config_view, self._config, self._config_context, self._colors_enabled,
                           self._config_completer)
         elif command == get:
             return Get(self._ssm, self._config_completer, self._colors_enabled, self._config_context)

@@ -3,25 +3,31 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
 from figcli.config.style.style import FIGGY_STYLE
+from figcli.config.commands import *
+from figcli.io.output import Output
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
-from figcli.utils.utils import *
+from figcli.utils.utils import Utils
 from figcli.commands.types.config import ConfigCommand
 from figcli.commands.config_context import ConfigContext
 from figcli.data.dao.config import ConfigDao
 from figcli.models.replication_config import ReplicationConfig
 from figcli.data.dao.ssm import SsmDao
+from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 
 class Delete(ConfigCommand):
 
-    def __init__(self, ssm_init: SsmDao, config_init: ConfigDao, context: ConfigContext, colors_enabled: bool,
+    def __init__(self, ssm_init: SsmDao, cfg_view: RBACLimitedConfigView,
+                 config_init: ConfigDao, context: ConfigContext, colors_enabled: bool,
                  config_completer: WordCompleter):
         super().__init__(delete, colors_enabled, context)
         self._ssm = ssm_init
         self._config = config_init
         self._utils = Utils(colors_enabled)
         self._config_completer = config_completer
+        self._out = Output(colors_enabled)
+        self._cfg_view = cfg_view
 
         # Prompts for this file
         self._del_message = [
@@ -41,15 +47,14 @@ class Delete(ConfigCommand):
         repl_conf = self._config.get_config_repl(key, self.run_env)  # type: ReplicationConfig
 
         if len(sources) > 0:
-            print(f"{self.c.fg_rd}You're attempting to delete a key that is the source for at least one "
-                  f"replication config.{self.c.rs}\n{self.c.fg_bl}{key}{self.c.rs} is actively replicating to these"
+            self._out.error(f"You're attempting to delete a key that is the source for at least one "
+                  f"replication config.\n[[{key}]] is actively replicating to these"
                   f" destinations:\n")
             for src in sources:
-                print(f"Dest: {self.c.fg_rd}{src.destination}{self.c.rs}. "
-                      f"This config was created by {self.c.fg_bl}{src.user}{self.c.rs}. ")
+                self._out.warn(f"Dest: [[{src.destination}]]. This config was created by [[{src.user}]]. ")
 
-            print(
-                f"\r\n{self.c.fg_bl}{key}{self.c.rs} is a replication SOURCE. Deleting this source would effectively BREAK "
+            self._out.print(
+                f"\r\n[[{key}]] is a replication SOURCE. Deleting this source would effectively BREAK "
                 f"replication to the above printed destinations. You may NOT delete sources that are actively "
                 f"replicating. Please delete the above printed DESTINATIONS first. "
                 f"Once they have been deleted, you will be allowed to delete this "
@@ -69,7 +74,7 @@ class Delete(ConfigCommand):
                 if selection.strip().lower() == "y":
                     self._config.delete_config(key, self.run_env)
                     self._ssm.delete_parameter(key)
-                    print(f"{self.c.fg_gr}{key} and replication config destination deleted successfully.{self.c.rs}")
+                    self._out.success(f"[[{key}]] and replication config destination deleted successfully.")
                     return True
                 elif selection.strip().lower() == "n":
                     return False
@@ -81,7 +86,7 @@ class Delete(ConfigCommand):
                 if e.response['Error']['Code'] == 'ParameterNotFound':
                     pass
                 elif "AccessDeniedException" == e.response['Error']['Code']:
-                    print(f"{self.c.fg_rd}You do not have permissions to delete: {key}{self.c.rs}")
+                    self._out.error(f"You do not have permissions to delete: {key}")
                     return False
                 else:
                     raise
@@ -110,16 +115,15 @@ class Delete(ConfigCommand):
             except ClientError as e:
                 error_code = e.response['Error']['Code']
                 if "AccessDeniedException" == error_code:
-                    print(f"\n\nYou do not have permissions to a new config value at the path: "
-                          f"{self.c.fg_bl} {key} {self.c.rs}")
-                    print(f"Developers may add keys under the following namespaces: "
-                          f"{self.c.fg_bl} {self.c.rs}")
-                    print(f"Error message: {e.response['Error']['Message']}")
+                    self._out.error(f"\n\nYou do not have permissions to delete config values at the path: [[{key}]]")
+                    self._out.warn(f"Your role of {self.context.role} may delete keys under the following namespaces: "
+                                   f"{self._cfg_view.get_authorized_namespaces()}")
+                    self._out.print(f"Error message: {e.response['Error']['Message']}")
                 elif "ParameterNotFound" == error_code:
-                    print(f"{self.c.fg_rd} The specified Name: {self.c.rs} {self.c.fg_bl} {key}{self.c.rs}"
-                          f"{self.c.fg_rd} does not exist in the selected environment. Please try again.', red {self.c.rs}")
+                    self._out.error(f"The specified Name: [[{key}]] does not exist in the selected environment. "
+                                    f"Please try again.")
                 else:
-                    print(f"Exception caught attempting to delete config: {e.response['Message']}")
+                    self._out.error(f"Exception caught attempting to delete config: {e.response['Message']}")
 
             print()
             to_continue = input(f"Delete another? (Y/n): ")

@@ -60,45 +60,54 @@ class Notification:
         self._dashes = dash_str
         return self._dashes
 
-    def h2(self, dash_color, text_color):
+    def h2(self, dash_color, text_color, accent_color):
         """
         Heading 2 prints.
+        Text color = all text will be in this color except [[test contained in brackets]] which will be accent_color.
         """
-        print(f'{dash_color}{self.dashes}{self.color.rs}')
+        print(f'\n{dash_color}{self.dashes}{self.color.rs}')
         for line in self.lines:
+            line = line.replace("[[", f'{self.color.rs}{accent_color}').replace("]]", f'{self.color.rs}{text_color}')
             print(f'    {text_color}{line}{self.color.rs}    ')
         print(f'{dash_color}{self.dashes}{self.color.rs}')
 
-    def p(self, text_color):
+    def p(self, text_color, accent_color):
         """
         Standard colored prints - 'p' is for 'paragraph' like in html/css
+        Text color = all text will be in this color except [[test contained in brackets]] which will be accent_color.
         """
+        self.message = self.message\
+            .replace("[[", f'{self.color.rs}{accent_color}')\
+            .replace("]]", f'{self.color.rs}{text_color}')
+
         print(f"{text_color}{self.message}{self.color.rs}")
 
     def notify_h2(self):
-        self.h2(self.color.fg_yl, self.color.fg_bl)
+        self.h2(self.color.fg_yl, self.color.fg_bl, self.color.fg_yl)
 
     def warn_h2(self):
-        self.h2(self.color.fg_yl, self.color.fg_yl)
+        self.h2(self.color.fg_yl, self.color.fg_yl, self.color.fg_bl)
 
     def success_h2(self):
-        self.h2(self.color.fg_gr, self.color.fg_bl)
+        self.h2(self.color.fg_gr, self.color.fg_bl, self.color.fg_gr)
 
     def error_h2(self):
-        self.h2(self.color.fg_yl, self.color.fg_rd)
+        self.h2(self.color.fg_yl, self.color.fg_rd, self.color.fg_bl)
 
     def notify(self):
-        self.p(self.color.fg_bl)
+        self.p(self.color.fg_bl, self.color.fg_yl)
 
     def warn(self):
-        self.p(self.color.fg_yl)
+        self.p(self.color.fg_yl, self.color.fg_bl)
 
     def success(self):
-        self.p(self.color.fg_bl)
+        self.p(self.color.fg_gr, self.color.fg_bl)
 
     def error(self):
-        self.p(self.color.fg_rd)
+        self.p(self.color.fg_rd, self.color.fg_yl)
 
+    def print(self):
+        self.p('', self.color.fg_bl)
 
 class Output:
     """
@@ -133,4 +142,4 @@ class Output:
         Notification(message=message, color=self.c).error()
 
     def print(self, message: str):
-        print(message)
+        Notification(message=message, color=self.c).print()

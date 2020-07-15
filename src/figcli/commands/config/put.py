@@ -8,7 +8,7 @@ from prompt_toolkit.completion import WordCompleter
 from figcli.commands.config.get import Get
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figcli.data.dao.ssm import SsmDao
+from figcli.data.dao.ssm import SsmDao, Output
 from figcli.io.input import Input
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
@@ -26,6 +26,7 @@ class Put(ConfigCommand):
         self._config_view = config_view
         self._get = get
         self._source_key = Utils.attr_if_exists(copy_from, config_context.args)
+        self._out = Output(colors_enabled)
 
         self._select_name = [
             ('class:', 'Please input a PS Name: ')
@@ -58,7 +59,7 @@ class Put(ConfigCommand):
         value, desc, notify, put_another = True, None, False, True
 
         if display_hints:
-            print(f"{self.c.fg_bl}Hint:{self.c.rs} To upload a file's contents, pass in `file:///path/to/your/file` "
+            self._out.print(f"[[Hint:]] To upload a file's contents, pass in `file:///path/to/your/file` "
                   f"in the value prompt.")
 
         while put_another:
@@ -103,13 +104,12 @@ class Put(ConfigCommand):
 
             except ClientError as e:
                 if "AccessDeniedException" == e.response['Error']['Code']:
-                    print(f"\n\nYou do not have permissions to put a new config value at the path:"
-                          f" {self.c.fg_bl}{key}{self.c.rs}")
-                    print(f"Your role has access to the following namespaces: "
-                          f"{self.c.fg_bl}{self._config_view.get_authorized_namespaces()}{self.c.rs}")
-                    print(f"{self.c.fg_rd}Error message: {e.response['Error']['Message']}{self.c.rs}")
+                    self._out.error(f"\n\nYou do not have permissions to add config values at the path: [[{key}]]")
+                    self._out.warn(f"Your role of {self.context.role} may delete keys under the following namespaces: "
+                                   f"{self._config_view.get_authorized_namespaces()}")
+                    self._out.print(f"Error message: {e.response['Error']['Message']}")
                 else:
-                    print(f"{self.c.fg_rd}Exception caught attempting to add config: {e}{self.c.rs}")
+                    self._out.error(f"Exception caught attempting to add config: {e}")
 
             print()
             if loop:

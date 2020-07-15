@@ -1,13 +1,15 @@
 from prompt_toolkit.completion import WordCompleter
 
+from figcli.config.commands import audit
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
 from figcli.data.dao.config import ConfigDao
 from figcli.data.dao.ssm import SsmDao
 from figcli.io.input import Input
+from figcli.io.output import Output
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
-from figcli.utils.utils import *
+from figcli.utils.utils import Utils
 
 
 class Audit(ConfigCommand):
@@ -21,6 +23,7 @@ class Audit(ConfigCommand):
         self._config = config_init
         self._config_completer = config_completer_init
         self._utils = Utils(colors_enabled)
+        self._out = Output(colors_enabled)
 
     def _audit(self):
         audit_more = True
@@ -30,9 +33,9 @@ class Audit(ConfigCommand):
             audit_logs = self._config.get_audit_logs(ps_name)
             result_count = len(audit_logs)
             if result_count > 0:
-                print(f"\nFound {self.c.fg_bl}{result_count}{self.c.rs} results.")
+                self._out.print(f"\nFound [[{result_count}]] results.")
             else:
-                print(f"\n{self.c.fg_yl}No results found for: {ps_name}{self.c.rs}")
+                self._out.warn(f"\nNo results found for: [[{ps_name}]]")
             for log in audit_logs:
                 print(log)
 
