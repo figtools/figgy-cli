@@ -5,6 +5,7 @@ from prompt_toolkit import prompt
 
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
+from figcli.io.input import Input
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import *
@@ -40,7 +41,7 @@ class Generate(ConfigCommand):
         base_name = base_name if not base_name.endswith('-') else base_name[:-1]
         new_service_name = f'{base_name}-{version + 1}'
 
-        new_name = prompt(f'Please select a new service name, it CANNOT be: {service_name}:  ',
+        new_name = Input.input(f'Please select a new service name, it CANNOT be: {service_name}:  ',
                           default=new_service_name)
         self._utils.validate(new_name != service_name, f"You must select a new service name that differs from the one"
         f"designated in your source figgy.json file. "

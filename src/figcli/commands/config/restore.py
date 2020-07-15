@@ -48,15 +48,9 @@ class Restore(ConfigCommand):
 
     def _client_exception_msg(self, item: RestoreConfig, e: ClientError):
         if "AccessDeniedException" == e.response["Error"]["Code"]:
-            print(
-                f"\n\nYou do not have permissions to a new config value at the path: "
-                f"{self.c.fg_bl}{item.ps_name}{self.c.rs}"
-            )
+            self._out.print(f"\n\nYou do not have permissions to a new config value at the path: [[{item.ps_name}]]")
         else:
-            print(
-                f"{self.c.fg_rd}Error message: "
-                f"{e.response['Error']['Message']}{self.c.rs}"
-            )
+            self._out.error(f"Error message: [[{e.response['Error']['Message']}]]")
 
     def get_parameter_arn(self, parameter_name: str):
         account_id = self._ssm.get_parameter(ACCOUNT_ID_PATH)
@@ -72,11 +66,11 @@ class Restore(ConfigCommand):
 
         ps_name = prompt(f"Please input PS key to restore: ", completer=self._config_completer)
 
-        print(f"Attempting to retrieve all restorable values of {ps_name}")
+        self._out.notify(f"\n\nAttempting to retrieve all restorable values of [[{ps_name}]]")
         items: List[RestoreConfig] = self._config.get_parameter_restore_details(ps_name)
 
         if len(items) == 0:
-            print("No restorable values were found for this parameter.")
+            self._out.warn("No restorable values were found for this parameter.")
             return
 
         for i, item in enumerate(items):
@@ -120,7 +114,7 @@ class Restore(ConfigCommand):
                 self._out.success("Restore was successful")
             else:
                 self._out.error("Latest version in parameter store doesn't match what we restored.")
-                self._out.print(f"Current value: {current_value}.  Expected value: {item.ps_value}")
+                self._out.print(f"Current value: [[{current_value}]].  Expected value: [[{item.ps_value}]]")
 
         except ClientError as e:
             self._client_exception_msg(item, e)
@@ -183,7 +177,6 @@ class Restore(ConfigCommand):
 
                     cfgs_before: List[RestoreConfig] = item.cfgs_before(time_converted)
                     cfg_at: RestoreConfig = item.cfg_at(time_converted)
-                    print(f"GOt restored config: {cfg_at}")
                     ssm_value = self._ssm.get_parameter(item.name)
                     dynamo_value = self._decrypt_if_applicable(cfg_at)
 
@@ -193,9 +186,9 @@ class Restore(ConfigCommand):
 
                         for cfg in cfgs_before:
                             decrypted_value = self._decrypt_if_applicable(cfg)
-                            print(f"Restoring: {cfg.ps_name} as value: {decrypted_value} with description: "
-                                  f"{cfg.ps_description} and key: {cfg.ps_key_id if cfg.ps_key_id else 'Parameter was unencrypted'}")
-                            self._out.print(f"Replaying version: {cfg.ps_version} of {cfg.ps_name}")
+                            self._out.print(f"Restoring: [[{cfg.ps_name}]] as value: [[{decrypted_value}]] with description: "
+                                            f"[[{cfg.ps_description}]] and key: [[{cfg.ps_key_id if cfg.ps_key_id else 'Parameter was unencrypted'}]]")
+                            self._out.notify(f"Replaying version: [[{cfg.ps_version}]] of [[{cfg.ps_name}]]")
 
                             self._ssm.set_parameter(cfg.ps_name, decrypted_value,
                                                     cfg.ps_description, cfg.ps_type, cfg.ps_key_id)
@@ -203,7 +196,7 @@ class Restore(ConfigCommand):
                         self._out.print(f"Value for cfg: {item.name} is current. Skipping.")
                 else:
                     # This item must have been a delete, which means this config didn't exist at that time.
-                    self._out.print(f"Checking if {item.name} exists. It was previously deleted.")
+                    self._out.print(f"Checking if [[{item.name}]] exists. It was previously deleted.")
                     self._prompt_delete(item.name)
         except ClientError as e:
             self._utils.error_exit(f"Caught error when attempting restore. {e}")
@@ -220,7 +213,6 @@ class Restore(ConfigCommand):
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
-        print("1")
         if self._point_in_time:
             self._restore_params_to_point_in_time()
         else:

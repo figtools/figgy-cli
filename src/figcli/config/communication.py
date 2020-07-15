@@ -7,7 +7,7 @@ from figcli.utils.collection_utils import CollectionUtils
 CLEANUP_REPLICA_ORPHANS = "Some stray replication mappings were discovered for your service. " \
                           "Once they are no longer necessary please clean them up using the `prune` command."
 SHARED_NAME_RESOLUTION_MESSAGE = f"Your application is missing at least one ParameterStore name that it expects to " \
-                                 f"exist as defined in either the {SHARED_KEY} block of your configuration, or as a " \
+                                 f"exist as defined in either the [[{SHARED_KEY}]] block of your configuration, or as a " \
                                  f"dependency of a merge key. To resolve " \
                                  f"this, contact whoever is responsible for sharing these config value(s) with you " \
                                  f"and have them setup up config replication of the values into your apps namespace " \
@@ -18,9 +18,7 @@ COMMAND_PARSER_DESC = "Provides utilities to help manage application configs and
                       f"For more details on commands, run: `{CLI_NAME} [resource] [command] --help`"
 CONFIG_REQ_TEXT = f"--config is a requirement argument."
 CI_CONFIG_HELP_TEXT = f"Path to your project's figgy.json file."
-UNUSED_CONFIG_DETECTED = f"%%red%%The following Names were found in PS but are not referenced in your configurations. \n" \
-                         f"Use the %%rs%%%%blue%%`prune`%%rs%%%%red%% command to clean them up once all " \
-                         f"deployed application versions no longer use these configurations: %%rs%%"
+
 
 # Help Text
 VERSION_HELP_TEXT = f'Prints current version, which is, in this case: {VERSION}'

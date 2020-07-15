@@ -21,6 +21,7 @@ class Get(ConfigCommand):
         self._ssm = ssm_init
         self._config_completer = config_completer_init
         self._utils = Utils(colors_enabled)
+        self._out = Output(colors_enabled)
 
     def get_val_and_desc(self, key: str) -> Tuple[Optional[str], Optional[str]]:
         try:

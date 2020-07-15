@@ -52,15 +52,14 @@ class Sync(ConfigCommand):
         """
 
         def validate_msg(ps_name: str):
-            print(f"Name Validated: {self.c.fg_bl}{ps_name}{self.c.rs}")
+            self._out.success(f"Name Validated: [[{ps_name}]]")
             return validate_msg
 
         count = 0
         for key in config_keys:
             try:
                 if not self._get.get(key):
-                    print(f"Fig: {self.c.fg_bl}{key}{self.c.rs} missing from PS in environment: "
-                          f"{self.c.fg_yl}{self.run_env}{self.c.rs}.")
+                    self._out.warn(f"Fig: [[{key}]] missing from PS in environment: [[{self.run_env}]].")
                     self._put.put_param(key=key, display_hints=False)
                     count = count + 1
                 else:
@@ -69,7 +68,7 @@ class Sync(ConfigCommand):
                 validate_msg(key)
 
         if count:
-            print(f"{self.c.fg_bl}{count} {'value' if count == 1 else 'values'} added successfully{self.c.rs}")
+            self._out.success(f"[[{count}]] {'value' if count == 1 else 'values'} added successfully")
 
     def _sync_keys(self, config_namespace: str, all_keys: Set):
         """
@@ -79,22 +78,25 @@ class Sync(ConfigCommand):
             config_namespace: Namespace to query PS under.
             all_keys: All keys that exist in figgy.json to compare against.
         """
-        print(f"{self.c.fg_gr}Checking for stray config names.{self.c.rs}")
+        self._out.notify(f"Checking for stray config names.")
 
         # Find & Prune stray keys
         ps_keys = set(list(map(lambda x: x['Name'], self._ssm.get_all_parameters([config_namespace]))))
         ps_only_keys = ps_keys.difference(all_keys)
 
+        UNUSED_CONFIG_DETECTED = f"%%red%%The following Names were found in PS but are not referenced in your configurations. \n" \
+                                 f"Use the %%rs%%%%blue%%`prune`%%rs%%%%red%% command to clean them up once all " \
+                                 f"deployed application versions no longer use these configurations: %%rs%%"
+
         if len(ps_only_keys) > 0:
-            print(UNUSED_CONFIG_DETECTED.replace("%%red%%", self.c.fg_rd)
-                  .replace("%%blue%%", self.c.fg_bl)
-                  .replace("%%rs%%", self.c.rs))
+            self._out.warn("The following Names were found in PS but are not referenced in your configurations. \n"
+                           "Use the [[prune]] command to clean them up once all.")
 
         for key in ps_only_keys:
-            print(f"Unused Parameter: {self.c.fg_bl}{key}{self.c.rs}")
+            self._out.print(f"Unused Parameter: [[{key}]]")
 
         if not ps_only_keys:
-            print(f"{self.c.fg_bl}No stray names found.{self.c.rs}")
+            self._out.success(f"No stray configurations found.")
 
     def _sync_repl_configs(self, config_repl: Dict, namespace: str = None) -> None:
         """
@@ -114,8 +116,8 @@ class Sync(ConfigCommand):
                 namespace = l_cfg.namespace
 
             if not l_cfg.destination.startswith(namespace):
-                print(f"{self.c.fg_rd}Replication config {l_cfg.source} -> {l_cfg.destination} has a destination that "
-                      f"is not in your service namespace: {namespace}. This is invalid.{self.c.rs}")
+                self._out.error(f"Replication config [[{l_cfg.source} -> {l_cfg.destination}]] has a destination that "
+                      f"is not in your service namespace: [[{namespace}]]. This is invalid.")
                 self.errors_detected = True
                 continue
 
@@ -128,12 +130,12 @@ class Sync(ConfigCommand):
                 try:
                     if self._can_replicate_from(l_cfg.source) and not remote_cfg or missing_from_ps:
                         self._config.put_config_repl(l_cfg)
-                        print(f"{self.c.fg_gr}Replication added:{self.c.rs} {l_cfg.source} -> {l_cfg.destination}")
+                        self._out.print(f"[[Replication added:]] {l_cfg.source} -> {l_cfg.destination}")
                     elif self._can_replicate_from(l_cfg.source) and remote_cfg:
                         self._config.put_config_repl(l_cfg)
-                        print(f"{self.c.fg_bl}Replication updated.{self.c.rs}")
-                        print(f"{self.c.fg_rd}Removed: {remote_cfg.source} -> {remote_cfg.destination}")
-                        print(f"{self.c.fg_gr}Added: {l_cfg.source} -> {l_cfg.destination}")
+                        self._out.notify(f"Replication updated.")
+                        self._out.warn(f"Removed: {remote_cfg.source} -> {remote_cfg.destination}")
+                        self._out.success(f"Added: {l_cfg.source} -> {l_cfg.destination}")
                     else:
                         self._errors_detected = True
                         # print(f"{self.c.fg_rd}You do not have permission to configure replication from source:"
@@ -143,7 +145,7 @@ class Sync(ConfigCommand):
                                                 f"for {l_cfg.destination}")
                     self._errors_detected = True
             else:
-                print(f"{self.c.fg_bl}Replication Validated:{self.c.rs} {l_cfg.source} -> {l_cfg.destination}")
+                self._out.success(f"Replication Validated: [[{l_cfg.source} -> {l_cfg.destination}]]")
 
     def _notify_of_data_repl_orphans(self, config_repl: Dict) -> None:
         """
@@ -183,10 +185,10 @@ class Sync(ConfigCommand):
             namespace: Namespace to sync replication configs to. E.g. /app/demo-time/
         """
 
-        print(f"{self.c.fg_gr}Validating replication for all parameters.{self.c.rs}")
+        self._out.notify(f"Validating replication for all parameters.")
 
         self._sync_repl_configs(config_repl, namespace=namespace)
-        print(f"\n{self.c.fg_gr}Checking for stray replication configurations.{self.c.rs}")
+        self._out.notify(f"\nChecking for stray replication configurations.")
         remote_cfgs = self._config.get_all_configs(self.run_env, namespace)
         notify = True
         if remote_cfgs:
@@ -201,10 +203,9 @@ class Sync(ConfigCommand):
                           f" {self.c.fg_bl}{cfg.source} -> {cfg.destination}{self.c.rs}.")
                     notify = False
         if notify:
-            print(f"{self.c.fg_bl}No stray replication configs found for: "
-                  f"{self.c.rs}{self.c.fg_gr}{namespace}{self.c.rs}")
+            self._out.success(f"No stray replication configs found for: {namespace}")
         else:
-            print(f"{self.c.fg_bl}{CLEANUP_REPLICA_ORPHANS}{self.c.rs}")
+            self._out.warn(f"{CLEANUP_REPLICA_ORPHANS}")
 
     def _validate_merge_keys(self, destination: str, sources: Union[List, str], namespace: str) -> bool:
         """
@@ -243,7 +244,7 @@ class Sync(ConfigCommand):
             config_merge: Dict of merge_parameters parsed from figcli.json file
             namespace: namespace for app
         """
-        print(f"{self.c.fg_gr}Validating replication for all merge keys.{self.c.rs}")
+        self._out.notify("Validating replication for all merge keys.")
         for key in config_merge:
             self._validate_merge_keys(key, config_merge[key], namespace)
 
@@ -257,10 +258,10 @@ class Sync(ConfigCommand):
                     self._utils.validate(False, f"Error detected when attempting to store replication config for {key}")
                     self._errors_detected = True
             else:
-                print(f"Merge key replication config validated: {key}")
+                self._out.success(f"Merge key replication config validated: [[{key}]]")
 
     def _validate_expected_names(self, all_names: Set, repl_conf: Dict, merge_conf: Dict):
-        print(f"{self.c.fg_gr}Validating shared keys exist.{self.c.rs}")
+        self._out.notify(f"Validating shared keys exist.")
         print_resolution_message = False
         merged_confs = {**repl_conf, **merge_conf}
         for name in all_names:
@@ -268,36 +269,39 @@ class Sync(ConfigCommand):
                 awaiting_repl = False
                 for cnf in merged_confs:
                     if name == cnf or name in list(repl_conf.values()):
-                        print(f"{self.c.fg_bl}Config value {name} is a destination for replication, but doesn't exist "
-                              f"yet. If you commit now your build could fail. This will auto-resolve itself if all of "
-                              f"its dependencies exist.{self.c.rs}")
+                        self._out.print(f"\nConfig value [[{name}]] is a destination for replication, but doesn't exist"
+                              f" yet. If you commit now your build could fail. This will auto-resolve itself if all of "
+                              f"its dependencies exist. This will probably resolve itself in a few seconds. "
+                              f"Try re-running sync.")
                         awaiting_repl = True
                         break
 
                 if not awaiting_repl:
-                    print(f"Config value of {self.c.fg_rd}{name}{self.c.rs} does not exist and is expected based on"
-                          f" your defined configuration.")
+                    self._out.print(f"Config value of [[{name}]] does not exist and is expected based on "
+                                    f"your defined configuration.")
                     print_resolution_message = True
                     self._errors_detected = True
 
         if print_resolution_message:
-            print(f"\n\n{self.c.fg_rd}{SHARED_NAME_RESOLUTION_MESSAGE}{self.c.rs}")
+            self._out.error(f"{SHARED_NAME_RESOLUTION_MESSAGE}")
+        else:
+            self._out.success("Shared keys have been validated.")
 
     def _can_replicate_from(self, source: str):
         try:
             if self.__get_param_encrypted(source) is not None:
                 return True
             else:
-                print(f"{self.c.fg_yl}Replication source: {source} is missing from ParameterStore. "
-                      f"It must be added before config replication can be configured.{self.c.rs}\n")
+                self._out.warn(f"Replication source: [[{source}]] is missing from ParameterStore. "
+                      f"It must be added before config replication can be configured.\n")
                 self._input_config_values({source})
                 return True
         except ClientError as e:
             denied = "AccessDeniedException" == e.response['Error']['Code']
             if denied and "AWSKMS; Status Code: 400;" in e.response['Error']['Message']:
-                print(f"{self.c.fg_rd}You do not have access to decrypt the value of Name: {source}{self.c.rs}")
+                self._out.error(f"You do not have access to decrypt the value of Name: [[{source}]]")
             elif denied:
-                print(f"{self.c.fg_rd}You do not have access to Parameter: {source}{self.c.rs}")
+                self._out.error(f"You do not have access to Parameter: [[{source}]]")
             else:
                 raise
         return False
@@ -308,10 +312,10 @@ class Sync(ConfigCommand):
         except ClientError as e:
             denied = "AccessDeniedException" == e.response['Error']['Code']
             if denied and "AWSKMS; Status Code: 400;" in e.response['Error']['Message']:
-                print(f"{self.c.fg_rd}You do not have access to decrypt the value of Name: {source}{self.c.rs}")
+                self._out.error(f"You do not have access to decrypt the value of Name: [[{source}]]")
                 return None
             elif denied:
-                self._utils.error_exit(f"{self.c.fg_rd}You do not have access to Parameter: {source}{self.c.rs}")
+                self._utils.error_exit(f"You do not have access to Parameter: {source}")
             else:
                 raise
 
@@ -414,7 +418,7 @@ class Sync(ConfigCommand):
 
         repl_conf = KeyUtils.merge_repl_and_repl_from_blocks(repl_conf, repl_from_conf, namespace)
         # Add missing config values
-        print(f"{self.c.fg_gr}Validating all configuration keys exist in ParameterStore.{self.c.rs}")
+        self._out.notify(f"Validating all configuration keys exist in ParameterStore.")
         self._input_config_values(config_keys)
 
         # Sync keys between PS / Local config

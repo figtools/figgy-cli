@@ -1,4 +1,6 @@
 Figgy Changelog:
+## 0.0.61
+- Lots of output & color standardization. Improvements in UX.
 
 ## 0.0.60
 - Major improvements to Browse command to add dynamic lookups and tracking of marked parameters for deleted or selected parameters

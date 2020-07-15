@@ -1,8 +1,10 @@
 from typing import Dict, Set
 
+from figcli.config.commands import *
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
+from figcli.config.constants import *
 from figcli.commands.config.delete import Delete
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
@@ -10,9 +12,10 @@ from figcli.config.style.style import FIGGY_STYLE
 from figcli.data.dao.config import ConfigDao
 from figcli.data.dao.ssm import SsmDao
 from figcli.extras.key_utils import KeyUtils
+from figcli.io.output import Output
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
-from figcli.utils.utils import *
+from figcli.utils.utils import Utils
 
 
 class Prune(ConfigCommand):
@@ -32,6 +35,7 @@ class Prune(ConfigCommand):
         self.example = f"{self.c.fg_bl}{CLI_NAME} config {self.command_printable} --env dev " \
             f"--config /path/to/figgy.json{self.c.rs}"
         self._config_path = context.ci_config_path if context.ci_config_path else Utils.find_figgy_json()
+        self._out = Output(colors_enabled)
 
         # If user passes in --info flag, we don't need all of this to be initialized.
         if not hasattr(args, Utils.get_first(info)) or args.info is False:
@@ -60,7 +64,7 @@ class Prune(ConfigCommand):
             config_keys: set() -> Set of parameters that are found as defined in the figgy.json file for a svc
         """
 
-        print(f"{self.c.fg_gr}Checking for stray config names.{self.c.rs}\r\n")
+        self._out.notify(f"Checking for stray config names.\r\n")
         # Find & Prune stray keys
         ps_keys = set(list(map(lambda x: x['Name'], self._ssm.get_all_parameters([self._namespace]))))
         ps_only_keys = ps_keys.difference(config_keys)
@@ -90,7 +94,7 @@ class Prune(ConfigCommand):
             namespace: str -> /app/service-name as defined or parsed from the figgy.json file.
         """
 
-        print(f"{self.c.fg_gr}Checking for stray replication configs.{self.c.rs}")
+        self._out.notify(f"Checking for stray replication configs.")
         remote_cfgs = self._config_dao.get_all_configs(self.run_env, self._namespace)
         notify = True
         if remote_cfgs:
@@ -112,9 +116,8 @@ class Prune(ConfigCommand):
                         if selection == "y":
                             self._config_dao.delete_config(cfg.destination, self.run_env)
         if notify:
-            print(
-                f"{self.c.fg_bl}No remote replication configs found available for prune under namespace: {self.c.rs}"
-                f"{self.c.fg_gr}{self._namespace}{self.c.rs}")
+            self._out.success("No remote replication configs found available for prune under namespace: "
+                                f"[[{self._namespace}]]")
 
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage
