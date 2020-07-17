@@ -31,15 +31,14 @@ class ConfigDao:
         self._audit_table = self._dynamo_resource.Table(AUDIT_TABLE_NAME)
         self._cache_table = self._dynamo_resource.Table(CACHE_TABLE_NAME)
 
-    def delete_config(self, destination: str, run_env: RunEnv) -> None:
+    def delete_config(self, destination: str) -> None:
         """
         Deletes a Replication configuration from the DB
         Args:
             destination: str -> /path/to/configuration/destination
-            run_env: RunEnv -> run_env
         """
         self._config_repl_table.delete_item(
-            Key={REPL_DEST_KEY_NAME: destination, REPL_RUN_ENV_KEY_NAME: run_env.env}
+            Key={REPL_DEST_KEY_NAME: destination}
         )
 
     def get_parameter_restore_details(self, ps_name: str, start_key: str = None) -> List[RestoreConfig]:
@@ -146,21 +145,18 @@ class ConfigDao:
 
         return sorted(RestoreConfig.convert_to_model(items), key=lambda x: x.ps_time, reverse=True)
 
-    def get_all_configs(self, run_env: RunEnv, namespace: str, start_key: str = None) -> List[ReplicationConfig]:
+    def get_all_configs(self, namespace: str, start_key: str = None) -> List[ReplicationConfig]:
         """
         Retrieves all replication configs from the database for a particular namespace
         Args:
             start_key: LastEvaluatedKey returned in scan results. Lets you konw if there is more scanning that can be done.
-            run_env: RunEnv -> run_env
             namespace: namespace  - e.g. /app/demo-time/
 
         Returns:
             List of ReplicationConfigs that match the namespace.
 
         """
-        filter_exp = Attr(REPL_NAMESPACE_ATTR_NAME).eq(namespace) & Key(
-            REPL_RUN_ENV_KEY_NAME
-        ).eq(run_env.env)
+        filter_exp = Attr(REPL_NAMESPACE_ATTR_NAME).eq(namespace)
 
         if start_key:
             result = self._config_repl_table.scan(FilterExpression=filter_exp, ExclusiveStartKey=start_key)
@@ -182,38 +178,31 @@ class ConfigDao:
                 configs.append(repl_config)
 
         if 'LastEvaluatedKey' in result:
-            configs = configs + self.get_all_configs(run_env, namespace, start_key=result['LastEvaluatedKey'])
+            configs = configs + self.get_all_configs(namespace, start_key=result['LastEvaluatedKey'])
 
         return configs
 
-    def get_cfgs_by_src(self, source: str, run_env: RunEnv) -> List[ReplicationConfig]:
+    def get_cfgs_by_src(self, source: str) -> List[ReplicationConfig]:
         """
         Args:
             source: Source to perform table scan by
-            run_env: RunEnv to query for.
-
         Returns: A list of matching replication confgs.
         """
 
-        filter_exp = Attr(REPL_SOURCE_ATTR_NAME).eq(source) & Key(
-            REPL_RUN_ENV_KEY_NAME
-        ).eq(run_env.env)
+        filter_exp = Attr(REPL_SOURCE_ATTR_NAME).eq(source)
         result = self._config_repl_table.scan(FilterExpression=filter_exp)
         return self._map_results(result)
 
-    def get_config_repl(self, destination: str, run_env: RunEnv) -> ReplicationConfig:
+    def get_config_repl(self, destination: str) -> ReplicationConfig:
         """
         Lookup a replication config by destination / run_env
         Args:
             destination: str: /app/demo-time/replicated/destination/path
-            run_env: RunEnvironment -> run_env
 
         Returns: Matching replication config, or None if none match.
         """
 
-        filter_exp = Key(REPL_DEST_KEY_NAME).eq(destination) & Key(
-            REPL_RUN_ENV_KEY_NAME
-        ).eq(run_env.env)
+        filter_exp = Key(REPL_DEST_KEY_NAME).eq(destination)
         result = self._config_repl_table.query(KeyConditionExpression=filter_exp)
 
         if "Items" in result and len(result["Items"]) > 0:
@@ -239,13 +228,11 @@ class ConfigDao:
         """
         item = {
             REPL_DEST_KEY_NAME: config.destination,
-            REPL_RUN_ENV_KEY_NAME: config.run_env,
         }
 
         for key in config.props:
             if (
                     key != REPL_DEST_KEY_NAME
-                    and key != REPL_RUN_ENV_KEY_NAME
                     and not isinstance(config.props[key], float)
             ):
                 item[key] = config.props[key]
@@ -268,7 +255,7 @@ class ConfigDao:
             for item in result["Items"]:
                 config = ReplicationConfig(
                     item[REPL_DEST_KEY_NAME],
-                    RunEnv(item[REPL_RUN_ENV_KEY_NAME]),
+                    RunEnv(item.get(REPL_RUN_ENV_KEY_NAME, "unknown")),
                     item[REPL_NAMESPACE_ATTR_NAME],
                     item[REPL_SOURCE_ATTR_NAME],
                     ReplicationType(item[REPL_TYPE_ATTR_NAME]),

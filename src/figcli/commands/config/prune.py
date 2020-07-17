@@ -95,7 +95,7 @@ class Prune(ConfigCommand):
         """
 
         self._out.notify(f"Checking for stray replication configs.")
-        remote_cfgs = self._config_dao.get_all_configs(self.run_env, self._namespace)
+        remote_cfgs = self._config_dao.get_all_configs(self._namespace)
         notify = True
         if remote_cfgs:
             for cfg in remote_cfgs:
@@ -114,7 +114,7 @@ class Prune(ConfigCommand):
                             f"exist in your figgy.json. Should this be removed? (y/N): ").lower()
                         selection = selection if selection != '' else 'n'
                         if selection == "y":
-                            self._config_dao.delete_config(cfg.destination, self.run_env)
+                            self._config_dao.delete_config(cfg.destination)
         if notify:
             self._out.success("No remote replication configs found available for prune under namespace: "
                                 f"[[{self._namespace}]]")

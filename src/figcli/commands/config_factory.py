@@ -77,8 +77,8 @@ class ConfigFactory(Factory):
         elif command == dump:
             return Dump(self._ssm, self._config_completer, self._colors_enabled, self._config_context)
         elif command == restore:
-            return Restore(self._ssm, self._kms, self._config, self._colors_enabled, self._config_context,
-                           self._config_completer, self.get(delete))
+            return Restore(self._ssm, self._kms, self._config, self._config_view, self._colors_enabled,
+                           self._config_context, self._config_completer, self.get(delete))
         elif command == promote:
             return Promote(self._ssm, self._config_completer, self._colors_enabled,
                            self._config_context, self._session_manager)

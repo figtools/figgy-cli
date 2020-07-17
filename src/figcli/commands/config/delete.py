@@ -1,3 +1,5 @@
+from typing import List
+
 from botocore.exceptions import ClientError
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
@@ -43,8 +45,8 @@ class Delete(ConfigCommand):
 
         Returns: bool - T/F based on whether a parameter was actually deleted.
         """
-        sources = self._config.get_cfgs_by_src(key, self.run_env)  # type: List[ReplicationConfig]
-        repl_conf = self._config.get_config_repl(key, self.run_env)  # type: ReplicationConfig
+        sources = self._config.get_cfgs_by_src(key)  # type: List[ReplicationConfig]
+        repl_conf = self._config.get_config_repl(key)  # type: ReplicationConfig
 
         if len(sources) > 0:
             self._out.error(f"You're attempting to delete a key that is the source for at least one "
@@ -72,7 +74,7 @@ class Delete(ConfigCommand):
                 selection = prompt(repl_msg, completer=WordCompleter(['Y', 'N']), style=FIGGY_STYLE)
                 selection = selection if selection != '' else 'n'
                 if selection.strip().lower() == "y":
-                    self._config.delete_config(key, self.run_env)
+                    self._config.delete_config(key)
                     self._ssm.delete_parameter(key)
                     self._out.success(f"[[{key}]] and replication config destination deleted successfully.")
                     return True
