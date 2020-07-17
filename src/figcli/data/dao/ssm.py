@@ -283,7 +283,7 @@ class SsmDao:
                 raise
 
     @Utils.retry
-    def set_parameter(self, key, value, desc, type, tags=[], key_id=None) -> None:
+    def set_parameter(self, key, value, desc, type, key_id=None, tags=[]) -> None:
         """
         Sets a parameter in PS.
         Args:
@@ -299,6 +299,11 @@ class SsmDao:
         #     'Value': PROJECT_NAME
         #     },
         # ]
+
+        if type == SSM_SECURE_STRING and not key_id:
+            raise ValueError(f"There's a bug! Somehow Figgy is attempting to set the parameter: {key} with a type of "
+                             f"{SSM_SECURE_STRING} but the KMS key id is missing! If you experience this please "
+                             f"report this to figgy maintainers immediately!")
 
         if key_id:
             self._ssm.put_parameter(

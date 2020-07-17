@@ -114,11 +114,7 @@ class CacheManager:
     def get_or_refresh(self, cache_key: str, refresher: Callable, *args, max_age: int = DEFAULT_REFRESH_INTERVAL) \
             -> Tuple[int, Any]:
 
-        if not isinstance(max_age, int):
-            log.warning(f"Received an invalid max_age of : {max_age}. Defaulting to"
-                        f" {CacheManager.DEFAULT_REFRESH_INTERVAL}")
-
-            max_age = CacheManager.DEFAULT_REFRESH_INTERVAL
+        assert isinstance(max_age, int), "Invalid max_age provided for session, it must be of type <int>"
 
         last_write, val = self.get(cache_key)
         if Utils.millis_since_epoch() - last_write > max_age or not val:

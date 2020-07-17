@@ -48,7 +48,7 @@ class Restore(ConfigCommand):
 
     def _client_exception_msg(self, item: RestoreConfig, e: ClientError):
         if "AccessDeniedException" == e.response["Error"]["Code"]:
-            self._out.print(f"\n\nYou do not have permissions to a new config value at the path: [[{item.ps_name}]]")
+            self._out.error(f"\n\nYou do not have permissions to restore config at the path: [[{item.ps_name}]]")
         else:
             self._out.error(f"Error message: [[{e.response['Error']['Message']}]]")
 
@@ -171,8 +171,10 @@ class Restore(ConfigCommand):
         if len(ps_history.history.values()) == 0:
             self._utils.warn_exit("No results found for time range.  Aborting.")
 
+        last_item_name = 'Unknown'
         try:
             for item in ps_history.history.values():
+                last_item_name = item.name
                 if item.cfg_at(time_converted).ps_action == SSM_PUT:
 
                     cfgs_before: List[RestoreConfig] = item.cfgs_before(time_converted)
@@ -186,12 +188,13 @@ class Restore(ConfigCommand):
 
                         for cfg in cfgs_before:
                             decrypted_value = self._decrypt_if_applicable(cfg)
-                            self._out.print(f"Restoring: [[{cfg.ps_name}]] as value: [[{decrypted_value}]] with description: "
-                                            f"[[{cfg.ps_description}]] and key: [[{cfg.ps_key_id if cfg.ps_key_id else 'Parameter was unencrypted'}]]")
+                            self._out.notify(f"\nRestoring: [[{cfg.ps_name}]] \nValue: [[{decrypted_value}]]"
+                                            f"\nDescription: [[{cfg.ps_description}]]\nKMS Key: "
+                                            f"[[{cfg.ps_key_id if cfg.ps_key_id else '[[No KMS Key Specified]]'}]]")
                             self._out.notify(f"Replaying version: [[{cfg.ps_version}]] of [[{cfg.ps_name}]]")
 
                             self._ssm.set_parameter(cfg.ps_name, decrypted_value,
-                                                    cfg.ps_description, cfg.ps_type, cfg.ps_key_id)
+                                                    cfg.ps_description, cfg.ps_type, key_id=cfg.ps_key_id)
                     else:
                         self._out.print(f"Value for cfg: {item.name} is current. Skipping.")
                 else:
@@ -199,7 +202,12 @@ class Restore(ConfigCommand):
                     self._out.print(f"Checking if [[{item.name}]] exists. It was previously deleted.")
                     self._prompt_delete(item.name)
         except ClientError as e:
-            self._utils.error_exit(f"Caught error when attempting restore. {e}")
+            if "AccessDeniedException" == e.response["Error"]["Code"]:
+                self._utils.error_exit(f"\n\nYou do not have permissions to restore config at the path:"
+                                       f" [[{last_item_name}]]")
+            else:
+                self._utils.error_exit(f"Caught error when attempting restore. {e}")
+
 
     def _prompt_delete(self, name):
         param = self._ssm.get_parameter_encrypted(name)

@@ -1,4 +1,7 @@
 Figgy Changelog:
+## 0.0.62
+- Fixing a bug with restore where restored parameters could be missing their KMS Key Id parameter.
+
 ## 0.0.61
 - Lots of output & color standardization. Improvements in UX.
 
