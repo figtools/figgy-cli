@@ -1,4 +1,4 @@
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.ssm import SsmDao
 from botocore.exceptions import ClientError
 import botocore.session
 from typing import Dict

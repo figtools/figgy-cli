@@ -8,12 +8,12 @@ from figcli.commands.config.get import Get
 from figcli.commands.config.put import Put
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figcli.data.dao.config import ConfigDao
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.extras.key_utils import KeyUtils
 from figcli.io.output import Output
 from figcli.io.input import Input
-from figcli.models.replication_config import ReplicationConfig, ReplicationType
+from figgy.models.replication_config import ReplicationConfig, ReplicationType
 from figcli.config import *
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker

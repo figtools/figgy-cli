@@ -12,9 +12,9 @@ from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import Utils
 from figcli.commands.types.config import ConfigCommand
 from figcli.commands.config_context import ConfigContext
-from figcli.data.dao.config import ConfigDao
-from figcli.models.replication_config import ReplicationConfig
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.config import ConfigDao
+from figgy.models.replication_config import ReplicationConfig
+from figgy.data.dao.ssm import SsmDao
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 

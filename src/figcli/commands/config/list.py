@@ -12,7 +12,7 @@ from figcli.commands.config.get import Get
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
 from figcli.io.output import OutUtils
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.svcs.config import ConfigService, ParameterUndecryptable
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker

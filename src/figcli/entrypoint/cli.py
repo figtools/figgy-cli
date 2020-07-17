@@ -15,7 +15,7 @@ from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.svcs.observability.error_reporter import FiggyErrorReporter
 from figcli.svcs.setup import FiggySetup
 from figcli.utils.utils import Utils

@@ -6,7 +6,7 @@ from typing import Optional, List
 from figcli.config.style.color import Color
 from figcli.config.style.terminal_factory import TerminalFactory
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.models.defaults.provider import Provider
 from figcli.utils.utils import Utils
 from figcli.config import *

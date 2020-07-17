@@ -5,9 +5,9 @@ from typing import List
 from prompt_toolkit.completion import WordCompleter
 
 from figcli.config import *
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config import ConfigService
 from figcli.utils.utils import Utils

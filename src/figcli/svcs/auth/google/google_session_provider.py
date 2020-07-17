@@ -8,7 +8,7 @@ from typing import Optional, Any, List
 
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.svcs.auth.google.google import Google, ExpectedGoogleException
 
 from figcli.models.defaults.defaults import CLIDefaults

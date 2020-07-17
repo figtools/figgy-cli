@@ -3,7 +3,7 @@ from typing import Optional, List, Set
 from figcli.commands.command_context import CommandContext
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 
 
 class HelpContext(CommandContext):

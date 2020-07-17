@@ -3,8 +3,8 @@ from prompt_toolkit.completion import WordCompleter
 from figcli.config.commands import audit
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figcli.data.dao.config import ConfigDao
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.io.output import Output
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker

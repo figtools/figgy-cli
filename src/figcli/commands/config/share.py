@@ -8,7 +8,7 @@ from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
 from figcli.config.constants import *
 from figcli.io.output import Output
-from figcli.models.replication_config import ReplicationType, ReplicationConfig
+from figgy.models.replication_config import ReplicationType, ReplicationConfig
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import Utils
