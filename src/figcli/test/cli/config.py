@@ -1,4 +1,5 @@
-# THIS MUST MATCH devops.ci.lambdas/lambdas/python/parameter_store_auditor/config.py's value!!!
+import os
+
 ### For PS items stored with this value, we will auto-clean them up from our audit table. Used for automated E2E testing.
 DELETE_ME_VALUE = 'DELETE_ME'   ### <-- use this for ALL VALUES
 MFA_USER_ENV_KEY = 'MFA_USER'
@@ -41,4 +42,14 @@ automated_test_dest_1 = '/app/automated-test/dest/1'
 
 
 # Others
-DEFAULT_ENV = 'stage'
+if os.environ.get('GOOGLE_IDP_ID'):
+    # Google tests hit figgy-qa
+    DEFAULT_ENV = 'qa'
+elif os.environ.get('OKTA_EMBED_URL'):
+    # Okta tests hit figgy-dev
+    DEFAULT_ENV = 'dev'
+else:
+    # Bastion tests hit whatever env is logged-in
+    # Standard tests use profile which uses sandbox-qa
+    DEFAULT_ENV = 'stage'
+
