@@ -21,27 +21,35 @@ class DataDelete(FiggyTest):
         self.expect('.*PS Name.*')
         self.sendline(name)
         print(f"Delete sent for {name}")
-        if repl_source_delete:
-            self.expect(".*You may NOT delete sources that are actively replicating.*")
-        elif repl_dest_delete:
-            match = self.expect_multiple([f".*active replication destination.*{name}.*", ".*deleted successfully.*"])
-            print(f"Match: {match}")
-            if match == 0:
-                print("Matched replication destination message")
+        match = self.expect_multiple([".*You may NOT delete sources that are actively replicating.*", f".*active replication destination.*{name}.*", ".*deleted successfully.*"])
+        print(f"Match: {match}")
+
+        if match == 0:
+            if repl_source_delete:
+                print("VALIDATING REPL_SOURCE_DELETE")
+                Utils.stc_validate(repl_source_delete, "Encountered REPL Source delete but that was not expected!!")
+
+        if match == 1:
+            if repl_dest_delete:
+                print("VALIDATING REPL_DEST_DELETE")
+                Utils.stc_validate(repl_dest_delete, "Encountered REPL Dest delete but that was not expected!!")
+
+            self.sendline('y')
+            self.expect(f".*{name}.*deleted successfully.*Delete another.*")
+
+            if delete_another:
                 self.sendline('y')
-                self.expect(f".*{name}.*deleted successfully.*Delete another.*")
             else:
-                print("Matched delete successful message")
-        else:
-            self.expect(f'.*deleted successfully.*Delete another.*')
+                self.sendline('n')
+
+        if match == 2:
             print("Validating delete success.")
             get = DevGet(extra_args=self.extra_args)
             get.get(param_1, param_1_val, expect_missing=True)
 
-        if delete_another:
-            self.sendline('y')
-        else:
-            self.sendline('n')
+            if delete_another:
+                self.sendline('y')
+            else:
+                self.sendline('n')
 
         print("Successful delete validated.")
-
