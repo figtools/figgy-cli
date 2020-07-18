@@ -24,7 +24,7 @@ class DevDelete(FiggyTest):
         self.expect('.*PS Name to Delete.*')
         self.sendline(name)
         print(f"Delete sent for {name}")
-        self.expect(f'.*deleted successfully.*Delete another.*')
+        result = self.expect([f'.*deleted successfully.*Delete another.*', '.*SOURCE.*another.*'])
 
         print("Validating delete success.")
         get = DevGet(extra_args=self.extra_args)
