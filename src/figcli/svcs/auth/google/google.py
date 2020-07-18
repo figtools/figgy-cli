@@ -11,26 +11,19 @@ import re
 import sys
 
 import requests
-from PIL import Image
+import subprocess
+
 from distutils.spawn import find_executable
 from bs4 import BeautifulSoup
 from requests import HTTPError
 from six import print_ as print
 from six.moves import urllib_parse, input
+from figcli.svcs.mfa.u2f import *
 
-from aws_google_auth import _version
-
-# The U2F USB Library is optional, if it's there, include it.
 from figcli.io.input import Input
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
-
-try:
-    from aws_google_auth import u2f
-except ImportError:
-    logging.info("Failed to import U2F libraries, U2F login unavailable. "
-                 "Other methods can still continue.")
 
 
 class ExpectedGoogleException(Exception):
@@ -388,8 +381,8 @@ class Google:
         if open_image:
             try:
                 with requests.get(captcha_url) as url:
-                    with io.BytesIO(url.content) as f:
-                        Image.open(f).show()
+                    subprocess.call(['open', url.content])
+
             except Exception:
                 pass
 
