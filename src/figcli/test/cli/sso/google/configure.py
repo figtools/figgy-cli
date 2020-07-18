@@ -44,7 +44,6 @@ class ConfigureGoogle(FiggyTest):
         self._child.expect('.*Please input.*Provider ID.*')
         self._child.sendline(sp_id)
         selected = self._child.expect(['.*overwrite.*REDACTED.*', '.*Choose MFA.*'])
-        print(f"SELECTED!!! {selected}")
         if selected == 1:
             self._child.sendline("2")
             self._child.expect('.*')

@@ -6,6 +6,7 @@ from prompt_toolkit.completion import WordCompleter
 
 from figcli.config.style.style import FIGGY_STYLE
 from figcli.config.commands import *
+from figcli.io.input import Input
 from figcli.io.output import Output
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
@@ -31,10 +32,6 @@ class Delete(ConfigCommand):
         self._out = Output(colors_enabled)
         self._cfg_view = cfg_view
 
-        # Prompts for this file
-        self._del_message = [
-            ('class:', 'PS Name to Delete: ')
-        ]
 
     def delete_param(self, key) -> bool:
         """
@@ -103,15 +100,12 @@ class Delete(ConfigCommand):
         # Add all keys
         key, notify, delete_another = None, False, True
 
-        while not self._utils.is_valid_input(key, f"PS Name", notify) or delete_another:
-            key = prompt(self._del_message, style=FIGGY_STYLE,
-                         completer=self._config_completer)
-            notify = True
+        while delete_another:
+            key = Input.input('PS Name to Delete: ', completer=self._config_completer)
             try:
-                if self._utils.is_valid_input(key, 'PS Parameter', False):
-                    if self.delete_param(key):
-                        if key in self._config_completer.words:
-                            self._config_completer.words.remove(key)
+                if self.delete_param(key):
+                    if key in self._config_completer.words:
+                        self._config_completer.words.remove(key)
                 else:
                     continue
             except ClientError as e:

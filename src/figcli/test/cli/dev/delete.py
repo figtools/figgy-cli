@@ -24,15 +24,16 @@ class DevDelete(FiggyTest):
         self.expect('.*PS Name to Delete.*')
         self.sendline(name)
         print(f"Delete sent for {name}")
-        result = self.expect([f'.*deleted successfully.*Delete another.*', '.*SOURCE.*another.*'])
+        result = self.expect(['.*deleted successfully.*Delete another.*', '.*SOURCE.*'])
 
-        print("Validating delete success.")
-        get = DevGet(extra_args=self.extra_args)
-        get.get(name, DELETE_ME_VALUE, expect_missing=True)
+        if result == 0:
+            print("Validating delete success.")
+            get = DevGet(extra_args=self.extra_args)
+            get.get(name, DELETE_ME_VALUE, expect_missing=True)
 
-        if delete_another:
-            self.sendline('y')
-        else:
-            self.sendline('n')
+            if delete_another:
+                self.sendline('y')
+            else:
+                self.sendline('n')
 
-        print("Successful delete validated.")
+            print("Successful delete validated.")
