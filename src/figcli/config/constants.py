@@ -151,8 +151,8 @@ FIGGY_DISABLE_KEYRING = 'FIGGY_DISABLE_KEYRING'  # used for automated tests.
 # Keychain
 KEYCHAIN_ENCRYPTION_KEY = 'figgy-encryption-key'
 
-# This is only used for temporary sandbox sessions. This reduces user friction when experimenting by not having to interact
-# with authenticating their OS Keychain.
+# This is only used for temporary sandbox sessions. This reduces user friction when experimenting by not having to
+# interact with authenticating their OS Keychain.
 DEFAULT_ENCRYPTION_KEY = 'wX1C0nK1glfzaWQU8SKukdS7XZgYlAMW5ueb_V3cfSE='
 
 # Default paths to search for figgy.json in

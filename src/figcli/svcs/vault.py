@@ -18,14 +18,13 @@ class FiggyVault:
         keychain_enabled: Stores the encyrption key in the user's keychain. This will be disabled for Sandbox
         sessions to simlify the user experience.
         """
+        encryption_key = DEFAULT_ENCRYPTION_KEY
         if keychain_enabled:
             encryption_key = SecretsManager.get_password(KEYCHAIN_ENCRYPTION_KEY)
             if not encryption_key:
                 Utils.wipe_vaults()
                 encryption_key: str = Fernet.generate_key().decode()
                 SecretsManager.set_password(KEYCHAIN_ENCRYPTION_KEY, encryption_key)
-        else:
-            encryption_key = DEFAULT_ENCRYPTION_KEY
 
         self.fernet = Fernet(encryption_key)
 
