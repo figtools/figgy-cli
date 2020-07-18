@@ -1,5 +1,6 @@
 import pexpect
 from figcli.test.cli.config import *
+from figcli.test.cli.dev.delete import DevDelete
 from figcli.test.cli.figgy import FiggyTest
 from figcli.config import *
 from figcli.utils.utils import *
@@ -17,6 +18,8 @@ class DevPut(FiggyTest):
         self.add(param_1, param_1_val, param_1_desc)
 
     def add(self, key, value, desc, add_more=False):
+        delete = DevDelete()
+        delete.delete(key)
         self.expect('.*Please input a PS Name.*')
         self.sendline(key)
         self.expect('.*Please input a value.*')
@@ -32,6 +35,8 @@ class DevPut(FiggyTest):
             self.sendline('n')
 
     def add_encrypt_app(self, key, value, desc, add_more=False):
+        delete = DevDelete()
+        delete.delete(key)
         self.expect('.*Please input a PS Name.*')
         self.sendline(key)
         self.expect('.*Please input a value.*')

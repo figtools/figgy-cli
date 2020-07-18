@@ -1,3 +1,5 @@
+import sys
+
 import pexpect
 from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
@@ -47,6 +49,7 @@ class DevBrowse(FiggyTest):
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
                               timeout=20, encoding='utf-8')
+        child.logfile = sys.stdout
 
         for i in range(0, self.key_down_to_shared):
             child.send(KEY_DOWN)
@@ -67,6 +70,7 @@ class DevBrowse(FiggyTest):
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
                               timeout=20, encoding='utf-8')
+        child.logfile = sys.stdout
 
         for i in range(0, self.key_down_to_shared):
             child.send(KEY_DOWN)

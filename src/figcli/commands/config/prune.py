@@ -9,6 +9,7 @@ from figcli.commands.config.delete import Delete
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
 from figcli.config.style.style import FIGGY_STYLE
+from figcli.io.input import Input
 from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figcli.extras.key_utils import KeyUtils
@@ -65,21 +66,18 @@ class Prune(ConfigCommand):
         """
 
         self._out.notify(f"Checking for stray config names.\r\n")
+
         # Find & Prune stray keys
         ps_keys = set(list(map(lambda x: x['Name'], self._ssm.get_all_parameters([self._namespace]))))
         ps_only_keys = ps_keys.difference(config_keys)
         for key in ps_only_keys:
-            selection = "unselected"
-            while selection.lower() != "y" and selection.lower() != "n":
-                exists_msg = [
-                    (f'class:{self.c.bl}', key),
-                    ('class:', ' exists in ParameterStore but does not exist '
-                               'in your config, do you want to delete it? (y/N): ')
-                ]
-                selection = prompt(exists_msg, completer=WordCompleter(['Y', 'N']), style=FIGGY_STYLE)
-                selection = selection if selection != '' else 'n'
-                if selection.strip().lower() == "y":
-                    self._delete_command.delete_param(key)
+            selection = Input.y_n_input(f"{key} exists in ParameterStore but does not exist "
+                                        f"in your config, do you want to delete it?", default_yes=False)
+
+            if selection:
+                self._delete_command.delete_param(key)
+            else:
+                self._out.notify("OK, skipping due to user selection.")
         if not ps_only_keys:
             print(f"{self.c.fg_bl}No stray keys found.{self.c.rs}")
 
@@ -106,6 +104,7 @@ class Prune(ConfigCommand):
                         and (isinstance(cfg.source, list) or cfg.source.startswith(shared_ns)
                              or cfg.source.startswith(self.context.defaults.service_ns)):
                     notify = False
+
                     selection = "unselected"
                     while selection.lower() != "y" and selection.lower() != "n":
                         selection = input(
@@ -117,7 +116,7 @@ class Prune(ConfigCommand):
                             self._config_dao.delete_config(cfg.destination)
         if notify:
             self._out.success("No remote replication configs found available for prune under namespace: "
-                                f"[[{self._namespace}]]")
+                              f"[[{self._namespace}]]")
 
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage

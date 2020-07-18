@@ -45,7 +45,7 @@ class GoogleSessionProvider(SSOSessionProvider):
             sp_id=defaults.provider_config.sp_id,
             bg_response=None)
 
-        self._google = Google(config=config, save_failure=False)
+        self._google = Google(config=config, save_failure=False, defaults=defaults)
 
         self._write_google_session_to_cache(self._google.session_state)
 
