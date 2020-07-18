@@ -11,14 +11,15 @@ class DevPut(FiggyTest):
     def __init__(self, extra_args=""):
         print(f"Testing `figgy config {Utils.get_first(put)} --env {DEFAULT_ENV}`")
         super().__init__(pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(put)} '
-                                    f'--env {DEFAULT_ENV} --skip-upgrade {extra_args}', timeout=20, encoding='utf-8'))
+                                       f'--env {DEFAULT_ENV} --skip-upgrade {extra_args}', timeout=20, encoding='utf-8'),
+                                       extra_args=extra_args)
 
     def run(self):
         self.step(f"Testing PUT for {param_1}")
         self.add(param_1, param_1_val, param_1_desc)
 
     def add(self, key, value, desc, add_more=False):
-        delete = DevDelete()
+        delete = DevDelete(extra_args=self.extra_args)
         delete.delete(key)
         self.expect('.*Please input a PS Name.*')
         self.sendline(key)
@@ -35,7 +36,7 @@ class DevPut(FiggyTest):
             self.sendline('n')
 
     def add_encrypt_app(self, key, value, desc, add_more=False):
-        delete = DevDelete()
+        delete = DevDelete(extra_args=self.extra_args)
         delete.delete(key)
         self.expect('.*Please input a PS Name.*')
         self.sendline(key)

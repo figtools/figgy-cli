@@ -39,7 +39,7 @@ class ConfigureOkta(FiggyTest):
         self._child.sendline('n')
         self._child.expect('.*Embed Link.*')
         self._child.sendline(embed_url)
-        self._child.expect('.*MFA token.*')
+        self._child.expect('.*GOOGLE.*')
         self._child.sendline('y')
         self._child.expect('.*Options are.*')
         self._child.sendline(self._role_type)

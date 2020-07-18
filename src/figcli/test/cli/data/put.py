@@ -32,7 +32,7 @@ class DataPut(FiggyTest):
         self.sendline('n')
 
     def add(self, key, value, desc, add_more=False):
-        delete = DataDelete()
+        delete = DataDelete(self.extra_args)
         delete.delete(key)
         self.expect('.*Please input a PS Name.*')
         self.sendline(key)
