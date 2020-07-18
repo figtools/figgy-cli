@@ -42,7 +42,11 @@ class DevPromote(FiggyTest):
         child.expect(f'.*prefix to promote.*')
         child.sendline('/app/test-promote/')
         child.expect('.*destination environment.*')
-        child.sendline('qa')
+        if DEFAULT_ENV == 'qa':
+            child.sendline('stage')
+        else:
+            child.sendline('qa')
+
         child.expect('.*promote.*config11.*')
         child.sendline('y')
         child.expect('.*promote.*config12.*')

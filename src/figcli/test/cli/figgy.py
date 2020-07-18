@@ -18,6 +18,9 @@ class FiggyTest(ABC):
             self._child = child
             self._child.logfile = sys.stdout
 
+        self._child.delayafterread = .01
+        self._child.delaybeforesend = .25
+
     @abstractmethod
     def run(self):
         pass
