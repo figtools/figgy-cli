@@ -18,6 +18,8 @@ from bs4 import BeautifulSoup
 from requests import HTTPError
 from six import print_ as print
 from six.moves import urllib_parse, input
+
+from figcli.config import VERSION
 from figcli.svcs.mfa.u2f import *
 
 from figcli.io.input import Input
@@ -43,7 +45,7 @@ class Google:
         duration_seconds: number of seconds for the session to be active (max 43200)
         """
 
-        self.version = _version.__version__
+        self.version = VERSION
         self.config = config
         self.base_url = 'https://accounts.google.com'
         self.save_failure = save_failure
@@ -386,10 +388,8 @@ class Google:
             except Exception:
                 pass
 
-        try:
-            captcha_input = raw_input("Captcha (case insensitive): ") or None
-        except NameError:
-            captcha_input = input("Captcha (case insensitive): ") or None
+
+        captcha_input = input("Captcha (case insensitive): ") or None
 
         # Update the payload
         payload['identifier-captcha-input'] = captcha_input
