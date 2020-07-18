@@ -121,7 +121,7 @@ class Sync(ConfigCommand):
                 self.errors_detected = True
                 continue
 
-            remote_cfg = self._config.get_config_repl(l_cfg.destination, self.run_env)
+            remote_cfg = self._config.get_config_repl(l_cfg.destination)
 
             # Should never happen, except when someone manually deletes source / destination without going through CLI
             missing_from_ps = self.__get_param_encrypted(l_cfg.source) is None
@@ -248,7 +248,7 @@ class Sync(ConfigCommand):
         for key in config_merge:
             self._validate_merge_keys(key, config_merge[key], namespace)
 
-            config = self._config.get_config_repl(key, self.run_env)
+            config = self._config.get_config_repl(key)
             if not config or (config.source != config_merge[key]):
                 try:
                     repl_config = ReplicationConfig(key, self.run_env, namespace,
