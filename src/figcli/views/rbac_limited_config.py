@@ -50,7 +50,7 @@ class RBACLimitedConfigView:
             if isinstance(authed_nses, str):
                 authed_nses = sorted(json.loads(authed_nses))
         else:
-            es, authed_nses = sorted(self._cache_mgr.get_or_refresh(cache_key, self._config_svc.get_root_namespaces))
+            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._config_svc.get_root_namespaces)
 
         if not isinstance(authed_nses, list):
             raise ValueError(
