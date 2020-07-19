@@ -5,7 +5,7 @@ from figcli.test.cli.config import *
 from figcli.utils.utils import *
 
 
-class Get(FiggyAction):
+class GetAction(FiggyAction):
     def __init__(self, extra_args=""):
         super().__init__(pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(get)} --env {DEFAULT_ENV} '
                                        f'--skip-upgrade {extra_args}',

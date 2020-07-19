@@ -5,9 +5,8 @@ from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
 from figcli.test.cli.dev.put import DevPut
 from figcli.test.cli.dev.delete import DevDelete
-from figcli.test.cli.dev.get import DevGet
+from figcli.test.cli.actions.get import GetAction
 from figcli.test.cli.dev.audit import DevAudit
-from figcli.config import *
 from figcli.utils.utils import *
 import time
 import uuid
@@ -63,7 +62,7 @@ class DevRestore(FiggyTest):
         self.step("Validating values were rolled back...")
         time.sleep(5)
 
-        get = DevGet(extra_args=self.extra_args)
+        get = GetAction(extra_args=self.extra_args)
         get.get(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', get_more=True)
         for i in range(minimum, maximum):
             get.get(f'{param_test_prefix}{self._guuid}/test_param-{i}', first_val, get_more=i < maximum - 1)
@@ -89,7 +88,7 @@ class DevRestore(FiggyTest):
         self.step("Validating values were rolled back...")
         time.sleep(5)
 
-        get = DevGet(extra_args=self.extra_args)
+        get = GetAction(extra_args=self.extra_args)
         get.get(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', get_more=True)
         for i in range(minimum, maximum):
             get.get(f'{param_test_prefix}{self._guuid}/test_param-{i}', second_val, get_more=i < maximum - 1)
@@ -109,7 +108,7 @@ class DevRestore(FiggyTest):
             put.add_another(f'{param_test_prefix}{self._guuid}/test_param-{i}', value, f'{param_1_desc}-{i}',
                             add_more=i < max - 1)
 
-        get = DevGet(extra_args=self.extra_args)
+        get = GetAction(extra_args=self.extra_args)
         get.get(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', get_more=True)
         for i in range(min, max):
             value = value_override if value_override else DELETE_ME_VALUE

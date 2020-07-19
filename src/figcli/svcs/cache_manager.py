@@ -2,6 +2,7 @@ import logging
 import json
 import os
 import jsonpickle
+from filelock import FileLock
 from typing import Dict, Any, Union, Set, Tuple, List, Callable, FrozenSet
 from figcli.config import *
 from figcli.svcs.vault import FiggyVault
@@ -64,6 +65,7 @@ class CacheManager:
             os.makedirs("/".join(file_override.split('/')[:-1]), exist_ok=True)
 
         self.vault = vault
+        self._lock = FileLock(f'{self._cache_file}.lock')
 
     def __decrypt(self, data: bytes) -> str:
         """
@@ -97,12 +99,14 @@ class CacheManager:
             return bytes(data, 'utf-8')
 
     def __read(self) -> str:
-        with open(self._cache_file, 'rb') as cache:
-            return self.__decrypt(cache.read())
+        with self._lock:
+            with open(self._cache_file, 'rb') as cache:
+                return self.__decrypt(cache.read())
 
     def __write(self, data: str):
-        with open(self._cache_file, 'wb') as cache:
-            cache.write(self.__encrypt(data))
+        with self._lock:
+            with open(self._cache_file, 'wb') as cache:
+                cache.write(self.__encrypt(data))
 
     def get_val_or_refresh(self, cache_key: str, refresher: Callable, *args, max_age: int = DEFAULT_REFRESH_INTERVAL) \
             -> Any:

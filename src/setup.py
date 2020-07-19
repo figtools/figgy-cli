@@ -33,8 +33,9 @@ base_requirements = [
         "urllib3 >= 1.25.7",
         "pyotp >= 2.3.0",
         "pydantic >= 1.5.1",
-        "python-u2flib-host",
+        "python-u2flib-host>=3.0.3",
         "pycryptodome>=3.9.7",
+        "filelock>=3.0.12"
 ]
 
 windows_requirements = [

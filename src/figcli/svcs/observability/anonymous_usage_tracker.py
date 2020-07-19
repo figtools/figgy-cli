@@ -1,4 +1,5 @@
 import time
+import os
 import logging
 import platform
 from dataclasses import dataclass, field
@@ -39,11 +40,16 @@ class AnonymousUsageTracker:
     _USER_KEY = 'user_id'
     _VERSION_KEY = 'version'
     _PLATFORM_KEY = 'platform'
+    _DISABLE_METRICS_ENV_VAR = 'DISABLE_FIGGY_METRICS'
+
     REPORT_FREQUENCY = 1000 * 60  # Report every minute
     # REPORT_FREQUENCY = 1000 * 60 * 60 * 24  # Report daily
 
     @staticmethod
     def report_usage(metrics: FiggyMetrics):
+        if os.environ.get(AnonymousUsageTracker._DISABLE_METRICS_ENV_VAR) == "true":
+            return
+
         metrics_json = {AnonymousUsageTracker._METRICS_KEY: {}, AnonymousUsageTracker._USER_KEY: metrics.user_id}
         for key, val in metrics.metrics.items():
             metrics_json[AnonymousUsageTracker._METRICS_KEY][key] = val.get(FiggyMetrics.COUNT_KEY, 0)
@@ -60,6 +66,9 @@ class AnonymousUsageTracker:
         """
 
         def inner(self, *args, **kwargs):
+            if os.environ.get(AnonymousUsageTracker._DISABLE_METRICS_ENV_VAR) == "true":
+                return function(self, *args, **kwargs)    
+
             command = getattr(self, 'type', None)
             if command:
                 command = Utils.get_first(command)

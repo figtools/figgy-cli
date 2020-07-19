@@ -100,6 +100,7 @@ STS_SESSION_CACHE_PATH = f"{HOME}/.figgy/vault/sts/sessions"
 SAML_SESSION_CACHE_PATH = f"{HOME}/.figgy/vault/sso/saml"
 OKTA_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/okta/session"
 GOOGLE_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/google/session"
+FIGGY_LOCK_FILE_PATH = f"{HOME}/.figgy/lock"
 
 # Defaults file keys
 DEFAULTS_ROLE_KEY = 'role'

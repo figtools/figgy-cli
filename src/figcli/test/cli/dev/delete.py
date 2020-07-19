@@ -1,6 +1,6 @@
 import pexpect
 from figcli.test.cli.config import *
-from figcli.test.cli.actions.get import Get
+from figcli.test.cli.actions.get import GetAction
 from figcli.test.cli.figgy import FiggyTest
 from figcli.config import *
 from figcli.utils.utils import *
@@ -26,7 +26,7 @@ class DevDelete(FiggyTest):
 
         if result == 0:
             if check_delete:
-                get = Get(extra_args=self.extra_args)
+                get = GetAction(extra_args=self.extra_args)
                 get.get(name, DELETE_ME_VALUE, expect_missing=True)
 
             if delete_another:
