@@ -22,8 +22,12 @@ class DevBrowse(FiggyTest):
         self.key_down_to_shared = key_down_to_shared
 
     def run(self):
+        self.step("Prepping browse")
+        self._setup()
         self.step(f"Testing browse for {param_1}")
         self.browse()
+        self.step("Cleaning up")
+        self._cleanup()
 
     def _cleanup(self):
         delete = DevDelete(extra_args=self.extra_args)
