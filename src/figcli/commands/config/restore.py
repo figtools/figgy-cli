@@ -147,7 +147,7 @@ class Restore(ConfigCommand):
         """
 
         repl_destinations = []
-        ps_prefix = prompt(f"Which parameter store prefix would you like to recursively restore? "
+        ps_prefix = Input.input(f"Which parameter store prefix would you like to recursively restore? "
                            f"(e.g., /app/demo-time): ", completer=self._config_completer)
 
         authed_nses = self._cfg_view.get_authorized_namespaces()
@@ -202,7 +202,6 @@ class Restore(ConfigCommand):
                     continue
 
                 if item.cfg_at(time_converted).ps_action == SSM_PUT:
-
                     cfgs_before: List[RestoreConfig] = item.cfgs_before(time_converted)
                     cfg_at: RestoreConfig = item.cfg_at(time_converted)
                     ssm_value = self._ssm.get_parameter(item.name)
@@ -222,7 +221,7 @@ class Restore(ConfigCommand):
                             self._ssm.set_parameter(cfg.ps_name, decrypted_value,
                                                     cfg.ps_description, cfg.ps_type, key_id=cfg.ps_key_id)
                     else:
-                        self._out.print(f"Value for cfg: {item.name} is current. Skipping.")
+                        self._out.success(f"Config: {item.name} is current. Skipping.")
                 else:
                     # This item must have been a delete, which means this config didn't exist at that time.
                     self._out.print(f"Checking if [[{item.name}]] exists. It was previously deleted.")

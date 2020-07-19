@@ -192,7 +192,7 @@ class Input:
 
             loop = not result or result.strip() == ''
 
-        return result
+        return result.strip()
 
     @staticmethod
     def y_n_input(message: str, default_yes: bool = True, invalid_no=False) -> bool:
