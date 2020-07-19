@@ -2,7 +2,6 @@ import pexpect
 from figcli.test.cli.config import *
 from figcli.test.cli.dev.delete import DevDelete
 from figcli.test.cli.figgy import FiggyTest
-from figcli.config import *
 from figcli.utils.utils import *
 import sys
 
@@ -17,6 +16,8 @@ class DevPut(FiggyTest):
     def run(self):
         self.step(f"Testing PUT for {param_1}")
         self.add(param_1, param_1_val, param_1_desc)
+        delete = DevDelete(extra_args=self.extra_args)
+        delete.delete(param_1, check_delete=True)
 
     def add(self, key, value, desc, add_more=False):
         delete = DevDelete(extra_args=self.extra_args)

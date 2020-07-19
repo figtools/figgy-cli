@@ -1,6 +1,6 @@
 import pexpect
 from figcli.test.cli.config import *
-from figcli.test.cli.dev.get import DevGet
+from figcli.test.cli.actions.get import Get
 from figcli.test.cli.figgy import FiggyTest
 from figcli.config import *
 from figcli.utils.utils import *
@@ -13,23 +13,21 @@ class DevDelete(FiggyTest):
             pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV} '
                           f'{extra_args} --skip-upgrade',
                           timeout=20, encoding='utf-8'), extra_args=extra_args)
-        self._child.delayafterread = .01
-        self._child.delaybeforesend = .5
 
     def run(self):
         print(f"Testing DELETE for {param_1}")
-        self.delete(param_1)
+        self.delete(param_1, check_delete=True)
 
-    def delete(self, name, delete_another=False):
+    def delete(self, name, check_delete=False, delete_another=False):
         self.expect('.*PS Name to Delete.*')
         self.sendline(name)
         print(f"Delete sent for {name}")
         result = self.expect(['.*deleted successfully.*Delete another.*', '.*SOURCE.*'])
 
         if result == 0:
-            print("Validating delete success.")
-            get = DevGet(extra_args=self.extra_args)
-            get.get(name, DELETE_ME_VALUE, expect_missing=True)
+            if check_delete:
+                get = Get(extra_args=self.extra_args)
+                get.get(name, DELETE_ME_VALUE, expect_missing=True)
 
             if delete_another:
                 self.sendline('y')
