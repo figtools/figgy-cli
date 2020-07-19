@@ -40,3 +40,7 @@ class FiggyTest(ABC):
         print(f"{self.c.fg_bl}-----------------------------------------{self.c.rs}")
         print(f"{self.c.fg_yl} STEP: {step_msg}{self.c.rs}")
         print(f"{self.c.fg_bl}-----------------------------------------{self.c.rs}")
+
+    def wait(self):
+        print("Waiting for child process to exit...")
+        self._child.wait()

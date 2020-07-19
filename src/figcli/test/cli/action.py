@@ -33,3 +33,6 @@ class FiggyAction:
     def sendline(self, line: str):
         print(f'Sending: {line}')
         self._child.sendline(line)
+
+    def wait(self):
+        self._child.wait()

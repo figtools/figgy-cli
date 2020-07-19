@@ -35,3 +35,4 @@ class DevDelete(FiggyTest):
                 self.sendline('n')
 
             print("Successful delete validated.")
+
