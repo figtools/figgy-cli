@@ -24,8 +24,8 @@ class DevBrowse(FiggyTest):
     def run(self):
         self.step("Prepping browse")
         self._setup()
-        self.step("Sleeping for 60 to ensure the cache gets populated with the new /shared value")
-        time.sleep(75)
+        self.step("Sleeping for 25 to ensure the cache gets populated with the new /shared value")
+        time.sleep(25)
         self.step(f"Testing browse for {param_1}")
         self.browse()
         self.step("Cleaning up")
@@ -37,7 +37,7 @@ class DevBrowse(FiggyTest):
 
     def _setup(self):
         put = DevPut(extra_args=self.extra_args)
-        put.add(KEY_PATH, DELETE_ME_VALUE, param_1_desc, add_more=False)
+        put.add(KEY_PATH, DELETE_ME_VALUE, param_1_desc, add_more=False, delete_first=False)
 
     def _validate_delete(self, key, value):
         print(f"Validating successfully deletion of {key}")

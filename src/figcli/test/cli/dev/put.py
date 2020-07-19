@@ -19,9 +19,11 @@ class DevPut(FiggyTest):
         delete = DevDelete(extra_args=self.extra_args)
         delete.delete(param_1, check_delete=True)
 
-    def add(self, key, value, desc, add_more=False):
-        delete = DevDelete(extra_args=self.extra_args)
-        delete.delete(key)
+    def add(self, key, value, desc, delete_first=True, add_more=False):
+        if delete_first:
+            delete = DevDelete(extra_args=self.extra_args)
+            delete.delete(key)
+
         self.expect('.*Please input a PS Name.*')
         self.sendline(key)
         self.expect('.*Please input a value.*')
