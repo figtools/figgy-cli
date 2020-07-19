@@ -1,31 +1,18 @@
 import pexpect
+from figcli.test.cli.action import FiggyAction
 
-from figcli.test.cli.actions.put import PutAction
 from figcli.test.cli.config import *
 from figcli.test.cli.actions.get import GetAction
-from figcli.test.cli.figgy import FiggyTest
 from figcli.utils.utils import *
 
 
-class DevDelete(FiggyTest):
+class DeleteAction(FiggyAction):
     def __init__(self, extra_args=""):
         print(f"Testing `figgy config {Utils.get_first(delete)} --env {DEFAULT_ENV}`")
         super().__init__(
             pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV} '
                           f'{extra_args} --skip-upgrade',
                           timeout=20, encoding='utf-8'), extra_args=extra_args)
-
-    def run(self):
-        self.step(f"Preparing get by adding: {param_1}")
-        self._setup()
-        time.sleep(3)
-
-        print(f"Testing DELETE for {param_1}")
-        self.delete(param_1, check_delete=True)
-
-    def _setup(self):
-        put = PutAction(extra_args=self.extra_args)
-        put.add(param_1, param_1_val, param_1_desc, add_more=False)
 
     def delete(self, name, check_delete=False, delete_another=False):
         self.expect('.*PS Name to Delete.*')
@@ -44,4 +31,3 @@ class DevDelete(FiggyTest):
                 self.sendline('n')
 
             print("Successful delete validated.")
-
