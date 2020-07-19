@@ -1,9 +1,10 @@
 import sys
 
 import pexpect
+
+from figcli.test.cli.actions.put import PutAction
 from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
-from figcli.test.cli.dev.put import DevPut
 from figcli.test.cli.dev.delete import DevDelete
 from figcli.test.cli.actions.get import GetAction
 from figcli.test.cli.dev.audit import DevAudit
@@ -101,8 +102,11 @@ class DevRestore(FiggyTest):
             delete.delete(f'{param_test_prefix}{self._guuid}/test_param-{i}', delete_another=i < maximum - 1)
 
     def _setup(self, min: int, max: int, value_override: str = None):
-        put = DevPut(extra_args=self.extra_args)
-        put.add(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', param_1_desc, add_more=True)
+        # Do not want to do a delete -> Put b/c it will mess up the restore, so delete_first=False is required.
+        put = PutAction(extra_args=self.extra_args)
+        put.add(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', param_1_desc,
+                add_more=True, delete_first=False)
+
         for i in range(min, max):
             value = value_override if value_override else DELETE_ME_VALUE
             put.add_another(f'{param_test_prefix}{self._guuid}/test_param-{i}', value, f'{param_1_desc}-{i}',

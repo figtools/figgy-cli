@@ -43,7 +43,7 @@ if os.environ.get('GOOGLE_IDP_ID'):
     DEFAULT_ENV = 'qa'
 elif os.environ.get('OKTA_EMBED_URL'):
     # Okta tests hit figgy-dev
-    DEFAULT_ENV = 'dev'
+    DEFAULT_ENV = 'stage'
 else:
     # Bastion tests hit whatever env is logged-in
     # Standard tests use profile which uses sandbox-qa

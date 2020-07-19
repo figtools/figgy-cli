@@ -1,9 +1,10 @@
 import sys
 
 import pexpect
+from figcli.test.cli.actions.get import GetAction
 
 from figcli.test.cli.config import *
-from figcli.test.cli.data.delete import DataDelete, DevGet
+from figcli.test.cli.data.delete import DataDelete
 from figcli.test.cli.figgy import FiggyTest
 from figcli.utils.utils import *
 
@@ -43,7 +44,7 @@ class DataSync(FiggyTest):
         self.step("Verifying successful replication")
         destinations = list(content.values())
         for dest in destinations:
-            DevGet().get(dest, DELETE_ME_VALUE, get_more=False, no_decrypt=True)
+            GetAction().get(dest, DELETE_ME_VALUE, get_more=False, no_decrypt=True)
 
         self.step("Cleaning leftover values")
         self.prep()
