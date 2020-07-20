@@ -93,4 +93,5 @@ class DevSync(FiggyTest):
         child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} '
                                 f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}')
         child.expect('.*Unused Parameter:.*/app/ci-test/v1/config11.*')
+        child.expect('.*Sync failed.*')
         print("Sync with stray configs passed!")

@@ -1,6 +1,8 @@
 import sys
 
 import pexpect
+
+from figcli.test.cli.actions.put import PutAction
 from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
 from figcli.test.cli.dev.put import DevPut
@@ -23,6 +25,10 @@ class DevEdit(FiggyTest):
         self.step(f"Testing edit for {param_1}")
         self.edit()
 
+    def prep(self):
+        put = PutAction(extra_args=self.extra_args)
+        put.add(param_1, param_1_val, param_1_desc, delete_first=False)
+
     def edit(self):
         # Get Value
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(edit)} --env {DEFAULT_ENV} '
@@ -39,6 +45,7 @@ class DevEdit(FiggyTest):
         child.sendcontrol('m')  # <-- Sends ENTER
         child.expect('.*secret.*')
         child.sendline('n')
+        child.expect('.*saved successfully.*')
         print("Add success. Checking successful save")
 
         get = DevGet(extra_args=self.extra_args)
