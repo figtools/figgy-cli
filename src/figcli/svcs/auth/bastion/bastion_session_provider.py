@@ -8,14 +8,14 @@ import boto3
 from botocore.exceptions import NoCredentialsError, ClientError, ParamValidationError
 
 from figcli.config.constants import *
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.aws_session import FiggyAWSSession
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.vault import FiggyVault

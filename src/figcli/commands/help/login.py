@@ -10,7 +10,7 @@ from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 import figcli.config.commands as commands
 from figcli.svcs.aws_cfg import AWSConfig
 from figcli.svcs.cache_manager import CacheManager

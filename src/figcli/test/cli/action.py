@@ -1,12 +1,14 @@
-from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import Union, List
 
-from pexpect.exceptions import TIMEOUT
 from figcli.utils.utils import Utils
 import sys
 
 
-class FiggyTest(ABC):
+class FiggyAction:
+    """
+    Actions prevent cyclic dependencies, and are designed for leveraging FiggyCli for cleanup steps when running inside
+    of tests.
+    """
 
     def __init__(self, child, extra_args=""):
         self.c = Utils.default_colors()
@@ -14,15 +16,11 @@ class FiggyTest(ABC):
 
         if child:
             c = Utils.default_colors()
-            print(f"{c.fg_yl}Testing command: {child.args}{c.rs}")
+            print(f"{c.fg_yl}Executing action: {child.args}{c.rs}")
             self._child = child
             self._child.logfile = sys.stdout
-            self._child.delayafterread = .1
+            self._child.delayafterread = .01
             self._child.delaybeforesend = .25
-
-    @abstractmethod
-    def run(self):
-        pass
 
     def expect_multiple(self, regexes: List[str]):
         print(f'Expecting: {regexes}')
@@ -36,11 +34,5 @@ class FiggyTest(ABC):
         print(f'Sending: {line}')
         self._child.sendline(line)
 
-    def step(self, step_msg: str):
-        print(f"{self.c.fg_bl}-----------------------------------------{self.c.rs}")
-        print(f"{self.c.fg_yl} STEP: {step_msg}{self.c.rs}")
-        print(f"{self.c.fg_bl}-----------------------------------------{self.c.rs}")
-
     def wait(self):
-        print("Waiting for child process to exit...")
         self._child.wait()

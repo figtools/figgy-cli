@@ -1,18 +1,21 @@
+from typing import List
+
 from botocore.exceptions import ClientError
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
 from figcli.config.style.style import FIGGY_STYLE
 from figcli.config.commands import *
+from figcli.io.input import Input
 from figcli.io.output import Output
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import Utils
 from figcli.commands.types.config import ConfigCommand
 from figcli.commands.config_context import ConfigContext
-from figcli.data.dao.config import ConfigDao
-from figcli.models.replication_config import ReplicationConfig
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.config import ConfigDao
+from figgy.models.replication_config import ReplicationConfig
+from figgy.data.dao.ssm import SsmDao
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 
@@ -29,10 +32,6 @@ class Delete(ConfigCommand):
         self._out = Output(colors_enabled)
         self._cfg_view = cfg_view
 
-        # Prompts for this file
-        self._del_message = [
-            ('class:', 'PS Name to Delete: ')
-        ]
 
     def delete_param(self, key) -> bool:
         """
@@ -43,8 +42,8 @@ class Delete(ConfigCommand):
 
         Returns: bool - T/F based on whether a parameter was actually deleted.
         """
-        sources = self._config.get_cfgs_by_src(key, self.run_env)  # type: List[ReplicationConfig]
-        repl_conf = self._config.get_config_repl(key, self.run_env)  # type: ReplicationConfig
+        sources = self._config.get_cfgs_by_src(key)  # type: List[ReplicationConfig]
+        repl_conf = self._config.get_config_repl(key)  # type: ReplicationConfig
 
         if len(sources) > 0:
             self._out.error(f"You're attempting to delete a key that is the source for at least one "
@@ -72,7 +71,7 @@ class Delete(ConfigCommand):
                 selection = prompt(repl_msg, completer=WordCompleter(['Y', 'N']), style=FIGGY_STYLE)
                 selection = selection if selection != '' else 'n'
                 if selection.strip().lower() == "y":
-                    self._config.delete_config(key, self.run_env)
+                    self._config.delete_config(key)
                     self._ssm.delete_parameter(key)
                     self._out.success(f"[[{key}]] and replication config destination deleted successfully.")
                     return True
@@ -101,15 +100,12 @@ class Delete(ConfigCommand):
         # Add all keys
         key, notify, delete_another = None, False, True
 
-        while not self._utils.is_valid_input(key, f"PS Name", notify) or delete_another:
-            key = prompt(self._del_message, style=FIGGY_STYLE,
-                         completer=self._config_completer)
-            notify = True
+        while delete_another:
+            key = Input.input('PS Name to Delete: ', completer=self._config_completer)
             try:
-                if self._utils.is_valid_input(key, 'PS Parameter', False):
-                    if self.delete_param(key):
-                        if key in self._config_completer.words:
-                            self._config_completer.words.remove(key)
+                if self.delete_param(key):
+                    if key in self._config_completer.words:
+                        self._config_completer.words.remove(key)
                 else:
                     continue
             except ClientError as e:

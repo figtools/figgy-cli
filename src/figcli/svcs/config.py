@@ -3,10 +3,10 @@ from typing import Set, List, Tuple, Optional
 
 from botocore.exceptions import ClientError
 
-from figcli.data.dao.config import ConfigDao
-from figcli.data.dao.ssm import SsmDao
-from figcli.data.models.config_item import ConfigState, ConfigItem
-from figcli.models.run_env import RunEnv
+from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.ssm import SsmDao
+from figgy.data.models.config_item import ConfigState, ConfigItem
+from figgy.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
 from figcli.utils.utils import Utils
 

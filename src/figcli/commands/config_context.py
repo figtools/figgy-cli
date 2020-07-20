@@ -1,7 +1,7 @@
 from typing import Optional
 
 from figcli.models.defaults.defaults import CLIDefaults
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.models.role import Role
 from figcli.commands.command_context import CommandContext
 from figcli.commands.figgy_context import FiggyContext

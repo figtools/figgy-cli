@@ -8,10 +8,10 @@ from prompt_toolkit.completion import WordCompleter
 
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.io.output import Output
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.svcs.auth.session_manager import SessionManager

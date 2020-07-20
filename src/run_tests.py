@@ -43,6 +43,9 @@ AUTH_TYPES = ['google', 'okta', 'bastion', 'profile']
 ##
 ## ALSO: You must always have an `child.expect` looking for the _last_ line of output, otherwise pexpect will kill
 ## the child process even if the child process is still finishing some stuff in the background.
+##
+##
+## If you forget "encoding='utf-8' on a spawn() call logs will break! Use TestUtils going forward.
 def print_test(test: str):
     print(f"{c.fg_bl}-----------------------------------------{c.rs}")
     print(f"{c.fg_yl} Starting test: {test}{c.rs}")
@@ -124,7 +127,6 @@ def main():
 
 def dev_tests(profile=None, key_down_to_shared=4):
     extra_args = f"--profile {profile}" if profile else ""
-
     run_test("Dev Put", DevPut(extra_args=extra_args))
     run_test("Dev Get", DevGet(extra_args=extra_args))
     run_test("Dev Delete", DevDelete(extra_args=extra_args))

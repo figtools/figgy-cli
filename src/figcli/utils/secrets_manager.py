@@ -11,6 +11,9 @@ import os
 
 class SecretsManager:
 
+    def __init__(self):
+        self._last_token = 9999999999
+
     @staticmethod
     def set_keyring():
         if platform.system() == WINDOWS:
@@ -24,6 +27,16 @@ class SecretsManager:
         else:
             Utils.stc_error_exit("Only OSX and MAC and Linux with installed SecretStorage are supported for "
                                  "OKTA + Keyring integration.")
+
+    def get_next_mfa(self, user):
+        token = self.generate_mfa(user)
+        while token == self._last_token:
+            print(f"Last token {self._last_token} has been used, waiting for new MFA token...")
+            time.sleep(3)
+            token = self.generate_mfa(user)
+
+        self._last_token = token
+        return token
 
     @staticmethod
     def generate_mfa(user: str) -> str:

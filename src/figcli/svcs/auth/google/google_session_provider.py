@@ -8,7 +8,7 @@ from typing import Optional, Any, List
 
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.svcs.auth.google.google import Google, ExpectedGoogleException
 
 from figcli.models.defaults.defaults import CLIDefaults
@@ -45,16 +45,20 @@ class GoogleSessionProvider(SSOSessionProvider):
             sp_id=defaults.provider_config.sp_id,
             bg_response=None)
 
-        self._google = Google(config=config, save_failure=False)
+        self._google = Google(config=config, save_failure=False, defaults=defaults)
+
         self._write_google_session_to_cache(self._google.session_state)
 
     def _write_google_session_to_cache(self, session: Any):
+
         self._cache_manager.write(self._SESSION_CACHE_KEY, session)
 
     def get_assumable_roles(self) -> List[AssumableRole]:
+
         return self._cache_manager.get_val_or_refresh('assumable_roles', refresher=self.__lookup_roles)
 
     def __lookup_roles(self) -> List[AssumableRole]:
+
         try:
             saml = self._google.parse_saml()
         except ExpectedGoogleException as e:
@@ -102,7 +106,7 @@ class GoogleSessionProvider(SSOSessionProvider):
 
     def get_saml_assertion(self, prompt: bool = False) -> str:
         return self._cache_manager.get_val_or_refresh(SAML_ASSERTION_CACHE_KEY, self._get_decoded_saml,
-                                                      max_age=SAML_ASSERTION_CACHE_KEY)
+                                                      max_age=SAML_ASSERTION_MAX_AGE)
 
     def cleanup_session_cache(self):
         self._write_google_session_to_cache(None)

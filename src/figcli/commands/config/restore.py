@@ -12,16 +12,18 @@ from tabulate import tabulate
 from figcli.commands.config.delete import Delete
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figcli.data.dao.config import ConfigDao
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.io.output import Output
-from figcli.models.parameter_store_history import PSHistory
-from figcli.models.restore_config import RestoreConfig
+from figgy.models.parameter_store_history import PSHistory
+from figgy.models.replication_config import ReplicationConfig
+from figgy.models.restore_config import RestoreConfig
 from figcli.svcs.kms import KmsSvc
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import Utils
+from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 
 class Restore(ConfigCommand):
@@ -30,6 +32,7 @@ class Restore(ConfigCommand):
             ssm_init: SsmDao,
             kms_init: KmsSvc,
             config_init: ConfigDao,
+            cfg_view: RBACLimitedConfigView,
             colors_enabled: bool,
             context: ConfigContext,
             config_completer: WordCompleter,
@@ -40,6 +43,7 @@ class Restore(ConfigCommand):
         self._ssm = ssm_init
         self._kms = kms_init
         self._config = config_init
+        self._cfg_view = cfg_view
         self._utils = Utils(colors_enabled)
         self._point_in_time = context.point_in_time
         self._config_completer = config_completer
@@ -48,7 +52,7 @@ class Restore(ConfigCommand):
 
     def _client_exception_msg(self, item: RestoreConfig, e: ClientError):
         if "AccessDeniedException" == e.response["Error"]["Code"]:
-            self._out.print(f"\n\nYou do not have permissions to a new config value at the path: [[{item.ps_name}]]")
+            self._out.error(f"\n\nYou do not have permissions to restore config at the path: [[{item.ps_name}]]")
         else:
             self._out.error(f"Error message: [[{e.response['Error']['Message']}]]")
 
@@ -65,6 +69,11 @@ class Restore(ConfigCommand):
         table_entries = []
 
         ps_name = prompt(f"Please input PS key to restore: ", completer=self._config_completer)
+
+        if self._is_replication_destination(ps_name):
+            repl_conf = self._config.get_config_repl(ps_name)
+            self._print_cannot_restore_msg(repl_conf)
+            exit(0)
 
         self._out.notify(f"\n\nAttempting to retrieve all restorable values of [[{ps_name}]]")
         items: List[RestoreConfig] = self._config.get_parameter_restore_details(ps_name)
@@ -98,8 +107,9 @@ class Restore(ConfigCommand):
         choice = int(Input.select("Select an item number to restore: ", valid_options=valid_options))
         item = items[choice] if items[choice] else None
 
-        restore = Input.y_n_input(f"Are you sure you want to restore item #{choice} and have it be the latest version? ",
-                        default_yes=False)
+        restore = Input.y_n_input(
+            f"Are you sure you want to restore item #{choice} and have it be the latest version? ",
+            default_yes=False)
 
         if not restore:
             self._utils.warn_exit("Restore aborted.")
@@ -127,19 +137,27 @@ class Restore(ConfigCommand):
         else:
             return entry.ps_value
 
+    def _is_replication_destination(self, ps_name: str):
+        return self._config.get_config_repl(ps_name)
+
     def _restore_params_to_point_in_time(self):
         """
         Restores parameters as they were to a point-in-time as defined by the time provided by the users.
         Replays parameter history to that point-in-time so versioning remains intact.
         """
 
-        ps_prefix = prompt(f"Which parameter store prefix would you like to recursively restore? "
+        repl_destinations = []
+        ps_prefix = Input.input(f"Which parameter store prefix would you like to recursively restore? "
                            f"(e.g., /app/demo-time): ", completer=self._config_completer)
 
-        time_selected: str = ""
-        time_converted = None
+        authed_nses = self._cfg_view.get_authorized_namespaces()
+        valid_prefix = ([True for ns in authed_nses if ps_prefix.startswith(ns)] or [False])[0]
+        self._utils.validate(valid_prefix, f"Selected namespace must begin with a 'Fig Tree' you have access to. "
+                                           f"Such as: {authed_nses}")
+
+        time_selected, time_converted = None, None
         try:
-            time_selected = input("Seconds since epoch to restore latest values from: ")
+            time_selected = Input.input("Seconds since epoch to restore latest values from: ")
             time_converted = datetime.fromtimestamp(float(time_selected))
         except ValueError as e:
             if "out of range" in e.args[0]:
@@ -167,14 +185,23 @@ class Restore(ConfigCommand):
             self._utils.warn_exit("Aborting restore due to user selection")
 
         ps_history: PSHistory = self._config.get_parameter_history_before_time(time_converted, ps_prefix)
+        restore_count = len(ps_history.history.values())
 
         if len(ps_history.history.values()) == 0:
             self._utils.warn_exit("No results found for time range.  Aborting.")
 
+        last_item_name = 'Unknown'
         try:
             for item in ps_history.history.values():
-                if item.cfg_at(time_converted).ps_action == SSM_PUT:
+                last_item_name = item.name
 
+                if self._is_replication_destination(item.name):
+                    repl_destinations.append(item.name)
+                    self._out.warn(f"Skipping: [[{item.name}]], it is a replication destination. To restore this value "
+                                   f"you must restore its source.")
+                    continue
+
+                if item.cfg_at(time_converted).ps_action == SSM_PUT:
                     cfgs_before: List[RestoreConfig] = item.cfgs_before(time_converted)
                     cfg_at: RestoreConfig = item.cfg_at(time_converted)
                     ssm_value = self._ssm.get_parameter(item.name)
@@ -186,20 +213,45 @@ class Restore(ConfigCommand):
 
                         for cfg in cfgs_before:
                             decrypted_value = self._decrypt_if_applicable(cfg)
-                            self._out.print(f"Restoring: [[{cfg.ps_name}]] as value: [[{decrypted_value}]] with description: "
-                                            f"[[{cfg.ps_description}]] and key: [[{cfg.ps_key_id if cfg.ps_key_id else 'Parameter was unencrypted'}]]")
+                            self._out.notify(f"\nRestoring: [[{cfg.ps_name}]] \nValue: [[{decrypted_value}]]"
+                                             f"\nDescription: [[{cfg.ps_description}]]\nKMS Key: "
+                                             f"[[{cfg.ps_key_id if cfg.ps_key_id else '[[No KMS Key Specified]]'}]]")
                             self._out.notify(f"Replaying version: [[{cfg.ps_version}]] of [[{cfg.ps_name}]]")
 
                             self._ssm.set_parameter(cfg.ps_name, decrypted_value,
-                                                    cfg.ps_description, cfg.ps_type, cfg.ps_key_id)
+                                                    cfg.ps_description, cfg.ps_type, key_id=cfg.ps_key_id)
                     else:
-                        self._out.print(f"Value for cfg: {item.name} is current. Skipping.")
+                        self._out.success(f"Config: {item.name} is current. Skipping.")
                 else:
                     # This item must have been a delete, which means this config didn't exist at that time.
                     self._out.print(f"Checking if [[{item.name}]] exists. It was previously deleted.")
                     self._prompt_delete(item.name)
         except ClientError as e:
-            self._utils.error_exit(f"Caught error when attempting restore. {e}")
+            if "AccessDeniedException" == e.response["Error"]["Code"]:
+                self._utils.error_exit(f"\n\nYou do not have permissions to restore config at the path:"
+                                       f" [[{last_item_name}]]")
+            else:
+                self._utils.error_exit(f"Caught error when attempting restore. {e}")
+
+        for item in repl_destinations:
+            cfg = self._config.get_config_repl(item)
+            self._print_cannot_restore_msg(cfg)
+
+        if not repl_destinations:
+            self._out.success_h2(f"[[{restore_count}]] configurations restored successfully!")
+        else:
+            self._out.warn(f"\n\n[[{len(repl_destinations)}]] configurations were not restored because they are shared "
+                           f"from other destinations. To restore them, restore their sources.")
+            self._out.success(f"{restore_count - len(repl_destinations)} configurations restored successfully.")
+
+    def _print_cannot_restore_msg(self, repl_conf: ReplicationConfig):
+        self._out.error_h2(f"Cannot restore: {repl_conf.destination}")
+        self._out.warn(f"Parameter: [[{repl_conf.destination}]] is a shared parameter. "
+                       f"It was shared from [[{repl_conf.source}]]")
+        self._out.warn(f"Shared by: [[{repl_conf.user}]]")
+        self._out.warn(f"To restore this parameter you should restore the source: {repl_conf.source} instead! "
+                       f"Doing so will result in {repl_conf.destination} being re-set to the appropriate previous "
+                       f"configuration.")
 
     def _prompt_delete(self, name):
         param = self._ssm.get_parameter_encrypted(name)

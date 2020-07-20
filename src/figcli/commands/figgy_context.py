@@ -2,7 +2,7 @@ import argparse
 import logging
 from figcli.config import *
 from figcli.models.assumable_role import AssumableRole
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.models.role import Role
 from figcli.utils.utils import Utils
 from typing import Optional, Dict, Union, List, Set

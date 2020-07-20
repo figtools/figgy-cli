@@ -8,12 +8,12 @@ from figcli.commands.config.get import Get
 from figcli.commands.config.put import Put
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figcli.data.dao.config import ConfigDao
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.extras.key_utils import KeyUtils
 from figcli.io.output import Output
 from figcli.io.input import Input
-from figcli.models.replication_config import ReplicationConfig, ReplicationType
+from figgy.models.replication_config import ReplicationConfig, ReplicationType
 from figcli.config import *
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
@@ -121,7 +121,7 @@ class Sync(ConfigCommand):
                 self.errors_detected = True
                 continue
 
-            remote_cfg = self._config.get_config_repl(l_cfg.destination, self.run_env)
+            remote_cfg = self._config.get_config_repl(l_cfg.destination)
 
             # Should never happen, except when someone manually deletes source / destination without going through CLI
             missing_from_ps = self.__get_param_encrypted(l_cfg.source) is None
@@ -156,7 +156,7 @@ class Sync(ConfigCommand):
         notify = False
         for repl in config_repl:
             namespace = self._utils.parse_namespace(config_repl[repl])
-            remote_cfgs = self._config.get_all_configs(self.run_env, namespace)
+            remote_cfgs = self._config.get_all_configs(namespace)
 
             if remote_cfgs:
                 for cfg in remote_cfgs:
@@ -189,7 +189,7 @@ class Sync(ConfigCommand):
 
         self._sync_repl_configs(config_repl, namespace=namespace)
         self._out.notify(f"\nChecking for stray replication configurations.")
-        remote_cfgs = self._config.get_all_configs(self.run_env, namespace)
+        remote_cfgs = self._config.get_all_configs(namespace)
         notify = True
         if remote_cfgs:
             for cfg in remote_cfgs:
@@ -248,7 +248,7 @@ class Sync(ConfigCommand):
         for key in config_merge:
             self._validate_merge_keys(key, config_merge[key], namespace)
 
-            config = self._config.get_config_repl(key, self.run_env)
+            config = self._config.get_config_repl(key)
             if not config or (config.source != config_merge[key]):
                 try:
                     repl_config = ReplicationConfig(key, self.run_env, namespace,
@@ -345,7 +345,7 @@ class Sync(ConfigCommand):
             Notifies the user if there is a parameter that has been shared into their namespace by an outside party
             but they have not added it to the `shared_figs` block of their figgy.json
         """
-        all_repl_cfgs = self._config.get_all_configs(self.run_env, namespace)
+        all_repl_cfgs = self._config.get_all_configs(namespace)
         for cfg in all_repl_cfgs:
             in_merge_conf = self._in_merge_value(cfg.destination, merge_conf)
 

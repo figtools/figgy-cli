@@ -11,7 +11,7 @@ from figcli.commands.iam_context import IAMContext
 from figcli.commands.iam_factory import IAMFactory
 from figcli.commands.factory import Factory
 from figcli.models.defaults.defaults import CLIDefaults
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.commands.figgy_context import FiggyContext
 from figcli.svcs.kms import KmsSvc
 from figcli.svcs.config import ConfigService
@@ -19,10 +19,10 @@ from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
 from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.auth.session_manager import SessionManager
-from figcli.data.dao.config import ConfigDao
+from figgy.data.dao.config import ConfigDao
 from figcli.utils.utils import Utils
 from figcli.config import *
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.ssm import SsmDao
 from typing import Dict
 from concurrent.futures import ThreadPoolExecutor, thread, as_completed
 

@@ -5,7 +5,7 @@ from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.provider import Provider
 from figcli.models.defaults.provider_config import ProviderConfig, ProviderConfigFactory, BastionProviderConfig
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.config.constants import APP_NS_OVERRIDE
 from figcli.config import *
 from typing import Dict, Optional, List, Any

@@ -1,13 +1,14 @@
 import sys
 
 import pexpect
+
+from figcli.test.cli.actions.put import PutAction
 from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
-from figcli.test.cli.dev.put import DevPut
 from figcli.test.cli.dev.delete import DevDelete
-from figcli.test.cli.dev.get import DevGet
+from figcli.test.cli.actions.get import GetAction
 from figcli.test.cli.dev.audit import DevAudit
-from figcli.config import *
+from figcli.test.cli.test_utils import TestUtils
 from figcli.utils.utils import *
 import time
 import uuid
@@ -48,9 +49,8 @@ class DevRestore(FiggyTest):
 
         restore_prefix = f'{param_test_prefix}{self._guuid}/'
         self.step(f"Attempting restore to time: {restore_breakpoint_1} with prefix: {restore_prefix}")
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(restore)} --env {DEFAULT_ENV} --skip-upgrade'
-                              f' --point-in-time {self.extra_args}', timeout=20, encoding='utf-8')
-        child.logfile = sys.stdout
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(restore)} --env {DEFAULT_ENV} --skip-upgrade'
+                              f' --point-in-time {self.extra_args}')
         child.expect('.*Which.*recursively restore.*')
         child.sendline(restore_prefix)
         child.expect('.*Seconds.*restore.*')
@@ -59,12 +59,13 @@ class DevRestore(FiggyTest):
         child.sendline('y')
         print("Checking restore output...\r\n\r\n")
         child.expect(f'.*Value.*{param_test_prefix}{self._guuid}/test_param.*')
+        child.expect(f'.*restored successfully!.*')  ## <-- this is needed or else the child proccess exits too early
 
-        self.step("Validating values were rolled back...")
         time.sleep(5)
+        self.step("Validating values were rolled back... Part 1")
 
-        get = DevGet(extra_args=self.extra_args)
-        get.get(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', get_more=True)
+        get = GetAction(extra_args=self.extra_args)
+        get.get(f'{param_test_prefix}{self._guuid}/test_param', first_val, get_more=True)
         for i in range(minimum, maximum):
             get.get(f'{param_test_prefix}{self._guuid}/test_param-{i}', first_val, get_more=i < maximum - 1)
 
@@ -74,9 +75,8 @@ class DevRestore(FiggyTest):
 
         restore_prefix = f'{param_test_prefix}{self._guuid}/'
         self.step(f"Attempting restore to time: {restore_breakpoint_2} with prefix: {restore_prefix}")
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(restore)} --env {DEFAULT_ENV} --skip-upgrade'
-                              f' --point-in-time {self.extra_args}', timeout=20, encoding='utf-8')
-        child.logfile = sys.stdout
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(restore)} --env {DEFAULT_ENV} --skip-upgrade'
+                                f' --point-in-time {self.extra_args}')
         child.expect('.*Which.*recursively restore.*')
         child.sendline(restore_prefix)
         child.expect('.*Seconds.*restore.*')
@@ -84,13 +84,14 @@ class DevRestore(FiggyTest):
         child.expect('.*Are you sure.*')
         child.sendline('y')
         print("Checking restore output...\r\n\r\n")
-        child.expect(f'.*Restoring.*{param_test_prefix}{self._guuid}/test_param-2.*{second_val}.*')
+        child.expect(f'.*Restoring.*{param_test_prefix}{self._guuid}/test_param.*{second_val}.*')
+        child.expect(f'.*restored successfully!.*')  ## <-- this is needed or else the child proccess exits too early
 
-        self.step("Validating values were rolled back...")
         time.sleep(5)
+        self.step("Validating values were rolled back... Part 2")
 
-        get = DevGet(extra_args=self.extra_args)
-        get.get(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', get_more=True)
+        get = GetAction(extra_args=self.extra_args)
+        get.get(f'{param_test_prefix}{self._guuid}/test_param', second_val, get_more=True)
         for i in range(minimum, maximum):
             get.get(f'{param_test_prefix}{self._guuid}/test_param-{i}', second_val, get_more=i < maximum - 1)
 
@@ -102,17 +103,19 @@ class DevRestore(FiggyTest):
             delete.delete(f'{param_test_prefix}{self._guuid}/test_param-{i}', delete_another=i < maximum - 1)
 
     def _setup(self, min: int, max: int, value_override: str = None):
-        put = DevPut(extra_args=self.extra_args)
-        put.add(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', param_1_desc, add_more=True)
+        # Do not want to do a delete -> Put b/c it will mess up the restore, so delete_first=False is required.
+        put = PutAction(extra_args=self.extra_args)
+        value = value_override if value_override else DELETE_ME_VALUE
+        put.add(f'{param_test_prefix}{self._guuid}/test_param', value, param_1_desc,
+                add_more=True, delete_first=False)
+
         for i in range(min, max):
-            value = value_override if value_override else DELETE_ME_VALUE
             put.add_another(f'{param_test_prefix}{self._guuid}/test_param-{i}', value, f'{param_1_desc}-{i}',
                             add_more=i < max - 1)
 
-        get = DevGet(extra_args=self.extra_args)
-        get.get(f'{param_test_prefix}{self._guuid}/test_param', 'NOT_CHANGED_VAL', get_more=True)
+        get = GetAction(extra_args=self.extra_args)
+        get.get(f'{param_test_prefix}{self._guuid}/test_param', value, get_more=True)
         for i in range(min, max):
-            value = value_override if value_override else DELETE_ME_VALUE
             get.get(f'{param_test_prefix}{self._guuid}/test_param-{i}', value, get_more=i < max - 1)
 
     def _audit(self, min: int, max: int):

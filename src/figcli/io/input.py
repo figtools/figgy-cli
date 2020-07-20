@@ -6,7 +6,7 @@ from typing import Optional, List
 from figcli.config.style.color import Color
 from figcli.config.style.terminal_factory import TerminalFactory
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.models.defaults.provider import Provider
 from figcli.utils.utils import Utils
 from figcli.config import *
@@ -192,7 +192,7 @@ class Input:
 
             loop = not result or result.strip() == ''
 
-        return result
+        return result.strip()
 
     @staticmethod
     def y_n_input(message: str, default_yes: bool = True, invalid_no=False) -> bool:

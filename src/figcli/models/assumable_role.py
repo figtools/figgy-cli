@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from figcli.models.defaults.provider import Provider
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from tabulate import tabulate
 
 

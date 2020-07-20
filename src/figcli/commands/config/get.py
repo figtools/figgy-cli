@@ -5,7 +5,7 @@ from prompt_toolkit.completion import WordCompleter
 
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
@@ -29,9 +29,9 @@ class Get(ConfigCommand):
         except ClientError as e:
             denied = "AccessDeniedException" == e.response['Error']['Code']
             if denied and "AWSKMS; Status Code: 400;" in e.response['Error']['Message']:
-                print(f"\n{self.c.fg_rd}You do not have access to decrypt the value of: {key}{self.c.rs}")
+                self._out.error(f"\nYou do not have access to decrypt the value of: [[{key}]]")
             elif denied:
-                print(f"\n{self.c.fg_rd}You do not have access to Parameter: {key}{self.c.rs}")
+                self._out.error(f"\nYou do not have access to Parameter: [{key}]]")
             else:
                 raise
         return None, None
@@ -46,16 +46,15 @@ class Get(ConfigCommand):
         get_another = True
 
         while get_another:
-            key = Input.input(f"PS Name: ",
-                              completer=self._config_completer)
+            key = Input.input(f"PS Name: ", completer=self._config_completer)
             if key:
                 value, desc = self.get_val_and_desc(key)
                 if value:
-                    print(f"{self.c.fg_gr}Value: {self.c.rs}{value}")
+                    self._out.print(f"[[Value:]] {value}")
                     desc = desc if desc else DESC_MISSING_TEXT
-                    print(f"{self.c.fg_gr}Description: {self.c.rs}{desc}")
+                    self._out.print(f"[[Description:]] {desc}")
                 else:
-                    print(f"{self.c.fg_rd}Invalid PS Name specified.{self.c.rs}")
+                    self._out.error(f"Invalid PS Name specified.")
                 get_another = Input.y_n_input(f"\nGet another?", default_yes=False, invalid_no=True)
                 print()
 

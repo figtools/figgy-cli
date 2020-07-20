@@ -10,7 +10,7 @@ from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.models.sso.okta.okta_primary_auth import OktaPrimaryAuth, OktaSession
 from figcli.models.sso.okta.okta_session_auth import OktaSessionAuth
 from figcli.svcs.cache_manager import CacheManager

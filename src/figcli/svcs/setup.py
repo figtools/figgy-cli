@@ -5,14 +5,14 @@ from typing import Callable, List, Dict, Optional
 
 from tabulate import tabulate
 from figcli.config import *
-from figcli.data.dao.ssm import SsmDao
+from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider
 from figcli.models.defaults.provider_config import ProviderConfigFactory
 from figcli.models.role import Role
-from figcli.models.run_env import RunEnv
+from figgy.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config_manager import ConfigManager
 from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory

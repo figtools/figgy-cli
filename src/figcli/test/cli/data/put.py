@@ -1,5 +1,6 @@
 import pexpect
 from figcli.test.cli.config import *
+from figcli.test.cli.data.delete import DataDelete
 from figcli.test.cli.figgy import FiggyTest
 from figcli.config import *
 from figcli.utils.utils import *
@@ -31,6 +32,8 @@ class DataPut(FiggyTest):
         self.sendline('n')
 
     def add(self, key, value, desc, add_more=False):
+        delete = DataDelete(self.extra_args)
+        delete.delete(key)
         self.expect('.*Please input a PS Name.*')
         self.sendline(key)
         self.expect('.*Please input a value.*')

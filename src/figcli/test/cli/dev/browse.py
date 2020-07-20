@@ -1,3 +1,5 @@
+import sys
+
 import pexpect
 from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
@@ -20,8 +22,14 @@ class DevBrowse(FiggyTest):
         self.key_down_to_shared = key_down_to_shared
 
     def run(self):
+        self.step("Prepping browse")
+        self._setup()
+        self.step("Sleeping for 25 to ensure the cache gets populated with the new /shared value")
+        time.sleep(25)
         self.step(f"Testing browse for {param_1}")
         self.browse()
+        self.step("Cleaning up")
+        self._cleanup()
 
     def _cleanup(self):
         delete = DevDelete(extra_args=self.extra_args)
@@ -29,7 +37,7 @@ class DevBrowse(FiggyTest):
 
     def _setup(self):
         put = DevPut(extra_args=self.extra_args)
-        put.add(KEY_PATH, DELETE_ME_VALUE, param_1_desc, add_more=False)
+        put.add(KEY_PATH, DELETE_ME_VALUE, param_1_desc, add_more=False, delete_first=False)
 
     def _validate_delete(self, key, value):
         print(f"Validating successfully deletion of {key}")
@@ -39,14 +47,12 @@ class DevBrowse(FiggyTest):
 
     ## Get through browse, then delete
     def browse(self):
-        self._setup()
-        self.step("Sleeping for 60 to ensure the cache gets populated with the new /shared value")
-        time.sleep(60)
         print(f"Getting {KEY_PATH} through browse...")
         # Get Value
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
                               timeout=20, encoding='utf-8')
+        child.logfile = sys.stdout
 
         for i in range(0, self.key_down_to_shared):
             child.send(KEY_DOWN)
@@ -67,6 +73,7 @@ class DevBrowse(FiggyTest):
         child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
                               timeout=20, encoding='utf-8')
+        child.logfile = sys.stdout
 
         for i in range(0, self.key_down_to_shared):
             child.send(KEY_DOWN)

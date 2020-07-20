@@ -1,6 +1,6 @@
 from pathlib import Path
 
-VERSION = '0.0.61'
+VERSION = '0.0.62'
 CLI_NAME = 'figgy'
 PROJECT_NAME = 'figgy'
 
@@ -27,7 +27,7 @@ FIGGY_ROLE_PREFIX_OVERRIDE_ENV = 'FIGGY_ROLE_PREFIX_OVERRIDE'
 # Table-specific Constants
 REPL_TABLE_NAME = "figgy-config-replication"
 REPL_DEST_KEY_NAME = "destination"
-REPL_RUN_ENV_KEY_NAME = "run_env"
+REPL_RUN_ENV_KEY_NAME = "env_alias"
 REPL_SOURCE_ATTR_NAME = "source"
 REPL_NAMESPACE_ATTR_NAME = "namespace"
 REPL_TYPE_ATTR_NAME = "type"
@@ -100,6 +100,7 @@ STS_SESSION_CACHE_PATH = f"{HOME}/.figgy/vault/sts/sessions"
 SAML_SESSION_CACHE_PATH = f"{HOME}/.figgy/vault/sso/saml"
 OKTA_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/okta/session"
 GOOGLE_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/google/session"
+FIGGY_LOCK_FILE_PATH = f"{HOME}/.figgy/lock"
 
 # Defaults file keys
 DEFAULTS_ROLE_KEY = 'role'
@@ -151,8 +152,8 @@ FIGGY_DISABLE_KEYRING = 'FIGGY_DISABLE_KEYRING'  # used for automated tests.
 # Keychain
 KEYCHAIN_ENCRYPTION_KEY = 'figgy-encryption-key'
 
-# This is only used for temporary sandbox sessions. This reduces user friction when experimenting by not having to interact
-# with authenticating their OS Keychain.
+# This is only used for temporary sandbox sessions. This reduces user friction when experimenting by not having to
+# interact with authenticating their OS Keychain.
 DEFAULT_ENCRYPTION_KEY = 'wX1C0nK1glfzaWQU8SKukdS7XZgYlAMW5ueb_V3cfSE='
 
 # Default paths to search for figgy.json in
