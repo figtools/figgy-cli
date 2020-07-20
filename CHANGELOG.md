@@ -1,6 +1,9 @@
 Figgy Changelog:
 
-## 0.0.62
+## 0.0.63
+- Fixing bug with --upgrade printing out too much junk.
+
+## 0.0.62 
 - Fixing a bug with restore where restored parameters could be missing their KMS Key Id parameter.
 - Major refactoring for audit table / restore command / tests
 

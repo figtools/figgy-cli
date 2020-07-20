@@ -26,7 +26,6 @@ class UpgradeManager:
         self.current_version: FiggyVersionDetails = VersionTracker.get_version()
 
     def download(self, url: str, local_path: str):
-        print("Downloading file....")
         with requests.get(url, stream=True) as r:
             r.raise_for_status()
             with open(local_path, 'wb+') as f:

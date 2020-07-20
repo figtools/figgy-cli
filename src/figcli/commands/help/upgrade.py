@@ -51,7 +51,7 @@ class Upgrade(HelpCommand):
             upgrade_it = False
 
         elif self.tracker.upgrade_available(VERSION, latest_version.version):
-            self._out.notify_h2(f"New version: [[{latest_version}]] is more recent than your version: [[{VERSION}]]")
+            self._out.notify_h2(f"New version: [[{latest_version.version}]] is more recent than your version: [[{VERSION}]]")
         else:
             self._out.notify_h2(f"Your version: [[{VERSION}]] is more recent then the current recommended version "
                                 f"of {CLI_NAME}: [[{latest_version.version}]]")
