@@ -36,6 +36,7 @@ jobs:
           FIGGY_DISABLE_KEYRING: true
           OVERRIDE_KEYRING: true
           DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_VERSION_CHECK: true
         run: |
           export TERM=linux
           export TERMINFO=/etc/terminfo
@@ -75,6 +76,7 @@ jobs:
           GOOGLE_SSO_USER: ${{ secrets.GOOGLE_SSO_USER }}
           GOOGLE_MFA_SECRET: ${{ secrets.GOOGLE_MFA_SECRET }}
           DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_VERSION_CHECK: true
         run: |
           export TERM=linux
           export TERMINFO=/etc/terminfo
@@ -115,6 +117,7 @@ jobs:
           OKTA_EMBED_URL: ${{ secrets.OKTA_EMBED_URL }}
           OKTA_MFA_SECRET: ${{ secrets.OKTA_MFA_SECRET }}
           DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_VERSION_CHECK: true
         run: |
           export TERM=linux
           export TERMINFO=/etc/terminfo
@@ -150,8 +153,9 @@ jobs:
           OVERRIDE_KEYRING: true
           QA_TESTER_CREDENTIALS_FILE: ${{ secrets.QA_TESTER_CREDENTIALS_FILE }}
           QA_TESTER_CONFIG_FILE: ${{ secrets.QA_TESTER_CONFIG_FILE }}
-          DISABLE_FIGGY_METRICS: true
           AWS_REGION: us-east-1
+          DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_VERSION_CHECK: true
         run: |
           mkdir -p ~/.aws
           echo "$QA_TESTER_CREDENTIALS_FILE" > ~/.aws/credentials

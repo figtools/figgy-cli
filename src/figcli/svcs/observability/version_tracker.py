@@ -3,6 +3,7 @@ from typing import Optional, Tuple, Dict
 import requests
 import logging
 import random
+import os
 import re
 from figcli.config.constants import *
 from figcli.config.style.color import Color
@@ -48,6 +49,7 @@ class FiggyVersionDetails:
 
 class VersionTracker:
     _UPGRADE_CHECK_PERCENTAGE = 5  # % chance any decorated method execution will check for an upgrade
+    _DISABLE_CHECK_ENV_VAR = "FIGGY_DISABLE_VERSION_CHECK"
 
     def __init__(self, cli_defaults: CLIDefaults):
         self._cli_defaults = cli_defaults
@@ -155,6 +157,9 @@ class VersionTracker:
         log.info("Rolling dice for update notify chance")
 
         def inner(self, *args, **kwargs):
+            if os.environ.get(VersionTracker._DISABLE_CHECK_ENV_VAR) == "true":
+                return function(self, *args, **kwargs)
+
             log.info("Rolling dice to check version..")
             if VersionTracker._UPGRADE_CHECK_PERCENTAGE >= random.randint(1, 100):
                 log.info("Checking for new version..")
