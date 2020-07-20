@@ -1,6 +1,8 @@
 import sys
 
 import pexpect
+
+from figcli.test.cli.actions.delete import DeleteAction
 from figcli.test.cli.actions.get import GetAction
 
 from figcli.test.cli.config import *
@@ -53,17 +55,17 @@ class DataSync(FiggyTest):
         with open('figcli/test/assets/data_repl_conf.json', 'r') as file:
             content = json.loads(file.read()).get('replicate_figs')
 
-        delete = DataDelete()
+        delete = DeleteAction()
         destinations = list(content.values())
         for i in range(0, len(destinations)):
             print(f"DELETING: {destinations[i]}")
 
             if i < len(destinations):
-                delete.delete(destinations[i], delete_another=True, repl_dest_delete=True)
+                delete.delete(destinations[i], delete_another=True)
             else:
-                delete.delete(destinations[i], delete_another=False, repl_dest_delete=True)
+                delete.delete(destinations[i], delete_another=False)
 
-        delete = DataDelete()
+        delete = DeleteAction()
         sources = list(content.keys())
         print(f"SOURCES: {sources}")
         for i in range(0, len(sources)):

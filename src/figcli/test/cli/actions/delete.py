@@ -18,7 +18,7 @@ class DeleteAction(FiggyAction):
         self.expect('.*PS Name to Delete.*')
         self.sendline(name)
         print(f"Delete sent for {name}")
-        result = self.expect(['.*deleted successfully.*Delete another.*', '.*SOURCE.*'])
+        result = self.expect(['.*deleted successfully.*Delete another.*', '.*SOURCE.*', '.*ALSO delete this replication config.*'])
 
         if result == 0:
             if check_delete:
@@ -31,3 +31,11 @@ class DeleteAction(FiggyAction):
                 self.sendline('n')
 
             print("Successful delete validated.")
+        elif result == 2:
+            self.sendline('y')
+            self.expect('.*deleted successfully.*')
+
+            if delete_another:
+                self.sendline('y')
+            else:
+                self.sendline('n')
