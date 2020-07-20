@@ -127,10 +127,10 @@ def main():
 
 def dev_tests(profile=None, key_down_to_shared=4):
     extra_args = f"--profile {profile}" if profile else ""
-    run_test("Dev Put", DevPut(extra_args=extra_args))
-    run_test("Dev Get", DevGet(extra_args=extra_args))
-    run_test("Dev Delete", DevDelete(extra_args=extra_args))
-    run_test("Dev Dump", DevDump(extra_args=extra_args))
+    # run_test("Dev Put", DevPut(extra_args=extra_args))
+    # run_test("Dev Get", DevGet(extra_args=extra_args))
+    # run_test("Dev Delete", DevDelete(extra_args=extra_args))
+    # run_test("Dev Dump", DevDump(extra_args=extra_args))
 
     if not profile:
         run_test("Dev Promote", DevPromote(extra_args=extra_args))
