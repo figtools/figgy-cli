@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.64
+- Adding support to disable version checks.
+
 ## 0.0.63
 - Fixing bug with --upgrade printing out too much junk.
 
