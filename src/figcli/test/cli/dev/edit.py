@@ -37,7 +37,7 @@ class DevEdit(FiggyTest):
 
         child.expect('.*Please input a PS Name.*')
         child.sendline(param_1)
-        time.sleep(3) # Give edit time to start
+        time.sleep(12)  # Give edit time to start
         child.send(DevEdit._VALUE)
         child.sendcontrol('n')  # <-- sends TAB
         child.send(DevEdit._DESC)
