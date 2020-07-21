@@ -19,8 +19,75 @@ jobs:
       run: |
         sudo apt-get install libusb-1.0-0-dev
         python -m pip install --upgrade pip
-        pip install setuptools twine pip wheel
+        pip install setuptools twine pip wheel awscli
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Get Version
+      id: version
+      run: |
+        cd src
+        # Parse version
+        VERSION=$(../scripts/get_version.sh)
+        echo "Setting release version to $VERSION"
+        echo "::set-env name=RELEASE_VERSION::$VERSION"
+
+    - name: Release Mac
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-1
+        VERSION: ${{ env.RELEASE_VERSION }}
+      run: |
+
+        aws s3 cp s3://figgy-website/releases/cli/unstable/darwin/figgy.zip s3://figgy-website/releases/cli/latest/darwin/figgy.zip
+
+        echo "Deploying darwin figgy to s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.zip"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/darwin/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.zip"
+
+        echo "Deploying darwin figgy to s3://figgy-website/releases/cli/latest/darwin/figgy.tar.gz"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz s3://figgy-website/releases/cli/latest/darwin/figgy.tar.gz
+
+        echo "Deploying darwin figgy to s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.tar.gz"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.tar.gz"
+
+    - name: Release Linux
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-1
+        VERSION: ${{ env.RELEASE_VERSION }}
+      run: |
+
+        aws s3 cp s3://figgy-website/releases/cli/unstable/linux/figgy.zip s3://figgy-website/releases/cli/latest/linux/figgy.zip
+
+        echo "Deploying linux figgy to s3://figgy-website/releases/cli/${VERSION}/linux/figgy.zip"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/linux/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/linux/figgy.zip"
+
+        echo "Deploying linux figgy to s3://figgy-website/releases/cli/latest/linux/figgy.tar.gz"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz s3://figgy-website/releases/cli/latest/linux/figgy.tar.gz
+
+        echo "Deploying linux figgy to s3://figgy-website/releases/cli/${VERSION}/linux/figgy.tar.gz"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/linux/figgy.tar.gz"
+
+    - name: Release Windows
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-1
+        VERSION: ${{ env.RELEASE_VERSION }}
+      run: |
+
+        aws s3 cp s3://figgy-website/releases/cli/unstable/windows/figgy.zip s3://figgy-website/releases/cli/latest/windows/figgy.zip
+
+        echo "Deploying windows figgy to s3://figgy-website/releases/cli/${VERSION}/windows/figgy.zip"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/windows/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/windows/figgy.zip"
+
+        echo "Deploying windows figgy to s3://figgy-website/releases/cli/latest/windows/figgy.tar.gz"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz s3://figgy-website/releases/cli/latest/windows/figgy.tar.gz
+
+        echo "Deploying windows figgy to s3://figgy-website/releases/cli/${VERSION}/windows/figgy.tar.gz"
+        aws s3 cp s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/windows/figgy.tar.gz"
+
 
     - name: Upload To PyPi
       env:

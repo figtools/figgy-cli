@@ -16,8 +16,6 @@ jobs:
         with:
           python-version: 3.8
       - name: Install dependencies
-        env:
-          FIGGY_TEST: true
         run: |
           sudo apt-get update \
           && sudo apt-get install libusb-1.0-0-dev libxmu-dev libxmu-headers \

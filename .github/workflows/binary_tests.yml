@@ -31,7 +31,7 @@ jobs:
           DISABLE_FIGGY_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
         run: |
-          dest="s3://figgy-website/releases/cli/latest/darwin/figgy.zip"
+          dest="s3://figgy-website/releases/cli/unstable/darwin/figgy.zip"
           aws s3 cp $dest .
           unzip figgy.zip
           cd figgy
@@ -75,7 +75,7 @@ jobs:
           DISABLE_FIGGY_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
         run: |
-          dest="s3://figgy-website/releases/cli/latest/linux/figgy.zip"
+          dest="s3://figgy-website/releases/cli/unstable/linux/figgy.zip"
           aws s3 cp $dest .
           unzip figgy.zip
           cd figgy
@@ -109,7 +109,7 @@ jobs:
           FIGGY_DISABLE_VERSION_CHECK: true
         shell: bash
         run: |
-          dest="s3://figgy-website/releases/cli/latest/windows/figgy.zip"
+          dest="s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
           aws s3 cp $dest .
           unzip figgy.zip
           cd figgy

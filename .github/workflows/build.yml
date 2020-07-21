@@ -67,17 +67,11 @@ jobs:
           VERSION: ${{ env.RELEASE_VERSION }}
         run: |
 
-          dest="s3://figgy-website/releases/cli/latest/darwin/figgy.zip"
+          dest="s3://figgy-website/releases/cli/unstable/darwin/figgy.zip"
           aws s3 cp src/figgy.zip $dest
 
-          echo "Deploying darwin figgy to s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.zip"
-          aws s3 cp src/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.zip"
-
-          echo "Deploying darwin figgy to s3://figgy-website/releases/cli/latest/darwin/figgy.tar.gz"
-          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/latest/darwin/figgy.tar.gz
-
-          echo "Deploying darwin figgy to s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.tar.gz"
-          aws s3 cp src/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/darwin/figgy.tar.gz"
+          echo "Deploying darwin figgy to s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz"
+          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz
 
   build_linux:
     runs-on: ubuntu-latest
@@ -145,17 +139,10 @@ jobs:
         run: |
 
           echo "Deploying linux figgy to $dest"
-          aws s3 cp src/figgy.zip s3://figgy-website/releases/cli/latest/linux/figgy.zip
+          aws s3 cp src/figgy.zip s3://figgy-website/releases/cli/unstable/linux/figgy.zip
 
-          echo "Deploying linux figgy to s3://figgy-website/releases/cli/${VERSION}/linux/figgy.zip"
-          aws s3 cp src/figgy.zip "s3://figgy-website/releases/cli/${VERSION}/linux/figgy.zip"
-
-          echo "Deploying linux figgy to s3://figgy-website/releases/cli/latest/linux/figgy.tar.gz"
-          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/latest/linux/figgy.tar.gz
-
-          echo "Deploying linux figgy to s3://figgy-website/releases/cli/${VERSION}/linux/figgy.tar.gz"
-          aws s3 cp src/figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/linux/figgy.tar.gz"
-
+          echo "Deploying linux figgy to s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz"
+          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz
 
   build_windows:
     runs-on: windows-latest
@@ -207,17 +194,11 @@ jobs:
           echo "Setting release version to $VERSION"
           cd src/
 
-          echo "Deploying windows figgy to s3://figgy-website/releases/cli/latest/windows/figgy.zip"
-          aws s3 cp figgy.zip "s3://figgy-website/releases/cli/latest/windows/figgy.zip"
+          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
+          aws s3 cp figgy.zip "s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
 
-          echo "Deploying windows figgy to s3://figgy-website/releases/cli/${VERSION}/windows/figgy.zip"
-          aws s3 cp figgy.zip "s3://figgy-website/releases/cli/${VERSION}/windows/figgy.zip"
-
-          echo "Deploying windows figgy to s3://figgy-website/releases/cli/latest/windows/figgy.tar.gz"
-          aws s3 cp figgy.tar.gz "s3://figgy-website/releases/cli/latest/windows/figgy.tar.gz"
-
-          echo "Deploying windows figgy to s3://figgy-website/releases/cli/${VERSION}/windows/figgy.tar.gz"
-          aws s3 cp figgy.tar.gz "s3://figgy-website/releases/cli/${VERSION}/windows/figgy.tar.gz"
+          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
+          aws s3 cp figgy.tar.gz "s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
 
   trigger_binary_tests:
     runs-on: ubuntu-latest
