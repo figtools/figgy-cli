@@ -1,9 +1,8 @@
 name: Test Binaries
 
 on:
-  push:
-    repository_dispatch:
-      types: [binary-build-complete]
+  repository_dispatch:
+    types: [binary-build-complete]
   watch:
     types: [started]
 
@@ -34,7 +33,7 @@ jobs:
           cd ..
           ls
           pwd
-          cd src/dist/figgy/
+          cd src/
 
           echo "Testing MAC binary as okta user"
           python run_tests.py okta
