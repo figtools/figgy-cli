@@ -1,10 +1,11 @@
 import sys
 
 import pexpect
+
+from figcli.test.cli.actions.delete import DeleteAction
+from figcli.test.cli.actions.get import GetAction
+from figcli.test.cli.actions.put import PutAction
 from figcli.test.cli.config import *
-from figcli.test.cli.dev.get import DevGet
-from figcli.test.cli.dev.delete import DevDelete
-from figcli.test.cli.dev.put import DevPut
 
 from figcli.test.cli.figgy import FiggyTest
 from figcli.config import *
@@ -14,22 +15,23 @@ import time
 
 AUDIT_PROPAGATION_TIME = 60
 
+
 class DevAudit(FiggyTest):
     def __init__(self, extra_args=""):
         super().__init__(None, extra_args=extra_args)
 
     def run(self):
-        put = DevPut(extra_args=self.extra_args)
+        put = PutAction(extra_args=self.extra_args)
         guuid = uuid.uuid4().hex
         key = f"{param_test_prefix}{guuid}"
         put.add(key, DELETE_ME_VALUE, 'desc', add_more=False)
-        get = DevGet(extra_args=self.extra_args)
+        get = GetAction(extra_args=self.extra_args)
         get.get(key, DELETE_ME_VALUE, get_more=False)
         self.step(f"Sleeping {AUDIT_PROPAGATION_TIME} to allow for lambda -> dynamo audit log insert.")
         time.sleep(AUDIT_PROPAGATION_TIME)
         self.step(f"Looking up audit log for: {key}. If this fails, the lambda could be broken. ")
         self.audit(key)
-        delete = DevDelete(extra_args=self.extra_args)
+        delete = DeleteAction(extra_args=self.extra_args)
         delete.delete(key)
 
         new_uuid = uuid.uuid4().hex

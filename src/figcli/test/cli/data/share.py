@@ -1,7 +1,7 @@
 import pexpect
 from figcli.test.cli.config import *
 from figcli.test.cli.data.put import *
-from figcli.test.cli.data.delete import DataDelete
+from figcli.test.cli.data.delete import DataDelete, PutAction
 from figcli.test.cli.figgy import FiggyTest
 from figcli.config import *
 from figcli.utils.utils import *
@@ -17,7 +17,7 @@ class DataShare(FiggyTest):
 
     def run(self):
         self.step("Adding parameters to share...")
-        put = DataPut()
+        put = PutAction()
         put.add(data_param_1, data_param_1_val, data_param_1_desc, add_more=False)
 
         self.step(f"Testing share success from {figgy} to {automated_test_dest_1}")

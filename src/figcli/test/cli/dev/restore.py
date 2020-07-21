@@ -1,17 +1,14 @@
-import sys
-
-import pexpect
-
-from figcli.test.cli.actions.put import PutAction
-from figcli.test.cli.config import *
-from figcli.test.cli.figgy import FiggyTest
-from figcli.test.cli.dev.delete import DevDelete
-from figcli.test.cli.actions.get import GetAction
-from figcli.test.cli.dev.audit import DevAudit
-from figcli.test.cli.test_utils import TestUtils
-from figcli.utils.utils import *
 import time
 import uuid
+
+from figcli.test.cli.actions.delete import DeleteAction
+from figcli.test.cli.actions.get import GetAction
+from figcli.test.cli.actions.put import PutAction
+from figcli.test.cli.config import *
+from figcli.test.cli.dev.audit import DevAudit
+from figcli.test.cli.figgy import FiggyTest
+from figcli.test.cli.test_utils import TestUtils
+from figcli.utils.utils import *
 
 RESTORE_PROPAGATION_TIME = 120
 
@@ -97,7 +94,7 @@ class DevRestore(FiggyTest):
 
         print("Values were rolled forward successfully. Cleaning up...")
 
-        delete = DevDelete(extra_args=self.extra_args)
+        delete = DeleteAction(extra_args=self.extra_args)
         delete.delete(f'{param_test_prefix}{self._guuid}/test_param', delete_another=True)
         for i in range(minimum, maximum):
             delete.delete(f'{param_test_prefix}{self._guuid}/test_param-{i}', delete_another=i < maximum - 1)

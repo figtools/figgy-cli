@@ -1,16 +1,11 @@
-import sys
-
 import pexpect
 
+from figcli.test.cli.actions.delete import DeleteAction
+from figcli.test.cli.actions.get import GetAction
 from figcli.test.cli.actions.put import PutAction
 from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
-from figcli.test.cli.dev.put import DevPut
-from figcli.test.cli.dev.get import DevGet
-from figcli.test.cli.dev.delete import DevDelete
-from figcli.config import *
 from figcli.utils.utils import *
-import time
 
 
 #Todo get this working...
@@ -48,7 +43,7 @@ class DevEdit(FiggyTest):
         child.expect('.*saved successfully.*')
         print("Add success. Checking successful save")
 
-        get = DevGet(extra_args=self.extra_args)
+        get = GetAction(extra_args=self.extra_args)
         get.get(param_1, DevEdit._VALUE, DevEdit._DESC)
-        delete = DevDelete(extra_args=self.extra_args)
+        delete = DeleteAction(extra_args=self.extra_args)
         delete.delete(param_1)

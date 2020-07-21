@@ -1,14 +1,14 @@
 import sys
+import time
 
 import pexpect
+
+from figcli.test.cli.actions.delete import DeleteAction
+from figcli.test.cli.actions.get import GetAction
+from figcli.test.cli.actions.put import PutAction
 from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
-from figcli.test.cli.dev.put import DevPut
-from figcli.test.cli.dev.get import DevGet
-from figcli.test.cli.dev.delete import DevDelete
-from figcli.config import *
 from figcli.utils.utils import *
-import time
 
 KEY_UP = 'k'
 KEY_DOWN = 'j'
@@ -32,16 +32,16 @@ class DevBrowse(FiggyTest):
         self._cleanup()
 
     def _cleanup(self):
-        delete = DevDelete(extra_args=self.extra_args)
+        delete = DeleteAction(extra_args=self.extra_args)
         delete.delete(KEY_PATH, delete_another=False)
 
     def _setup(self):
-        put = DevPut(extra_args=self.extra_args)
+        put = PutAction(extra_args=self.extra_args)
         put.add(KEY_PATH, DELETE_ME_VALUE, param_1_desc, add_more=False, delete_first=False)
 
     def _validate_delete(self, key, value):
         print(f"Validating successfully deletion of {key}")
-        get = DevGet(extra_args=self.extra_args)
+        get = GetAction(extra_args=self.extra_args)
         get.get(key, value, get_more=False, expect_missing=True)
         print("Delete success validated.")
 

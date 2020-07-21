@@ -17,19 +17,22 @@ class DataDelete(FiggyTest):
         self.step(f"Testing delete for param: {param_1}")
         self.delete(param_1)
 
-    def delete(self, name, delete_another=False, repl_source_delete=False, repl_dest_delete=False):
+    def delete(self, name, delete_another=False, repl_source_delete=False, repl_dest_delete=False, retry=True):
         self.expect('.*PS Name.*')
         self.sendline(name)
         print(f"Delete sent for {name}")
-        match = self.expect_multiple([".*You may NOT delete sources that are actively replicating.*", f".*active replication destination.*{name}.*", ".*deleted successfully.*"])
-        print(f"Match: {match}")
+        result = self.expect_multiple([".*You may NOT delete sources that are actively replicating.*", 
+                                      f".*active replication destination.*{name}.*", 
+                                      ".*deleted successfully.*",
+                                      pexpect.TIMEOUT])
+        print(f"Match: {result}")
 
-        if match == 0:
+        if result == 0:
             if repl_source_delete:
                 print("VALIDATING REPL_SOURCE_DELETE")
                 Utils.stc_validate(repl_source_delete, "Encountered REPL Source delete but that was not expected!!")
 
-        if match == 1:
+        if result == 1:
             if repl_dest_delete:
                 print("VALIDATING REPL_DEST_DELETE")
                 Utils.stc_validate(repl_dest_delete, "Encountered REPL Dest delete but that was not expected!!")
@@ -42,7 +45,7 @@ class DataDelete(FiggyTest):
             else:
                 self.sendline('n')
 
-        if match == 2:
+        if result == 2:
             print("Validating delete success.")
             get = DevGet(extra_args=self.extra_args)
             get.get(param_1, param_1_val, expect_missing=True)
@@ -51,5 +54,10 @@ class DataDelete(FiggyTest):
                 self.sendline('y')
             else:
                 self.sendline('n')
+                
+        elif result == 3 and retry:
+            self.step("EXECUTING RETRY, RECEIVED TIMEOUT!!")
+            retry = DataDelete(extra_args=self.extra_args)
+            retry.delete(name, retry=False)
 
         print("Successful delete validated.")

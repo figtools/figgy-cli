@@ -2,8 +2,8 @@ import sys
 import time
 import pexpect
 
+from figcli.test.cli.actions.delete import DeleteAction
 from figcli.test.cli.config import *
-from figcli.test.cli.dev.delete import DevDelete
 from figcli.test.cli.dev.sync import DevSync
 from figcli.test.cli.figgy import FiggyTest
 from figcli.utils.utils import *
@@ -38,7 +38,7 @@ class DevValidate(FiggyTest):
         print("VALIDATE SUCCESS VERIFIED")
 
     def validate_error(self):
-        delete = DevDelete(extra_args=self.extra_args)
+        delete = DeleteAction(extra_args=self.extra_args)
         delete.delete(self.missing_key)
         print(f"Testing: {CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/error/figgy.json {self.extra_args}")
