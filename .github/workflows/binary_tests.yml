@@ -67,11 +67,6 @@ jobs:
           AWS_REGION: us-east-1
           FIGGY_DISABLE_KEYRING: true
           OVERRIDE_KEYRING: true
-          GOOGLE_IDP_ID: ${{ secrets.GOOGLE_IDP_ID }}
-          GOOGLE_SP_ID: ${{ secrets.GOOGLE_SP_ID }}
-          GOOGLE_SSO_PASSWORD: ${{ secrets.GOOGLE_SSO_PASSWORD }}
-          GOOGLE_SSO_USER: ${{ secrets.GOOGLE_SSO_USER }}
-          GOOGLE_MFA_SECRET: ${{ secrets.GOOGLE_MFA_SECRET }}
           DISABLE_FIGGY_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
         run: |
@@ -86,7 +81,7 @@ jobs:
           pip3 install -r requirements-test.txt
 
           echo "Testing MAC binary as okta user"
-          python run_tests.py google
+          python run_tests.py bastion
 
   test_windows_binary:
     runs-on: windows-latest
