@@ -19,7 +19,7 @@ class FiggyAction:
             print(f"{c.fg_yl}Executing action: {child.args}{c.rs}")
             self._child = child
             self._child.logfile = sys.stdout
-            self._child.delayafterread = .1
+            # self._child.delayafterread = .1
             self._child.delaybeforesend = .5
 
     def expect_multiple(self, regexes: List[str]):

@@ -17,7 +17,7 @@ class FiggyTest(ABC):
             print(f"{c.fg_yl}Testing command: {child.args}{c.rs}")
             self._child = child
             self._child.logfile = sys.stdout
-            self._child.delayafterread = .1
+            # self._child.delayafterread = .1
             self._child.delaybeforesend = .5
 
     @abstractmethod
