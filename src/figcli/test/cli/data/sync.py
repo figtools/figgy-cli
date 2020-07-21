@@ -7,6 +7,7 @@ from figcli.test.cli.actions.get import GetAction
 
 from figcli.test.cli.config import *
 from figcli.test.cli.figgy import FiggyTest
+from figcli.test.cli.test_utils import TestUtils
 from figcli.utils.utils import *
 
 
@@ -19,9 +20,9 @@ class DataSync(FiggyTest):
         self.step("Prepping workspace, deleting any existing values.")
         self.prep()
 
-        child = pexpect.spawn(f'{CLI_NAME} {Utils.get_first(config)} {Utils.get_first(sync)} '
+        child = TestUtils.spawn(f'{CLI_NAME} {Utils.get_first(config)} {Utils.get_first(sync)} '
                               f'--env {DEFAULT_ENV} --config figcli/test/assets/data_repl_conf.json '
-                              f'--skip-upgrade --replication-only {self.extra_args}', timeout=20, encoding='utf-8')
+                              f'--skip-upgrade --replication-only {self.extra_args}', timeout=30)
         time.sleep(2)
         with open('figcli/test/assets/data_repl_conf.json', 'r') as file:
             content = json.loads(file.read()).get('replicate_figs')
