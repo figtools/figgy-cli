@@ -35,3 +35,8 @@ class FiggyAction:
 
     def wait(self):
         self._child.wait()
+
+    def alert(self, msg: str):
+        print(f"{self.c.fg_yl}-----------------------------------------{self.c.rs}")
+        print(f"{self.c.fg_rd} ALERT: {msg}{self.c.rs}")
+        print(f"{self.c.fg_yl}-----------------------------------------{self.c.rs}")

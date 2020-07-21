@@ -1,7 +1,7 @@
 import pexpect
 from figcli.test.cli.config import *
-from figcli.test.cli.dev.delete import DevDelete
-from figcli.test.cli.dev.put import DevPut
+from figcli.test.cli.actions.delete import DeleteAction
+from figcli.test.cli.actions.put import PutAction
 from figcli.test.cli.figgy import FiggyTest
 from figcli.config import *
 from figcli.utils.utils import *
@@ -16,14 +16,14 @@ class DevGet(FiggyTest):
 
     def run(self):
         self.step(f"Preparing get by adding: {param_1}")
-        put = DevPut(extra_args=self.extra_args)
+        put = PutAction(extra_args=self.extra_args)
         put.add(param_1, param_1_val, param_1_desc, add_more=False)
 
         self.step(f"Testing GET for {param_1}")
         self.get(param_1, param_1_val, get_more=False)
 
         self.step(f"Cleaning up: {param_1}")
-        delete = DevDelete(extra_args=self.extra_args)
+        delete = DeleteAction(extra_args=self.extra_args)
         delete.delete(param_1, check_delete=True, delete_another=False)
 
     def get(self, key, value, get_more=False, expect_missing=False, no_decrypt=False):

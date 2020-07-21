@@ -14,11 +14,12 @@ class DeleteAction(FiggyAction):
                           f'{extra_args} --skip-upgrade',
                           timeout=20, encoding='utf-8'), extra_args=extra_args)
 
-    def delete(self, name, check_delete=False, delete_another=False):
+    def delete(self, name, check_delete=False, delete_another=False, retry=True):
         self.expect('.*PS Name to Delete.*')
         self.sendline(name)
         print(f"Delete sent for {name}")
-        result = self.expect(['.*deleted successfully.*Delete another.*', '.*SOURCE.*', '.*ALSO delete this replication config.*'])
+        result = self.expect(['.*deleted successfully.*Delete another.*', '.*SOURCE.*',
+                              '.*ALSO delete this replication config.*', pexpect.TIMEOUT])
 
         if result == 0:
             if check_delete:
@@ -39,3 +40,8 @@ class DeleteAction(FiggyAction):
                 self.sendline('y')
             else:
                 self.sendline('n')
+
+        elif result == 3 and retry:
+            self.alert("EXECUTING RETRY, RECEIVED TIMEOUT!!")
+            retry = DeleteAction(extra_args=self.extra_args)
+            retry.delete(name, retry=False)
