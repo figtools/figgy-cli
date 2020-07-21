@@ -46,7 +46,8 @@ class DevSync(FiggyTest):
         print(f"Testing: {CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/success/figgy.json")
         child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} '
-                              f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}')
+                                f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}',
+                                timeout=45)
         missing_key = '/app/ci-test/v1/config12'
         child.expect(f'.*Please input a value for.*{missing_key}.*')
         child.sendline(DELETE_ME_VALUE)
@@ -73,7 +74,7 @@ class DevSync(FiggyTest):
               f"--config figcli/test/assets/success/multi-level-ns.json")
         child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} '
                                 f'--config figcli/test/assets/success/multi-level-ns.json --skip-upgrade'
-                                f' {self.extra_args}')
+                                f' {self.extra_args}', timeout=45)
 
         child.expect(f'.*Please input a value for.*{missing_key}.*')
         child.sendline(DELETE_ME_VALUE)
@@ -91,7 +92,8 @@ class DevSync(FiggyTest):
         print(f"Testing: {CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/error/figgy.json")
         child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} '
-                                f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}')
+                                f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}',
+                                timeout=45)
         child.expect('.*Unused Parameter:.*/app/ci-test/v1/config11.*')
         child.expect('.*Sync failed.*')
         print("Sync with stray configs passed!")
