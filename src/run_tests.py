@@ -46,6 +46,10 @@ AUTH_TYPES = ['google', 'okta', 'bastion', 'profile']
 ##
 ##
 ## If you forget "encoding='utf-8' on a spawn() call logs will break! Use TestUtils going forward.
+##
+## Do not set delaybeforeread - it is not needed and appears to cause issues if you set it to be too long. If the delay
+## is too long, if the figgy subprocess returns data before delaybeforeread seconds, that data may never get read thus resulting
+## in a timeout exception.
 def print_test(test: str):
     print(f"{c.fg_bl}-----------------------------------------{c.rs}")
     print(f"{c.fg_yl} Starting test: {test}{c.rs}")
