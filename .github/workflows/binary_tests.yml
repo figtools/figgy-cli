@@ -17,11 +17,19 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - name: E2E Mac Binary
+      - name: Mac Binary Test
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
+          FIGGY_DISABLE_KEYRING: true
+          OVERRIDE_KEYRING: true
+          OKTA_SSO_USER: ${{ secrets.OKTA_SSO_USER }}
+          OKTA_SSO_PASSWORD: ${{ secrets.OKTA_SSO_PASSWORD }}
+          OKTA_EMBED_URL: ${{ secrets.OKTA_EMBED_URL }}
+          OKTA_MFA_SECRET: ${{ secrets.OKTA_MFA_SECRET }}
+          DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_VERSION_CHECK: true
         run: |
           dest="s3://figgy-website/releases/cli/latest/darwin/figgy.zip"
           aws s3 cp $dest .
@@ -35,3 +43,76 @@ jobs:
 
           echo "Testing MAC binary as okta user"
           python run_tests.py okta
+
+  test_linux_binary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Linux Binary Test
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          FIGGY_DISABLE_KEYRING: true
+          OVERRIDE_KEYRING: true
+          GOOGLE_IDP_ID: ${{ secrets.GOOGLE_IDP_ID }}
+          GOOGLE_SP_ID: ${{ secrets.GOOGLE_SP_ID }}
+          GOOGLE_SSO_PASSWORD: ${{ secrets.GOOGLE_SSO_PASSWORD }}
+          GOOGLE_SSO_USER: ${{ secrets.GOOGLE_SSO_USER }}
+          GOOGLE_MFA_SECRET: ${{ secrets.GOOGLE_MFA_SECRET }}
+          DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_VERSION_CHECK: true
+        run: |
+          dest="s3://figgy-website/releases/cli/latest/darwin/figgy.zip"
+          aws s3 cp $dest .
+          unzip figgy.zip
+          cd figgy
+          export PATH="$PATH:$(PWD)"
+          cd ../src
+
+          pip install -r requirements.txt
+          pip3 install -r requirements-test.txt
+
+          echo "Testing MAC binary as okta user"
+          python run_tests.py google
+
+  test_windows_binary:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Windows Binary Test
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          FIGGY_DISABLE_KEYRING: true
+          OVERRIDE_KEYRING: true
+          DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_VERSION_CHECK: true
+        shell: bah
+        run: |
+          dest="s3://figgy-website/releases/cli/latest/darwin/figgy.zip"
+          aws s3 cp $dest .
+          unzip figgy.zip
+          cd figgy
+          export PATH="$PATH:$(PWD)"
+          cd ../src
+
+          pip3 install -r requirements.txt
+          pip3 install -r requirements-test.txt
+          pip3 install -r requirements-windows.txt
+
+          echo "Testing Windows binary as bastion user"
+          python run_tests.py bastion
