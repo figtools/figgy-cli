@@ -1,5 +1,8 @@
 import pexpect
 import sys
+
+from figcli.test.cli.test_utils import TestUtils
+
 from figcli.test.cli.config import *
 from figcli.test.cli.dev.sync import DevSync
 from figcli.test.cli.figgy import FiggyTest
@@ -31,11 +34,9 @@ class DevPrune(FiggyTest):
         self.step(f"Testing: {CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/success/figgy.json --skip-upgrade ")
         time.sleep(30)
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} '
-                                    f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}',
-                                    encoding='utf-8', timeout=20)
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} '
+                                    f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}')
         child.expect('.*No stray keys.*No remote replication configs.*')
-        child.logfile = sys.stdout
         print("Empty prune, success!")
 
     def cleanup_with_orphans(self):
@@ -44,10 +45,8 @@ class DevPrune(FiggyTest):
               f"--config figcli/test/assets/error/figgy.json")
 
         time.sleep(30)
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} '
-                                    f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}',
-                                    encoding='utf-8', timeout=20)
-        child.logfile = sys.stdout
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(prune)} --env {DEFAULT_ENV} '
+                                    f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}')
         child.expect('.*/app/ci-test/v1/config11.* exists.*but does not exist.*')
         child.sendline('n')
         child.expect('.*does not exist in your.*')

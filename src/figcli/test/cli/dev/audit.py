@@ -1,6 +1,7 @@
 import sys
 
 import pexpect
+from figcli.test.cli.test_utils import TestUtils
 
 from figcli.test.cli.actions.delete import DeleteAction
 from figcli.test.cli.actions.get import GetAction
@@ -39,9 +40,8 @@ class DevAudit(FiggyTest):
         self.audit(f'/doesnt/exist/{new_uuid}', expect_results=False)
 
     def audit(self, name, audit_another=False, expect_results=True):
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(audit)} --env {DEFAULT_ENV} --skip-upgrade'
-                              f' {self.extra_args}', encoding='utf-8', timeout=20)
-        child.logfile = sys.stdout
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(audit)} --env {DEFAULT_ENV} --skip-upgrade'
+                              f' {self.extra_args}')
 
         self.step(f"Auditing: {name}")
         child.expect('.*Please.*input.*')

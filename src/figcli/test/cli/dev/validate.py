@@ -1,6 +1,7 @@
 import sys
 import time
 import pexpect
+from figcli.test.cli.test_utils import TestUtils
 
 from figcli.test.cli.actions.delete import DeleteAction
 from figcli.test.cli.config import *
@@ -30,10 +31,8 @@ class DevValidate(FiggyTest):
 
         print(f"Testing: {CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/success/figgy.json {self.extra_args}")
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} '
-                              f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}',
-                              encoding='utf-8', timeout=20)
-        child.logfile = sys.stdout
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} '
+                              f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}')
         child.expect(".*Success.*")
         print("VALIDATE SUCCESS VERIFIED")
 
@@ -42,7 +41,7 @@ class DevValidate(FiggyTest):
         delete.delete(self.missing_key)
         print(f"Testing: {CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/error/figgy.json {self.extra_args}")
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} '
-                              f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}', timeout=20)
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} '
+                              f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}')
         child.expect('.*missing at least one.*')
         print("VALIDATE ERROR VERIFIED")

@@ -2,6 +2,7 @@ import sys
 import time
 
 import pexpect
+from figcli.test.cli.test_utils import TestUtils
 
 from figcli.test.cli.actions.delete import DeleteAction
 from figcli.test.cli.actions.get import GetAction
@@ -24,8 +25,8 @@ class DevBrowse(FiggyTest):
     def run(self):
         self.step("Prepping browse")
         self._setup()
-        self.step("Sleeping for 25 to ensure the cache gets populated with the new /shared value")
-        time.sleep(25)
+        self.step("Sleeping for 45 to ensure the cache gets populated with the new /shared value")
+        time.sleep(45)
         self.step(f"Testing browse for {param_1}")
         self.browse()
         self.step("Cleaning up")
@@ -49,14 +50,13 @@ class DevBrowse(FiggyTest):
     def browse(self):
         print(f"Getting {KEY_PATH} through browse...")
         # Get Value
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
-                              f'--skip-upgrade {self.extra_args}',
-                              timeout=20, encoding='utf-8')
-        child.logfile = sys.stdout
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
+                              f'--skip-upgrade {self.extra_args}')
+        time.sleep(5) ## let browse start
 
         for i in range(0, self.key_down_to_shared):
             child.send(KEY_DOWN)
-            time.sleep(.02)
+            time.sleep(.25)
 
         child.send('e')
         child.send(KEY_DOWN)
@@ -70,14 +70,13 @@ class DevBrowse(FiggyTest):
 
         self.step("Get success. Deleting through browse.")
         # Delete Value
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
-                              f'--skip-upgrade {self.extra_args}',
-                              timeout=20, encoding='utf-8')
-        child.logfile = sys.stdout
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
+                              f'--skip-upgrade {self.extra_args}')
+        time.sleep(5) ## let browse start
 
         for i in range(0, self.key_down_to_shared):
             child.send(KEY_DOWN)
-            time.sleep(.02)
+            time.sleep(.25)
 
         child.send('e')
         child.send(KEY_DOWN)

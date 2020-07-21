@@ -1,4 +1,5 @@
 import pexpect
+from figcli.test.cli.test_utils import TestUtils
 
 from figcli.test.cli.actions.delete import DeleteAction
 from figcli.test.cli.actions.get import GetAction
@@ -26,9 +27,8 @@ class DevEdit(FiggyTest):
 
     def edit(self):
         # Get Value
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(edit)} --env {DEFAULT_ENV} '
-                              f'--skip-upgrade {self.extra_args}',
-                              timeout=20, encoding='utf-8')
+        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(edit)} --env {DEFAULT_ENV} '
+                              f'--skip-upgrade {self.extra_args}')
 
         child.expect('.*Please input a PS Name.*')
         child.sendline(param_1)
