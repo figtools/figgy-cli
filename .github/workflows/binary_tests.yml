@@ -23,17 +23,14 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
         run: |
-          pwd
-          ls
           dest="s3://figgy-website/releases/cli/latest/darwin/figgy.zip"
           aws s3 cp $dest .
           unzip figgy.zip
           cd figgy
           export PATH="$PATH:$(PWD)"
-          cd ..
-          ls
-          pwd
-          cd src/
+          cd ../src
+
+          pip3 install -r requirements-test.txt
 
           echo "Testing MAC binary as okta user"
           python run_tests.py okta
