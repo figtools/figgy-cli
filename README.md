@@ -1,4 +1,13 @@
+![Stable Binary E2E Tests](https://github.com/figtools/figgy-cli/workflows/Test%20Binaries/badge.svg)
+![Build](https://github.com/figtools/figgy-cli/workflows/Build%20&%20Deploy/badge.svg)
+![Release](https://github.com/figtools/figgy-cli/workflows/Release/badge.svg)
+
+
+![Unreleased Features E2E Test Suite](https://github.com/figtools/figgy-cli/workflows/E2E%20Integration%20Test%20Suite/badge.svg)
+
+
 # figgy
+
 ![Figgy](.assets/logo-black-text.png)
 
 [Figgy Website](https://www.figgy.dev)
