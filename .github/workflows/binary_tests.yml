@@ -1,8 +1,8 @@
-name: Test Binaries
+name: Binary Tests
 
 on:
   repository_dispatch:
-    types: [binary-build-complete]
+    types: [build-complete]
   watch:
     types: [started]
 
@@ -116,3 +116,19 @@ jobs:
           cd ../src
 
           figgy --version
+
+  emit_binary_tests_complete:
+    runs-on: ubuntu-latest
+    needs:
+      - test_bastion
+      - test_google
+      - test_okta
+      - test_profile
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v1.1.1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: figtools/figgy-cli
+          event-type: binary-tests-complete
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

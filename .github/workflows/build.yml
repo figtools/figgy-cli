@@ -1,10 +1,8 @@
 name: Build & Deploy
 
 on:
-  push:
-    branches: [master, build]
-  pull_request:
-    branches: [master, build]
+  repository_dispatch:
+    types: [e2e-tests-complete]
 
 jobs:
   build_mac:
@@ -200,7 +198,7 @@ jobs:
           echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
           aws s3 cp figgy.tar.gz "s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
 
-  trigger_binary_tests:
+  emit_build_complete:
     runs-on: ubuntu-latest
     needs:
       - build_windows
@@ -212,5 +210,5 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           repository: figtools/figgy-cli
-          event-type: binary-build-complete
+          event-type: build-complete
           client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
