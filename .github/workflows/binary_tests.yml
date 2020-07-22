@@ -31,6 +31,7 @@ jobs:
           DISABLE_FIGGY_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
           TERM: xterm-256color
+          TERMINFO: /etc/terminfo
         run: |
           dest="s3://figgy-website/releases/cli/unstable/darwin/figgy.zip"
           aws s3 cp $dest .
@@ -71,6 +72,7 @@ jobs:
           DISABLE_FIGGY_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
           TERM: linux
+          TERMINFO: /etc/terminfo
         run: |
           dest="s3://figgy-website/releases/cli/unstable/linux/figgy.zip"
           aws s3 cp $dest .

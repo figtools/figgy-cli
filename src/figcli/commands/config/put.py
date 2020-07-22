@@ -1,5 +1,8 @@
 import re
 
+from prompt_toolkit.lexers import PygmentsLexer
+from prompt_toolkit.styles import style_from_pygments_cls
+
 from figcli.config import *
 from botocore.exceptions import ClientError
 from prompt_toolkit import prompt
@@ -9,6 +12,8 @@ from figcli.commands.config.get import Get
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
 from figgy.data.dao.ssm import SsmDao
+
+from figcli.config.style.pygments.lexer import FigLexer, FiggyPygment
 from figcli.io.input import Input
 from figcli.io.output import Output
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
@@ -67,7 +72,10 @@ class Put(ConfigCommand):
             try:
 
                 if not key:
-                    key = Input.input('Please input a PS Name: ', completer=self._config_view.get_config_completer())
+                    lexer = PygmentsLexer(FigLexer) if self.context.defaults.colors_enabled else None
+                    style = style_from_pygments_cls(FiggyPygment) if self.context.defaults.colors_enabled else None
+                    key = Input.input('Please input a PS Name: ', completer=self._config_view.get_config_completer(),
+                                      lexer=lexer, style=style)
 
                 if self._source_key:
                     plain_key = '/'.join(key.strip('/').split('/')[2:])

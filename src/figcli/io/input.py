@@ -3,7 +3,10 @@ import getpass
 
 from typing import Optional, List
 
+from prompt_toolkit.lexers import PygmentsLexer
+
 from figcli.config.style.color import Color
+from figcli.config.style.pygments.lexer import FigLexer, FiggyPygment
 from figcli.config.style.terminal_factory import TerminalFactory
 from figcli.models.role import Role
 from figgy.models.run_env import RunEnv
@@ -12,6 +15,7 @@ from figcli.utils.utils import Utils
 from figcli.config import *
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.styles import style_from_pygments_cls
 
 
 class Input:
@@ -171,15 +175,16 @@ class Input:
         return Input.y_n_input("Is this value a secret?", default_yes=False)
 
     @staticmethod
-    def input(message: str, completer=None, default: str = None, optional: bool = False, min_length=0) -> str:
+    def input(message: str, completer=None, default: str = None, optional: bool = False,
+              min_length=0, lexer=None, style=None) -> str:
         loop = True
         message = f'\n{message}\n  -> ' if len(message) > 15 else f'\n{message} -> '
 
         while loop:
             if completer:
-                result = prompt(message, completer=completer)
+                result = prompt(message, completer=completer, lexer=lexer, style=style)
             elif default:
-                result = prompt(message, default=default)
+                result = prompt(message, default=default, lexer=lexer, style=style)
             else:
                 result = input(message)
 
