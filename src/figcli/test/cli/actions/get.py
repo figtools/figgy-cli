@@ -14,23 +14,23 @@ class GetAction(FiggyAction):
     def get(self, key, value, get_more=False, expect_missing=False, no_decrypt=False, retry=True):
         response = self.expect(['.*PS Name.*', pexpect.TIMEOUT])
 
-        if response == 1:
+        if response == 1 and retry:
             self.alert(f"Received timeout, PERFORMING RETRY for KEY: {key}")
             self.get(key, value, get_more=get_more, expect_missing=expect_missing, retry=False)
-
-        self.sendline(key)
-        if expect_missing:
-            self.expect(f'.*Invalid PS Name specified.*')
-            print("Missing parameter validated.")
-        elif no_decrypt:
-            self.expect(f'.*do not have access.*')
-            print("Lack of decrypt permissions validated.")
         else:
-            self.expect(f'.*{value}.*Get another.*')
-            print(f"Expected value of {value} validated.")
-        if get_more:
-            print("Getting another")
-            self.sendline('y')
-        else:
-            print("Not getting another")
-            self.sendline('n')
+            self.sendline(key)
+            if expect_missing:
+                self.expect(f'.*Invalid PS Name specified.*')
+                print("Missing parameter validated.")
+            elif no_decrypt:
+                self.expect(f'.*do not have access.*')
+                print("Lack of decrypt permissions validated.")
+            else:
+                self.expect(f'.*{value}.*Get another.*')
+                print(f"Expected value of {value} validated.")
+            if get_more:
+                print("Getting another")
+                self.sendline('y')
+            else:
+                print("Not getting another")
+                self.sendline('n')
