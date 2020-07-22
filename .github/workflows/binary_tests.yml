@@ -30,6 +30,7 @@ jobs:
           OKTA_MFA_SECRET: ${{ secrets.OKTA_MFA_SECRET }}
           DISABLE_FIGGY_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
+          TERM: xterm-256color
         run: |
           dest="s3://figgy-website/releases/cli/unstable/darwin/figgy.zip"
           aws s3 cp $dest .
@@ -69,6 +70,7 @@ jobs:
           OVERRIDE_KEYRING: true
           DISABLE_FIGGY_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
+          TERM: linux
         run: |
           dest="s3://figgy-website/releases/cli/unstable/linux/figgy.zip"
           aws s3 cp $dest .

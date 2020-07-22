@@ -12,7 +12,7 @@ class DeleteAction(FiggyAction):
         super().__init__(
             pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV} '
                           f'{extra_args} --skip-upgrade',
-                          timeout=20, encoding='utf-8'), extra_args=extra_args)
+                          timeout=10, encoding='utf-8'), extra_args=extra_args)
 
     def delete(self, name, check_delete=False, delete_another=False, retry=True):
         result = self.expect(['.*PS Name to Delete.*', pexpect.TIMEOUT])
