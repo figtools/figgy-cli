@@ -1,5 +1,8 @@
 Figgy Changelog:
 
+## 0.0.65
+- Fixing issue that could cause a set AWS_PROFILE environment variable to cause errors in figgy.
+
 ## 0.0.64
 - Adding support to disable version checks.
 
