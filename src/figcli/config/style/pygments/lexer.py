@@ -30,6 +30,8 @@ class FigLexer(RegexLexer):
     tokens = {
         'root': [
             (r' ', Error),
+            (r'^/$', Text),
+            (r'/$', Error),
             (r'^/[\w\-_]+/[\w\-_]+/[\w\-_/]{2,}', Name),
             (r'^/[\w\-_]+/[\w\-_]+', Keyword.Namespace),
             (r'^/[\w\-_]+', Keyword.Namespace),
@@ -41,9 +43,9 @@ class FiggyPygment(Style):
     default_style = ""
     styles = {
         Comment: Palette.BL_HX,
-        Keyword.Namespace: f'nobold {Palette.YL_HX}',
+        Keyword.Namespace: f'noinherit',
         Keyword.Other: Palette.YL_HX,
         Name: Palette.GR_HX,
-        Text: '',
+        Text: 'noinherit',
         Error: f'underline {Palette.RD_HX}'
     }
