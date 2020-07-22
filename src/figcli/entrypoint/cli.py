@@ -131,7 +131,7 @@ class FiggyCLI:
 
         Returns: command object.
         """
-        return self.get_command_factory().instance()
+        return self.__command_factory().instance()
 
     def find_assumable_role(self, env: RunEnv, role: Role, skip: bool = False, profile=None) -> AssumableRole:
         """
@@ -160,6 +160,14 @@ class FiggyCLI:
 
         return self._setup
 
+    def __command_factory(self) -> CommandFactory:
+        if not self._command_factory:
+            self._command_factory = CommandFactory(self._context,
+                                                   FiggySetup.stc_get_defaults(skip=self._is_setup_command,
+                                                                               profile=self._profile))
+
+        return self._command_factory
+
     @staticmethod
     def is_setup_command(args):
         """
@@ -178,16 +186,11 @@ class FiggyCLI:
         Initializes global shared properties
         :param args: Arguments passed in from user, collected from ArgParse
         """
-        self._mgmt_session = None
-        self._s3_resource = None
-        self._mgmt_ssm = None
         self._profile = None
         self._command_factory = None
         self._setup = None
-        self._session_manager = None
         self._is_setup_command: bool = FiggyCLI.is_setup_command(args)
         self._utils = Utils(self.get_colors_enabled())
-        self._sts = boto3.client('sts')
         self._profile = Utils.attr_if_exists(profile, args)
         self._defaults: CLIDefaults = FiggySetup.stc_get_defaults(skip=self._is_setup_command, profile=self._profile)
         self._run_env = self._defaults.run_env
@@ -207,7 +210,7 @@ class FiggyCLI:
 
         self._assumable_role = self.find_assumable_role(self._run_env, self._role, skip=self._is_setup_command,
                                                         profile=self._profile)
-        # Todo validate this role?
+
         command_val = Utils.attr_if_exists(command, args)
         resource_val = Utils.attr_if_exists(resource, args)
         found_command: frozenset = frozenset({Utils.attr_if_exists(command, args)}) if command_val else None
@@ -215,14 +218,6 @@ class FiggyCLI:
 
         self._context = FiggyContext(self.get_colors_enabled(), found_resource, found_command,
                                      self._run_env, self._assumable_role, args)
-
-    def get_command_factory(self) -> CommandFactory:
-        if not self._command_factory:
-            self._command_factory = CommandFactory(self._context,
-                                                   FiggySetup.stc_get_defaults(skip=self._is_setup_command,
-                                                                               profile=self._profile))
-
-        return self._command_factory
 
 
 def main():
