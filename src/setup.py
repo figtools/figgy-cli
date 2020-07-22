@@ -35,7 +35,8 @@ base_requirements = [
         "pydantic >= 1.5.1",
         "python-u2flib-host>=3.0.3",
         "pycryptodome>=3.9.7",
-        "filelock>=3.0.12"
+        "filelock>=3.0.12",
+        "pygments>=2.6.1"
 ]
 
 windows_requirements = [

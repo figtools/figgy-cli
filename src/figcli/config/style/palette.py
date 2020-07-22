@@ -4,12 +4,7 @@ from sty import fg, FgRegister
 
 @dataclass
 class Palette:
-    # Default pallete colors
-    # BLUE = (5, 156, 205)
-    # GREEN = (48, 194, 46)
-    # RED = (253, 80, 85)
-    # YELLOW = (249, 149, 72)
-    # ORANGE = (214, 114, 52)
+    # Default palette colors
     BLUE = (5, 156, 205)
     GREEN = (51, 222, 136)
     RED = (240, 70, 87)

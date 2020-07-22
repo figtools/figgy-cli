@@ -14,6 +14,7 @@ python-u2flib-host==3.0.3 # BSD
 cryptography==2.9.2 # BSD
 requests==2.23.0 # Apache
 filelock==3.0.12
+pygements==2.6.1
 
 # Internal Figgy-lib
 git+git://github.com/figtools/figgy.lib@master
