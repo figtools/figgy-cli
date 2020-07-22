@@ -117,7 +117,7 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@master
+      uses: actions/create-release@main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:

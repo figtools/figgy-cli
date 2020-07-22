@@ -70,7 +70,7 @@ class VersionTracker:
             new_details = VersionTracker.get_version()
 
             if new_details.version != VERSION:
-                VersionTracker.print_new_version_msg(c, new_details)
+                VersionTracker.print_new_version_msg(c, new_details, print_version_text=False)
                 VersionTracker.print_changes(c, new_details)
             else:
                 print(f"Version: {VERSION}.")
@@ -89,13 +89,14 @@ class VersionTracker:
             print(f'{c.fg_bl}------------------------------------------{c.rs}')
 
     @staticmethod
-    def print_new_version_msg(c: Color, new_details: FiggyVersionDetails):
+    def print_new_version_msg(c: Color, new_details: FiggyVersionDetails, print_version_text=True):
         if not VersionTracker.is_rollback(VERSION, new_details.version):
             print(f'\n{c.fg_bl}----------------------------------------------{c.rs}')
             print(f'A new version of figgy is available!')
             print(f"Current Version: {c.fg_yl}{VERSION}{c.rs}")
             print(f"New Version: {c.fg_bl}{new_details.version}{c.rs}")
-            print(f"To see what the new version has in store for you, run `{CLI_NAME} --version`")
+            if print_version_text:
+                print(f"To see what the new version has in store for you, run `{CLI_NAME} --version`")
             print(f"To upgrade, run `{CLI_NAME} --upgrade`")
             print(f'{c.fg_bl}------------------------------------------------{c.rs}')
         else:
