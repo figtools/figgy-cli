@@ -71,7 +71,7 @@ class DevBrowse(FiggyTest):
         self.step("Get success. Deleting through browse.")
         # Delete Value
         child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
-                              f'--skip-upgrade {self.extra_args}')
+                                f'--skip-upgrade {self.extra_args}')
         time.sleep(5) ## let browse start
 
         for i in range(0, self.key_down_to_shared):
