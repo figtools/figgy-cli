@@ -216,7 +216,7 @@ class FiggyListForm(npyscreen.FormMuttActive):
         desc_lines = OutUtils.to_lines(desc, int(self.columns / 2 - self.BUFFER - self.BUFFER_LEFT))
         self.value_box.values = ["",
                                  "Value: ",
-                                 f"    > asdf",
+                                 f"    > {val}",
                                  "",
                                  "Description: ",
                                  f"---",
