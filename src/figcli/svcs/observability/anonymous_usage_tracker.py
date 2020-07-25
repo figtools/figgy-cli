@@ -42,7 +42,7 @@ class AnonymousUsageTracker:
     _PLATFORM_KEY = 'platform'
     _DISABLE_METRICS_ENV_VAR = 'FIGGY_DISABLE_METRICS'
 
-    REPORT_FREQUENCY = 1000 * 60  # Report every minute
+    REPORT_FREQUENCY = 1000 * 60 * 30  # Report every 30 minutes
     # REPORT_FREQUENCY = 1000 * 60 * 60 * 24  # Report daily
 
     @staticmethod
