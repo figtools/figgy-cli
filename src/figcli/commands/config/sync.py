@@ -199,7 +199,7 @@ class Sync(ConfigCommand):
                         and (isinstance(cfg.source, list)
                              or cfg.source.startswith(shared_ns) or cfg.source.startswith(
                             self.context.defaults.service_ns)):
-                    print(f"{self.c.fg_rd}stray replication mapping detected: {self.c.rs}"
+                    print(f"{self.c.fg_rd}Stray replication mapping detected: {self.c.rs}"
                           f" {self.c.fg_bl}{cfg.source} -> {cfg.destination}{self.c.rs}.")
                     notify = False
         if notify:

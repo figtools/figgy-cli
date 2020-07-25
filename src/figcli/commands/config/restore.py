@@ -197,8 +197,6 @@ class Restore(ConfigCommand):
 
                 if self._is_replication_destination(item.name):
                     repl_destinations.append(item.name)
-                    self._out.warn(f"Skipping: [[{item.name}]], it is a replication destination. To restore this value "
-                                   f"you must restore its source.")
                     continue
 
                 if item.cfg_at(time_converted).ps_action == SSM_PUT:
@@ -213,10 +211,11 @@ class Restore(ConfigCommand):
 
                         for cfg in cfgs_before:
                             decrypted_value = self._decrypt_if_applicable(cfg)
-                            self._out.notify(f"\nRestoring: [[{cfg.ps_name}]] \nValue: [[{decrypted_value}]]"
+                            self._out.print(f"\nRestoring: [[{cfg.ps_name}]] \nValue: [[{decrypted_value}]]"
                                              f"\nDescription: [[{cfg.ps_description}]]\nKMS Key: "
                                              f"[[{cfg.ps_key_id if cfg.ps_key_id else '[[No KMS Key Specified]]'}]]")
                             self._out.notify(f"Replaying version: [[{cfg.ps_version}]] of [[{cfg.ps_name}]]")
+                            print()
 
                             self._ssm.set_parameter(cfg.ps_name, decrypted_value,
                                                     cfg.ps_description, cfg.ps_type, key_id=cfg.ps_key_id)
@@ -237,6 +236,7 @@ class Restore(ConfigCommand):
             cfg = self._config.get_config_repl(item)
             self._print_cannot_restore_msg(cfg)
 
+        print("\n\n")
         if not repl_destinations:
             self._out.success_h2(f"[[{restore_count}]] configurations restored successfully!")
         else:
@@ -245,18 +245,16 @@ class Restore(ConfigCommand):
             self._out.success(f"{restore_count - len(repl_destinations)} configurations restored successfully.")
 
     def _print_cannot_restore_msg(self, repl_conf: ReplicationConfig):
-        self._out.error_h2(f"Cannot restore: {repl_conf.destination}")
-        self._out.warn(f"Parameter: [[{repl_conf.destination}]] is a shared parameter. "
-                       f"It was shared from [[{repl_conf.source}]]")
-        self._out.warn(f"Shared by: [[{repl_conf.user}]]")
-        self._out.warn(f"To restore this parameter you should restore the source: {repl_conf.source} instead! "
-                       f"Doing so will result in {repl_conf.destination} being re-set to the appropriate previous "
-                       f"configuration.")
+        self._out.print(f"Parameter: [[{repl_conf.destination}]] is a shared parameter. ")
+        self._out.print(f"Shared From: [[{repl_conf.source}]]")
+        self._out.print(f"Shared by: [[{repl_conf.user}]]")
+        self._out.warn(f"To restore this parameter you should restore the source: {repl_conf.source} instead!")
+        print()
 
     def _prompt_delete(self, name):
         param = self._ssm.get_parameter_encrypted(name)
         if param:
-            selection = Input.y_n_input(f"PS Name: {self.c.fg_bl}{name}{self.c.rs} did not exist at this restore time."
+            selection = Input.y_n_input(f"PS Name: {name} did not exist at this restore time."
                                         f" Delete it? ", default_yes=False)
 
             if selection:

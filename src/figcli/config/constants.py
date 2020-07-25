@@ -1,6 +1,6 @@
 from pathlib import Path
 
-VERSION = '0.0.65'
+VERSION = '0.0.66'
 CLI_NAME = 'figgy'
 PROJECT_NAME = 'figgy'
 
@@ -96,8 +96,8 @@ ERROR_LOG_DIR = f'{HOME}/.figgy/errors'
 CONFIG_OVERRIDE_FILE_PATH = f'{HOME}/.figgy/config'
 DEFAULTS_FILE_CACHE_PATH = f'{CACHE_OTHER_DIR}/defaults.json'
 CONFIG_CACHE_FILE_PATH = f'{CACHE_OTHER_DIR}/config-cache.json'
-STS_SESSION_CACHE_PATH = f"{HOME}/.figgy/vault/sts/sessions"
-SAML_SESSION_CACHE_PATH = f"{HOME}/.figgy/vault/sso/saml"
+STS_SESSION_CACHE_PATH = f"{HOME}/.figgy/lockbox/sts/sessions"
+SAML_SESSION_CACHE_PATH = f"{HOME}/.figgy/lockbox/sso/saml"
 OKTA_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/okta/session"
 GOOGLE_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/google/session"
 FIGGY_LOCK_FILE_PATH = f"{HOME}/.figgy/lock"
