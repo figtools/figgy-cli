@@ -1,5 +1,9 @@
 Figgy Changelog:
 
+## 0.0.66
+- Fixing a bug with `list` where the value would always return 'asdf'. This was accidentally left in as an artifact of
+troubleshooting.
+
 ## 0.0.65
 - Fixing issue that could cause a set AWS_PROFILE environment variable to cause errors in figgy.
 

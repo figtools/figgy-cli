@@ -27,7 +27,7 @@ from figcli.utils.utils import Utils
 from figcli.test.cli.sso.okta.configure import ConfigureOkta
 
 CACHE_DIR = f'{HOME}/.figgy/cache'
-VAULT_DIR = f'{HOME}/.figgy/vault'
+VAULT_DIR = f'{HOME}/.figgy/lockbox'
 CONFIG_FILE = f'{HOME}/.figgy/config'
 KEYRING_FILE = f'{HOME}/.local/share/python_keyring/keyring_pass.cfg'
 c = Utils.default_colors()
