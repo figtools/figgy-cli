@@ -683,7 +683,7 @@ class Google:
 
         if self._defaults.mfa_enabled:
             color = Utils.default_colors() if self._defaults.colors_enabled else None
-            mfa_token = self._secrets.get_next_mfa(self._defaults.user) if self._defaults.auto_mfa else \
+            mfa_token = self._secrets_mgr.get_next_mfa(self._defaults.user) if self._defaults.auto_mfa else \
                 Input.get_mfa(display_hint=True, color=color)
         else:
             mfa_token = None
@@ -880,7 +880,7 @@ class Google:
         # if challenge_id == 2:
         #     if self._defaults.mfa_enabled:
         #         color = Utils.default_colors() if self._defaults.colors_enabled else None
-        #         mfa_token = self._secrets.get_next_mfa(self._defaults.user) if self._defaults.auto_mfa else \
+        #         mfa_token = self._secrets_mgr.get_next_mfa(self._defaults.user) if self._defaults.auto_mfa else \
         #             Input.get_mfa(display_hint=True, color=color)
         #     else:
         #         mfa_token = None
