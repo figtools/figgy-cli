@@ -39,7 +39,7 @@ class BastionSessionProvider(SessionProvider):
         self._iam_client = None
         self._iam = None
         keychain_enabled = defaults.extras.get(DISABLE_KEYRING) is not True
-        vault = FiggyVault(keychain_enabled=keychain_enabled)
+        vault = FiggyVault(keychain_enabled=keychain_enabled, secrets_mgr=self._secrets_mgr)
         self._sts_cache: CacheManager = CacheManager(file_override=STS_SESSION_CACHE_PATH, vault=vault)
         self._role_name_prefix = os.getenv(FIGGY_ROLE_PREFIX_OVERRIDE_ENV, FIGGY_ROLE_NAME_PREFIX)
 
@@ -112,7 +112,7 @@ class BastionSessionProvider(SessionProvider):
                     if self._defaults.mfa_enabled:
                         self._defaults.mfa_serial = self.get_mfa_serial()
                         color = Utils.default_colors() if self._defaults.colors_enabled else None
-                        mfa = SecretsManager.generate_mfa(self._defaults.user) if self._defaults.auto_mfa else \
+                        mfa = self._secrets_mgr.generate_mfa(self._defaults.user) if self._defaults.auto_mfa else \
                                                             Input.get_mfa(display_hint=True, color=color)
 
                         response = self.__get_sts().assume_role(RoleArn=assumable_role.role_arn,

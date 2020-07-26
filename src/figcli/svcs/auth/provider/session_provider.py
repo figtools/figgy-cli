@@ -19,6 +19,7 @@ class SessionProvider(ABC):
         self._defaults = defaults
         self._valid_tokens = set()
         self._lock = Lock()
+        self._secrets_mgr = SecretsManager()
 
     @Utils.retry
     @Utils.trace
@@ -72,12 +73,12 @@ class SessionProvider(ABC):
         Returns: str -> password
         """
 
-        password = SecretsManager.get_password(user_name)
+        password = self._secrets_mgr.get_password(user_name)
         reset_password = not password
 
         if reset_password or prompt:
             password = Input.get_password(provider=self._defaults.provider.name)
             if reset_password or save:
-                SecretsManager.set_password(user_name, password)
+                self._secrets_mgr.set_password(user_name, password)
 
         return password

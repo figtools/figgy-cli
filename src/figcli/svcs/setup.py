@@ -38,6 +38,7 @@ class FiggySetup:
         self._config_mgr, self.c = ConfigManager.figgy(), Utils.default_colors()
         self._session_mgr = None
         self._session_provider = None
+        self._secrets_mgr = SecretsManager()
 
     def get_assumable_roles(self, defaults: CLIDefaults = None) -> List[AssumableRole]:
         if not defaults:
@@ -68,7 +69,7 @@ class FiggySetup:
         if provider in Provider.sso_providers():
             user: str = Input.get_user(provider=provider.name)
             password: str = Input.get_password(provider=provider.name)
-            SecretsManager.set_password(user, password)
+            self._secrets_mgr.set_password(user, password)
             updated_defaults.user = user
 
         try:
@@ -89,7 +90,7 @@ class FiggySetup:
 
         if updated_defaults.auto_mfa:
             mfa_secret = Input.get_mfa_secret()
-            SecretsManager.set_mfa_secret(updated_defaults.user, mfa_secret)
+            self._secrets_mgr.set_mfa_secret(updated_defaults.user, mfa_secret)
 
         if configure_provider:
             provider_config = ProviderConfigFactory().instance(provider, mfa_enabled=updated_defaults.mfa_enabled)

@@ -36,16 +36,16 @@ class GoogleSessionProvider(SSOSessionProvider):
     def __init__(self, defaults: CLIDefaults):
         super().__init__(defaults)
         keychain_enabled = defaults.extras.get(DISABLE_KEYRING) is not True
-        vault = FiggyVault(keychain_enabled=keychain_enabled)
+        vault = FiggyVault(keychain_enabled=keychain_enabled, secrets_mgr=self._secrets_mgr)
         self._cache_manager: CacheManager = CacheManager(file_override=GOOGLE_SESSION_CACHE_PATH, vault=vault)
         config = GoogleConfig(
             username=defaults.user,
-            password=SecretsManager.get_password(defaults.user),
+            password=self._secrets_mgr.get_password(defaults.user),
             idp_id=defaults.provider_config.idp_id,
             sp_id=defaults.provider_config.sp_id,
             bg_response=None)
 
-        self._google = Google(config=config, save_failure=False, defaults=defaults)
+        self._google = Google(config=config, save_failure=False, defaults=defaults, secrets_mgr=self._secrets_mgr)
 
         self._write_google_session_to_cache(self._google.session_state)
 

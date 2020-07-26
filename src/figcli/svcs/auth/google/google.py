@@ -34,7 +34,7 @@ class ExpectedGoogleException(Exception):
 
 
 class Google:
-    def __init__(self, config, save_failure, defaults: CLIDefaults):
+    def __init__(self, config, save_failure, defaults: CLIDefaults, secrets_mgr: SecretsManager):
         """The Google object holds authentication state
         for a given session. You need to supply:
         username: FQDN Google username, eg first.last@example.com
@@ -51,7 +51,7 @@ class Google:
         self.save_failure = save_failure
         self.session_state = None
         self._defaults = defaults
-        self._secrets = SecretsManager()
+        self._secrets_mgr = secrets_mgr
 
     @property
     def login_url(self):

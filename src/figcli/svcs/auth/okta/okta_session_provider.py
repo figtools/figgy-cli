@@ -29,7 +29,7 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
     def __init__(self, defaults: CLIDefaults):
         super().__init__(defaults)
         keychain_enabled = defaults.extras.get(DISABLE_KEYRING) is not True
-        vault = FiggyVault(keychain_enabled=keychain_enabled)
+        vault = FiggyVault(keychain_enabled=keychain_enabled, secrets_mgr=self._secrets_mgr)
         self._cache_manager: CacheManager = CacheManager(file_override=OKTA_SESSION_CACHE_PATH, vault=vault)
         self._saml_cache: CacheManager = CacheManager(file_override=SAML_SESSION_CACHE_PATH, vault=vault)
 
@@ -63,10 +63,11 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
                 return okta
             except (FileNotFoundError, InvalidSessionError, JSONDecodeError, AttributeError) as e:
                 try:
-                    password = SecretsManager.get_password(self._defaults.user)
+                    password = self._secrets_mgr.get_password(self._defaults.user)
+
                     if self._defaults.mfa_enabled:
                         color = Utils.default_colors() if self._defaults.colors_enabled else None
-                        mfa = SecretsManager.generate_mfa(self._defaults.user) if self._defaults.auto_mfa else\
+                        mfa = self._secrets_mgr.generate_mfa(self._defaults.user) if self._defaults.auto_mfa else\
                                 Input.get_mfa(display_hint=True, color=color)
                     else:
                         mfa = None
@@ -103,13 +104,13 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
                           " Likely invalid MFA or Password?\r\n")
                     failure_count += 1
 
-                log.info(f"GOT INVALID SESSION: {e}")
+                print(f"GOT INVALID SESSION: {e}")
                 user = self._get_user(prompt)
                 password = self._get_password(user, prompt=prompt, save=True)
 
                 if self._defaults.mfa_enabled:
                     color = Utils.default_colors() if self._defaults.colors_enabled else None
-                    mfa = SecretsManager.generate_mfa(user) if self._defaults.auto_mfa else \
+                    mfa = self._secrets_mgr.generate_mfa(user) if self._defaults.auto_mfa else \
                         Input.get_mfa(display_hint=True, color=color)
                 else:
                     mfa = None
@@ -117,10 +118,10 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
                 primary_auth = OktaPrimaryAuth(self._defaults, password, mfa)
 
                 try:
-                    log.info("Trying to write session to cache...")
+                    print("Trying to write session to cache...")
                     self._write_okta_session_to_cache(primary_auth.get_session())
                 except InvalidSessionError as e:
-                    log.info(f"Got invalid session: {e}")
+                    print(f"Got invalid session: {e}")
                     return self.get_saml_assertion(prompt=True)
                 else:
                     return self.get_saml_assertion(prompt=True)

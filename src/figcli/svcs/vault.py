@@ -13,18 +13,19 @@ to the vault.
 
 class FiggyVault:
 
-    def __init__(self, keychain_enabled=True):
+    def __init__(self, keychain_enabled=True, secrets_mgr: SecretsManager = SecretsManager()):
         """
         keychain_enabled: Stores the encyrption key in the user's keychain. This will be disabled for Sandbox
         sessions to simlify the user experience.
         """
+        self._secrets_mgr = secrets_mgr
         encryption_key = DEFAULT_ENCRYPTION_KEY
         if keychain_enabled:
-            encryption_key = SecretsManager.get_password(KEYCHAIN_ENCRYPTION_KEY)
+            encryption_key = secrets_mgr.get_password(KEYCHAIN_ENCRYPTION_KEY)
             if not encryption_key:
                 Utils.wipe_vaults()
                 encryption_key: str = Fernet.generate_key().decode()
-                SecretsManager.set_password(KEYCHAIN_ENCRYPTION_KEY, encryption_key)
+                secrets_mgr.set_password(KEYCHAIN_ENCRYPTION_KEY, encryption_key)
 
         self.fernet = Fernet(encryption_key)
 

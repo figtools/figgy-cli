@@ -31,7 +31,7 @@ class SSOSessionProvider(SessionProvider, ABC):
         self._utils = Utils(defaults.colors_enabled)
         self._sts = boto3.client('sts')
         keychain_enabled = defaults.extras.get(DISABLE_KEYRING) is not True
-        vault = FiggyVault(keychain_enabled=keychain_enabled)
+        vault = FiggyVault(keychain_enabled=keychain_enabled, secrets_mgr=self._secrets_mgr)
         self._sts_cache: CacheManager = CacheManager(file_override=STS_SESSION_CACHE_PATH, vault=vault)
         self._saml_cache: CacheManager = CacheManager(file_override=SAML_SESSION_CACHE_PATH, vault=vault)
 
