@@ -1,6 +1,6 @@
 from pathlib import Path
 
-VERSION = '0.0.66'
+VERSION = '0.1.0b'
 CLI_NAME = 'figgy'
 PROJECT_NAME = 'figgy'
 
