@@ -1,4 +1,4 @@
-Figgy Changelog:
+Figgy CLI Changelog:
 
 ## 0.0.66
 - Fixing a bug with `list` where the value would always return 'asdf'. This was accidentally left in as an artifact of

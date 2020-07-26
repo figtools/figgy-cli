@@ -28,7 +28,7 @@ jobs:
           OKTA_SSO_PASSWORD: ${{ secrets.OKTA_SSO_PASSWORD }}
           OKTA_EMBED_URL: ${{ secrets.OKTA_EMBED_URL }}
           OKTA_MFA_SECRET: ${{ secrets.OKTA_MFA_SECRET }}
-          DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
           TERM: xterm-256color
           TERMINFO: /etc/terminfo
@@ -69,7 +69,7 @@ jobs:
           AWS_REGION: us-east-1
           FIGGY_DISABLE_KEYRING: true
           OVERRIDE_KEYRING: true
-          DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
           TERM: linux
           TERMINFO: /etc/terminfo
@@ -104,7 +104,7 @@ jobs:
           AWS_REGION: us-east-1
           FIGGY_DISABLE_KEYRING: true
           OVERRIDE_KEYRING: true
-          DISABLE_FIGGY_METRICS: true
+          FIGGY_DISABLE_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
         shell: bash
         run: |
