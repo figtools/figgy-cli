@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 0.1.1
+- Tuning Figgy metric gathering.
+
 ## 0.1.0
 - Figgy beta release!
 - Changes to prevent Linux users from experiencing multiple keychain decrypt prompts during a single command execution.
