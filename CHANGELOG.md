@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 0.1.2
+- Clarify some error messaging in the FiggyCLI. Also removing some invalid options from `--configure` command.
+
 ## 0.1.1
 - Tuning Figgy metric gathering.
 

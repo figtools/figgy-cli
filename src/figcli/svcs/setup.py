@@ -206,8 +206,11 @@ class FiggySetup:
                 if skip:
                     return CLIDefaults.unconfigured()
                 else:
-                    Utils.stc_error_exit(f'{CLI_NAME} has not been configured. '
-                                     f'Please run {CLI_NAME} --{Utils.get_first(configure)}')
+                    Utils.stc_error_exit(f'{CLI_NAME} has not been configured.\n\nIf your organization has already '
+                                         f'installed Figgy Cloud, please run '
+                                         f'`{CLI_NAME} --{Utils.get_first(configure)}`.\n\n'
+                                         f'You may also provide the `--profile` flag, or log-in to our free sandbox with '
+                                         f'`figgy login sandbox` to experiment with {CLI_NAME}.')
 
             return defaults
         except JSONDecodeError:

@@ -16,8 +16,12 @@ class Provider(Enum):
         return [Provider.OKTA, Provider.GOOGLE]
 
     @staticmethod
+    def cloud_providers() -> List["Provider"]:
+        return [Provider.AWS_BASTION, Provider.OKTA, Provider.GOOGLE]
+
+    @staticmethod
     def names():
-        return [provider.name for provider in Provider]
+        return [provider.name for provider in Provider.cloud_providers()]
 
     @staticmethod
     def values():
