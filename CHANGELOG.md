@@ -1,5 +1,9 @@
 Figgy CLI Changelog:
 
+## 0.1.3
+- Fixing a display bug with `browse` when users selected delete then select (or the reverse) for a single fig.
+- Improving performance of de-selection of nodes in the browse tree.
+
 ## 0.1.2
 - Clarify some error messaging in the FiggyCLI. Also removing some invalid options from `--configure` command.
 

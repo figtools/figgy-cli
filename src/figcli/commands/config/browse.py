@@ -279,7 +279,7 @@ class BrowseApp(NPSApp):
         return select_prefix + selects + delete_prefix + deletes
 
     def on_delete(self, ps_name):
-        if ps_name in self.selected_params.keys():
+        if self.selected_params.get(ps_name) == self.TO_DELETE:
             del self.selected_params[ps_name]
         else:
             self.selected_params[ps_name] = self.TO_DELETE
@@ -287,39 +287,43 @@ class BrowseApp(NPSApp):
         self.select_state_box.values = self.generate_selections()
         self.select_state_box.update()
 
-    def on_select(self, ps_name: str):
+    def on_select(self, ps_name: str, update: bool = True):
         """
         Lookup and update the value form when a user selects an item in the DisplayBox
         """
-        self.value_box.name = ps_name
-        try:
-            val, desc, = self._cfg.get_parameter_with_description(ps_name)
-        except ParameterUndecryptable:
-            val = "Undecryptable"
-            desc = "You do not have access to decrypt this parameter."
-        except TypeError:
-            return  # No parameter found
 
-        val = f"> {val}" if val else ''
-        desc = f"> {desc}" if desc else ''
+        # Only update query box on selects
+        if update:
+            self.value_box.name = ps_name
+            try:
+                val, desc, = self._cfg.get_parameter_with_description(ps_name)
+            except ParameterUndecryptable:
+                val = "Undecryptable"
+                desc = "You do not have access to decrypt this parameter."
+            except TypeError:
+                return  # No parameter found
 
-        if val or desc:
-            line_length = int(self._browse_box.columns / 2) - self.BUFFER
-            val_lines = OutUtils.to_lines(val, line_length)
-            desc_lines = OutUtils.to_lines(desc, line_length)
-            self.value_box.values = ["",
-                                     "Value: ",
-                                     f"---",
-                                     ] + val_lines + [
-                                        "",
-                                        "Description: ",
-                                        f"---",
+            val = f"> {val}" if val else ''
+            desc = f"> {desc}" if desc else ''
 
-                                    ] + desc_lines
+            if val or desc:
+                line_length = int(self._browse_box.columns / 2) - self.BUFFER
+                val_lines = OutUtils.to_lines(val, line_length)
+                desc_lines = OutUtils.to_lines(desc, line_length)
+                self.value_box.values = ["",
+                                         "Value: ",
+                                         f"---",
+                                         ] + val_lines + [
+                                            "",
+                                            "Description: ",
+                                            f"---",
 
-            self.value_box.update()
+                                        ] + desc_lines
 
-        if ps_name in self.selected_params.keys():
+                self.value_box.update()
+
+        # Update selection box
+        if self.selected_params.get(ps_name) == self.SELECTED:
             del self.selected_params[ps_name]
         else:
             self.selected_params[ps_name] = self.SELECTED
@@ -413,6 +417,8 @@ class LogicalMLTree(MLTreeMultiSelect):
     def h_select(self, ch):
         vl = self.values[self.cursor_line]
         vl_to_set = not vl.selected
+        vl.deleted = False
+
         if self.select_cascades:
             for v in self._walk_tree(vl, only_expanded=False, ignore_root=False):
                 if v.selectable:
@@ -420,7 +426,7 @@ class LogicalMLTree(MLTreeMultiSelect):
         else:
             vl.selected = vl_to_set
 
-        self._on_select_callable(self.get_path(vl))
+        self._on_select_callable(self.get_path(vl), update=vl_to_set)
 
         if self.select_exit:
             self.editing = False
@@ -435,6 +441,8 @@ class LogicalMLTree(MLTreeMultiSelect):
     def h_delete(self, ch):
         vl = self.values[self.cursor_line]
         vl_to_set = not vl.deleted
+        vl.selected = False
+
         if self.select_cascades:
             for v in self._walk_tree(vl, only_expanded=False, ignore_root=False):
                 if v.selectable:
