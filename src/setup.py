@@ -127,7 +127,7 @@ Figgy supports SAML based SSO integrations with multi-factor authentication. Sim
 **Figgy will help you:**
 
 - Establish secure best practices from the start
-- Prevent failed deployments and application downtime due to configuration mismanagmeent
+- Prevent failed deployments and application downtime due to configuration mismanagement
 - Save you time by automating simple configuration management tasks
 - Give you peace of mind through high availability and resiliency, versioned configurations, audit logs, and easy rollbacks or restores.
 - Keep secrets with their owners by cutting out the middle-man and establishing a strong framework of least-privilege. 
