@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 0.1.4
+- Fixing a bug with color display on non-truecolor terminals. 
+
 ## 0.1.3
 - Fixing a display bug with `browse` when users selected delete then select (or the reverse) for a single fig.
 - Improving performance of de-selection of nodes in the browse tree.
