@@ -7,7 +7,7 @@ from figcli.config.style.terms.term import Term
 
 class iTerm(Term):
     TERM_PROGRAM = 'iTerm.app'
-    BLUE = (5, 156, 205)
+    BLUE = (7, 200, 239)
     GREEN = (51, 222, 136)
     RED = (240, 70, 87)
     YELLOW = (249, 149, 72)

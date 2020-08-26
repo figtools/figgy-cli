@@ -21,7 +21,7 @@ FIGGY_WEBSITE = "https://figgy.dev"
 base_requirements = [
         "boto3 >= 1.13.19",
         "prompt_toolkit == 2.0.7",
-        "sty >= 1.0.0b8",
+        "sty >= 1.0.0b12",
         "click >= 7.1.2",
         "tqdm >= 4.46.0",
         "npyscreen >= 4.10.5",

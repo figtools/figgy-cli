@@ -7,11 +7,11 @@ from figcli.config.style.terms.term import Term
 
 class DefaultTerm(Term):
     TERM_PROGRAM = 'Unknown'
-    BLUE = Palette.BLUE
-    GREEN = Palette.GREEN
-    RED = Palette.RED
-    YELLOW = Palette.YELLOW
-    ORANGE = Palette.ORANGE
+    BLUE = 26
+    GREEN = 41
+    RED = 161
+    YELLOW = 208
+    ORANGE = 166
 
     def get_colors(self) -> Color:
         return Color(

@@ -7,11 +7,11 @@ from figcli.config.style.terms.term import Term
 
 class AppleTerminal(Term):
     TERM_PROGRAM = 'Apple_Terminal'
-    BLUE = (33, 46, 222)
-    GREEN = (40, 138, 74)
-    RED = (191, 29, 42)
-    YELLOW = (199, 142, 10)
-    ORANGE = (232, 149, 39)
+    BLUE = 26
+    GREEN = 41
+    RED = 161
+    YELLOW = 208
+    ORANGE = 166
 
     def get_colors(self) -> Color:
         return Color(
