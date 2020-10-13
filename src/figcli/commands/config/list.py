@@ -64,7 +64,6 @@ class SelectBox(TextCommandBox):
 
     def __init__(self, screen, *args, **keywords):
         super().__init__(screen, *args, **keywords)
-        self.max_width = self.width / 2
         self.value = "/"
 
     def h_execute_command(self, *args, **keywords):

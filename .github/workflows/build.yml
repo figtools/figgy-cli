@@ -17,7 +17,7 @@ jobs:
         run: |
           echo "MacOs build is happening!!!"
           cd src
-          pip3 install pyinstaller
+          pip3 install pyinstaller==4.0
           pip3 install -r requirements.txt
           pip3 install -r requirements-darwin.txt
 
@@ -92,7 +92,7 @@ jobs:
           # install requirements
 
           cd src
-          pip3 install pyinstaller==3.5
+          pip3 install pyinstaller==4.0
           pip3 install -r requirements.txt
           pip3 install -r requirements-linux.txt
 
@@ -157,7 +157,7 @@ jobs:
           # install requirements
 
           cd src
-          pip3 install pyinstaller
+          pip3 install pyinstaller==4.0
           pip3 install -r requirements.txt
           pip3 install -r requirements-windows.txt
 
