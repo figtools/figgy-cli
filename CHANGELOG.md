@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 0.1.5
+- Testing out pyinstaller 4.0
+
 ## 0.1.4
 - Fixing a bug with color display on non-truecolor terminals. 
 
