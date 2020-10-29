@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 0.1.6
+- Updating cryptography package to address vulnerability
+
 ## 0.1.5
 - Testing out pyinstaller 4.0
 
