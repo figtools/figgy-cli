@@ -17,10 +17,10 @@ from distutils.spawn import find_executable
 from datetime import datetime
 from bs4 import BeautifulSoup
 from requests import HTTPError
-from six import print_ as print
 from six.moves import urllib_parse, input
 
 from figcli.config import VERSION
+from figcli.io.output import Output
 from figcli.svcs.mfa.u2f import *
 
 from figcli.io.input import Input
@@ -54,6 +54,8 @@ class Google:
         self._defaults = defaults
         self.save_flow = save_flow
         self._secrets_mgr = secrets_mgr
+        self._out = Output(defaults.colors_enabled)
+
         if save_flow:
             self.save_flow_dict = {}
             self.save_flow_dir = "aws-google-auth-" + datetime.now().strftime('%Y-%m-%dT%H%M%S')
@@ -400,7 +402,9 @@ class Google:
             if find_executable('xv') is None and find_executable('display') is None:
                 open_image = False
 
-        print("Please visit the following URL to view your CAPTCHA: {}".format(captcha_url))
+        self._out.print(f"\nPlease visit the following URL to view your CAPTCHA: {captcha_url}")
+        self._out.notify("\n\nTo avoid having to enter captchas in the future, check your gmail and authorize the new "
+                         "device.")
 
         if open_image:
             try:
@@ -578,7 +582,7 @@ class Google:
 
         self.check_prompt_code(response_page)
 
-        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")
+        self._out.print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")
 
         self.session.headers['Referer'] = sess.url
 
@@ -654,7 +658,7 @@ class Google:
         """
         num_code = response.find("div", {"jsname": "EKvSSd"})
         if num_code:
-            print("numerical code for prompt: {}".format(num_code.string))
+            self._out.print("numerical code for prompt: {}".format(num_code.string))
 
     def handle_totp(self, sess):
         response_page = BeautifulSoup(sess.text, 'html.parser')
@@ -846,9 +850,9 @@ class Google:
             elif "challenge/az/" in action:
                 challenges.append(['Google Prompt', i.attrs.get("data-challengeentry")])
 
-        print('Choose MFA method from available:')
+        self._out.print('Choose MFA method from available:')
         for i, mfa in enumerate(challenges, start=1):
-            print("{}: {}".format(i, mfa[0]))
+            self._out.print("{}: {}".format(i, mfa[0]))
 
         selected_challenge = input("Enter MFA choice number (1): ") or None
 
@@ -858,7 +862,7 @@ class Google:
             selected_challenge = 0
 
         challenge_id = challenges[selected_challenge][1]
-        print("MFA Type Chosen: {}".format(challenges[selected_challenge][0]))
+        self._out.print("MFA Type Chosen: {}".format(challenges[selected_challenge][0]))
 
         # We need the specific form of the challenge chosen
         challenge_form = response_page.find(
