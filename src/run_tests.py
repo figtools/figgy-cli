@@ -100,6 +100,7 @@ def main():
         print_test("Data Login")
         ConfigureGoogle('data').run()
         data_tests()
+
     elif auth_type == 'bastion':
         # Login to DEV Role
         print_test("Bastion DEV Login")

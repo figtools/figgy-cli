@@ -29,7 +29,7 @@ jobs:
         # Parse version
         VERSION=$(../scripts/get_version.sh)
         echo "Setting release version to $VERSION"
-        echo "::set-env name=RELEASE_VERSION::$VERSION"
+        echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Release Mac
       env:
@@ -104,7 +104,7 @@ jobs:
         # Parse version
         VERSION=$(../scripts/get_version.sh)
         echo "Setting release version to $VERSION"
-        echo "::set-env name=RELEASE_VERSION::$VERSION"
+        echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
 
         # Parse changelog
         CHANGELOG=$(../scripts/parse_changelog.sh)
