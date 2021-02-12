@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 0.1.7
+- Updating cryptography package to address another vulnerability
+
 ## 0.1.6
 - Updating cryptography package to address vulnerability
 
