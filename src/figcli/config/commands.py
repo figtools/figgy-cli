@@ -14,7 +14,7 @@ config = CliCommand('config')
 iam = CliCommand('iam')
 login = CliCommand('login')
 
-resources = {config, iam}
+resources = {config, iam, login}
 
 # Config Sub Command definitions
 sync = CliCommand('sync')
@@ -248,6 +248,7 @@ config_commands = [sync, put, edit, delete, prune, get, share, generate,
 iam_commands = [export, iam_restore]
 help_commands = [configure, version, login, sandbox, upgrade, role]
 login_commands = [login, sandbox]
+
 all_commands = iam_commands + help_commands + config_commands + login_commands
 
 # Used to build out parser, map of resource to sub-commands

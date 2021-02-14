@@ -11,7 +11,7 @@ from figcli.utils.utils import Utils, CollectionUtils
 
 
 class HelpFactory(Factory):
-    def __init__(self, command: frozenset, context: HelpContext):
+    def __init__(self, command: CliCommand, context: HelpContext):
         self._command = command
         self._context = context
         self._options = context.options
@@ -21,7 +21,7 @@ class HelpFactory(Factory):
     def instance(self):
         return self.get(self._command)
 
-    def get(self, command: frozenset):
+    def get(self, command: CliCommand):
         if configure in self._options:
             return Configure(self._context, self._setup)
         elif version in self._options:

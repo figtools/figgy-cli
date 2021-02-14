@@ -176,6 +176,8 @@ class FiggyCLI:
         Needed to skip past steps that are not necessary because figgy isn't set up yet, or to support a special
         use case (like sandbox logins).
         """
+
+
         return Utils.is_set_true(configure, args) \
                or Utils.command_set(sandbox, args) \
                or Utils.is_set_true(version, args) \

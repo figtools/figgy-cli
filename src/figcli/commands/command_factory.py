@@ -178,8 +178,6 @@ class CommandFactory(Factory):
         """
         factory: Factory = None
         start = time.time()
-        print(f"GOT COMMAND: {self._context.command}")
-
         if self._context.command in config_commands and self._context.resource == config:
             self.__init_sessions()
             context = ConfigContext(self._context.run_env, self._context.role, self._context.args, config,

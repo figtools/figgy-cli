@@ -116,8 +116,7 @@ class Utils:
 
     @staticmethod
     def command_set(check_command: CliCommand, args):
-        command_name = args.command if hasattr(args, check_command.name) else None
-
+        command_name = args.command if hasattr(args, 'command') else None
         return command_name == check_command.name
 
     @staticmethod
