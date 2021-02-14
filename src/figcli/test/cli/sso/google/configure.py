@@ -10,13 +10,13 @@ class ConfigureGoogle(FiggyTest):
         self._role_type = role_type
         super().__init__(None)
 
-        # super().__init__(pexpect.spawn(f'{CLI_NAME} --{Utils.get_first(configure)} --skip-upgrade {self.extra_args}',
+        # super().__init__(pexpect.spawn(f'{CLI_NAME} --{configure.name} --skip-upgrade {self.extra_args}',
         #                       encoding='utf-8', timeout=20))
-        self._child = pexpect.spawn(f'{CLI_NAME} --{Utils.get_first(configure)} --skip-upgrade {self.extra_args}',
+        self._child = pexpect.spawn(f'{CLI_NAME} --{configure.name} --skip-upgrade {self.extra_args}',
                               encoding='utf-8', timeout=20)
 
     def run(self):
-        self.step(f"Testing `{CLI_NAME} --{Utils.get_first(configure)}`")
+        self.step(f"Testing `{CLI_NAME} --{configure.name}`")
         user_name = os.environ.get(GOOGLE_SSO_USER)
         password = os.environ.get(GOOGLE_SSO_PASSWORD)
         idp_id = os.environ.get(GOOGLE_IDP_ID)

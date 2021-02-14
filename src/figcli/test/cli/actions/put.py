@@ -8,8 +8,8 @@ from figcli.utils.utils import *
 
 class PutAction(FiggyAction):
     def __init__(self, extra_args=""):
-        print(f"Testing `figgy config {Utils.get_first(put)} --env {DEFAULT_ENV}`")
-        super().__init__(f'{CLI_NAME} config {Utils.get_first(put)} '
+        print(f"Testing `figgy config {put.name} --env {DEFAULT_ENV}`")
+        super().__init__(f'{CLI_NAME} config {put.name} '
                          f'--env {DEFAULT_ENV} --skip-upgrade {extra_args}', extra_args=extra_args)
 
     def add(self, key, value, desc, delete_first=True, add_more=False):

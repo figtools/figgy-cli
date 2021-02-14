@@ -31,5 +31,5 @@ class HelpFactory(Factory):
         elif upgrade in self._options:
             return Upgrade(self._context)
         else:
-            self._utils.error_exit(f"{Utils.get_first(command)} is not a valid command. You must select from: "
+            self._utils.error_exit(f"{command.name} is not a valid command. You must select from: "
                                    f"[{CollectionUtils.printable_set(help_commands)}]. Try using --help for more info.")

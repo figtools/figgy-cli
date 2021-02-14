@@ -10,7 +10,7 @@ from figcli.utils.utils import *
 class DevGet(FiggyTest):
 
     def __init__(self, extra_args=""):
-        super().__init__(pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(get)} --env {DEFAULT_ENV} '
+        super().__init__(pexpect.spawn(f'{CLI_NAME} config {get.name} --env {DEFAULT_ENV} '
                                        f'--skip-upgrade {extra_args}',
                                        timeout=20, encoding='utf-8'), extra_args=extra_args)
 

@@ -89,5 +89,5 @@ class ConfigFactory(Factory):
         elif command == validate:
             return Validate(self._ssm, self._colors_enabled, self._config_context)
         else:
-            self._utils.error_exit(f"{Utils.get_first(command)} is not a valid command. You must select from: "
+            self._utils.error_exit(f"{command.name} is not a valid command. You must select from: "
                                    f"[{CollectionUtils.printable_set(config_commands)}]. Try using --help for more info.")

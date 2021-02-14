@@ -9,9 +9,9 @@ from figcli.utils.utils import *
 
 class DevDelete(FiggyTest):
     def __init__(self, extra_args=""):
-        print(f"Testing `figgy config {Utils.get_first(delete)} --env {DEFAULT_ENV}`")
+        print(f"Testing `figgy config {delete.name} --env {DEFAULT_ENV}`")
         super().__init__(
-            pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV} '
+            pexpect.spawn(f'{CLI_NAME} config {delete.name} --env {DEFAULT_ENV} '
                           f'{extra_args} --skip-upgrade',
                           timeout=20, encoding='utf-8'), extra_args=extra_args)
 

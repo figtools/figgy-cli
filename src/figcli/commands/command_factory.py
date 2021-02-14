@@ -145,7 +145,7 @@ class CommandFactory(Factory):
     def __cache_mgr(self) -> CacheManager:
         """Builds a cache manager service for the specified resource."""
         if not self._cache_mgr:
-            self._cache_mgr: CacheManager = CacheManager(Utils.get_first(self._context.resource))
+            self._cache_mgr: CacheManager = CacheManager(self._context.resource)
 
         return self._cache_mgr
 
@@ -178,6 +178,7 @@ class CommandFactory(Factory):
         """
         factory: Factory = None
         start = time.time()
+        print(f"GOT COMMAND: {self._context.command}")
 
         if self._context.command in config_commands and self._context.resource == config:
             self.__init_sessions()
@@ -217,7 +218,7 @@ class CommandFactory(Factory):
                                        f"not supplied.")
             else:
                 self._utils.error_exit(
-                    f"Command: {self._utils.get_first(self._context.command)} was not found in this version of figgy.")
+                    f"Command: {self._context.command.name} was not found in this version of figgy.")
 
         logger.info(f"Init completed in {time.time() - start} seconds.")
         return factory.instance()

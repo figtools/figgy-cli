@@ -111,4 +111,4 @@ class FiggyErrorReporter:
             else:
                 print(f"Error was not reported. Please consider reporting this error on our Github: "
                       f"{FIGGY_GITHUB}. Error details have been logged to this file: "
-                      f"{self.c.fg_bl}{log_file_name}{self.c.rs}. Farewell! \n")
+                      f"{self.c.fg_bl}~/.{CLI_NAME}/errors/{log_file_name}{self.c.rs}. Farewell! \n")

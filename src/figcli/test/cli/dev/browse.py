@@ -50,7 +50,7 @@ class DevBrowse(FiggyTest):
     def browse(self):
         print(f"Getting {KEY_PATH} through browse...")
         # Get Value
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {browse.name} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}')
         time.sleep(5) ## let browse start
 
@@ -70,7 +70,7 @@ class DevBrowse(FiggyTest):
 
         self.step("Get success. Deleting through browse.")
         # Delete Value
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(browse)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {browse.name} --env {DEFAULT_ENV} '
                                 f'--skip-upgrade {self.extra_args}')
         time.sleep(5) ## let browse start
 

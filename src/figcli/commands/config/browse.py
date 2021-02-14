@@ -232,7 +232,7 @@ class BrowseApp(NPSApp):
             prefix_child = td.newChild(content=self._browse.prefix, selectable=False, expanded=False)
             children = [prefix_child]
         else:
-            log.info(f"--{Utils.get_first(prefix)} missing, defaulting to normal browse tree.")
+            log.info(f"--{prefix.name} missing, defaulting to normal browse tree.")
 
             for namespace in self._config_view.get_authorized_namespaces():
                 child = td.newChild(content=namespace, selectable=False, expanded=False)

@@ -71,7 +71,7 @@ class AnonymousUsageTracker:
 
             command = getattr(self, 'type', None)
             if command:
-                command = Utils.get_first(command)
+                command = command.name
                 cache = CacheManager(AnonymousUsageTracker._CACHE_NAME)
 
                 if hasattr(self, 'context') and hasattr(self.context, 'defaults') and self.context.defaults is not None:

@@ -10,8 +10,8 @@ import sys
 
 class DevPut(FiggyTest):
     def __init__(self, extra_args=""):
-        print(f"Testing `figgy config {Utils.get_first(put)} --env {DEFAULT_ENV}`")
-        super().__init__(pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(put)} '
+        print(f"Testing `figgy config {put.name} --env {DEFAULT_ENV}`")
+        super().__init__(pexpect.spawn(f'{CLI_NAME} config {put.name} '
                                        f'--env {DEFAULT_ENV} --skip-upgrade {extra_args}', timeout=45, encoding='utf-8'),
                                        extra_args=extra_args)
 
