@@ -11,7 +11,7 @@ jsonpickle==1.4.1 # BSD
 urllib3==1.25.7 # MIT
 pyotp==2.3.0 # MIT
 python-u2flib-host==3.0.3 # BSD
-cryptography==3.2.1 # BSD
+cryptography==3.3.2 # BSD
 requests==2.23.0 # Apache
 filelock==3.0.12
 pygments==2.6.1
