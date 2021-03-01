@@ -47,6 +47,7 @@ generate = CliCommand('generate')
 from_path = CliCommand('from')
 validate = CliCommand('validate')
 profile = CliCommand('profile')
+ui = CliCommand('ui')
 
 # IAM sub commands
 export = CliCommand('export')
@@ -205,6 +206,13 @@ arg_options = {
             debug: {action: store_true, required: False},
             profile: {action: None, required: False},
         },
+        ui: {
+            info: {action: store_true, required: False},
+            env: {action: None, required: False},
+            skip_upgrade: {action: store_true, required: False},
+            debug: {action: store_true, required: False},
+            profile: {action: None, required: False},
+        },
     },
     iam: {
         export: {
@@ -244,7 +252,7 @@ merge_suffixes = [merge_uri_suffix, empty_uri_suffix]
 
 # Supported commands by resource
 config_commands = [sync, put, edit, delete, prune, get, share, generate,
-                   list_com, browse, audit, dump, restore, promote, validate]
+                   list_com, browse, audit, dump, restore, promote, validate, ui]
 iam_commands = [export, iam_restore]
 help_commands = [configure, version, login, sandbox, upgrade, role]
 login_commands = [login, sandbox]

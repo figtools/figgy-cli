@@ -1,10 +1,9 @@
-from figcli.config import *
+from dataclasses import dataclass
 
 
+@dataclass
 class Account:
-
-    def __init__(self, account: str):
-        self.account = account
+    account: str
 
     def __str__(self):
         return self.account

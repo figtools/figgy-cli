@@ -1,7 +1,10 @@
 import logging
+from functools import cache, lru_cache
 from typing import Set, List, Tuple, Optional
 
+import cachetools as cachetools
 from botocore.exceptions import ClientError
+from cachetools import cached, TTLCache
 
 from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
@@ -27,6 +30,9 @@ class ConfigService:
     cache for the fastest possible lookup times.
     """
     _PS_NAME_CACHE_KEY = 'parameter_names'
+    MEMORY_CACHED_NAMES: Set[str] = []
+    MEMORY_CACHE_REFRESH_INTERVAL: int = 5000
+    MEMORY_CACHE_LAST_REFRESH_TIME: int = 0
 
     def __init__(self, config_dao: ConfigDao, ssm: SsmDao, cache_mgr: CacheManager, run_env: RunEnv):
         self._config_dao = config_dao
@@ -39,6 +45,7 @@ class ConfigService:
         return sorted(list(set([f"/{p.split('/')[1]}" for p in all_params])))
 
     @Utils.trace
+    @cached(TTLCache(maxsize=10, ttl=5))
     def get_parameter_names(self) -> Set[str]:
         """
         Looks up local cached configs, then queries new config names from the remote cache, merges the two, and
@@ -86,6 +93,9 @@ class ConfigService:
             all_parameters = set(cached_contents) - deleted_names | added_names
 
         return all_parameters
+
+    def get_parameter_names_by_filter(self, filter_str: str):
+        return filter(lambda x: filter_str in x, self.get_parameter_names())
 
     def get_parameter_with_description(self, name: str) -> Tuple[Optional[str], Optional[str]]:
         """

@@ -22,7 +22,7 @@ from figcli.svcs.setup import FiggySetup
 from figcli.utils.utils import Utils
 
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.CRITICAL)
+root_logger.setLevel(logging.INFO)
 root_logger.handlers = []
 stdout_handler = logging.StreamHandler(sys.stdout)
 

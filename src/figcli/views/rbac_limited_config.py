@@ -10,6 +10,8 @@ from figcli.models.role import Role
 from figgy.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config import ConfigService
+from figcli.ui.models.config_orchard import ConfigOrchard
+from figcli.ui.models.config_tree_data import ConfigTreeData
 from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
@@ -68,9 +70,11 @@ class RBACLimitedConfigView:
         cache_key = f'{self._role.role}-authed-keys'
 
         if self._profile:
-            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter, self.rbac_profile_kms_keys_path)
+            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter,
+                                                             self.rbac_profile_kms_keys_path)
         else:
-            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter, self.rbac_role_kms_path)
+            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter,
+                                                             self.rbac_role_kms_path)
 
         if authed_nses:
             authed_nses = json.loads(authed_nses)
@@ -141,3 +145,8 @@ class RBACLimitedConfigView:
 
         # print(f"Cache Count: {len(all_names)}")
         return self._config_completer
+
+    @Utils.trace
+    def get_config_orchard(self) -> ConfigOrchard:
+        all_children = set(self.get_config_names())
+        return ConfigOrchard.build_orchard(all_children)

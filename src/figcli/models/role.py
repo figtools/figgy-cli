@@ -1,8 +1,10 @@
-class Role:
+from dataclasses import dataclass
 
-    def __init__(self, role: str, full_name: str = None):
-        self.role: str = role
-        self.full_name = full_name
+
+@dataclass
+class Role:
+    role: str
+    full_name: str
 
     def __str__(self):
         return self.role

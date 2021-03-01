@@ -80,6 +80,7 @@ MISSING_PS_NAME_MESSAGE = "Your application is missing at least one ParameterSto
 PROFILE_HELP_TEXT = "Overrides all other figgy configurations and instead pulls ALL credentials from your local " \
                     "~/.aws/credentials file and uses that for all types of authorization. Ideal for CICD pipelines."
 IAM_RESTORE_HELP_TEXT = "Restores any credentials in ~/.aws/credentials that were automatically backed up by figgy."
+UI_HELP_TEXT = "Loads the Figgy UI in your default browser."
 
 # Point in time (--point-in-time)
 POINT_IN_TIME = "Restore all parameters to a point in time."
@@ -128,7 +129,8 @@ HELP_TEXT_MAP = {
     validate: VALIDATE_HELP_TEXT,
     profile: PROFILE_HELP_TEXT,
     upgrade: UPGRADE_HELP_TEXT,
-    iam_restore: IAM_RESTORE_HELP_TEXT
+    iam_restore: IAM_RESTORE_HELP_TEXT,
+    ui: UI_HELP_TEXT
 }
 
 # Other
