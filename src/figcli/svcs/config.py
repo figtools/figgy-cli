@@ -10,6 +10,7 @@ from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.models.config_item import ConfigState, ConfigItem
 from figgy.models.run_env import RunEnv
+from figgy.models.fig import Fig
 from figcli.svcs.cache_manager import CacheManager
 from figcli.utils.utils import Utils
 
@@ -113,3 +114,10 @@ class ConfigService:
         except ClientError as e:
             if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                 raise ParameterUndecryptable(f'{e}')
+
+    def get_fig_simple(self, name: str) -> Fig:
+        """
+        Lookup a parameter's value and description.
+        """
+        value, desc = self._ssm.get_parameter_with_description(name)
+        return Fig(name=name, value=value, description=desc).__dict__
