@@ -1,9 +1,7 @@
-from dataclasses import dataclass
 from typing import List
 from figcli.ui.route import Route
 
 
-@dataclass
 class Controller:
     def __init__(self, prefix: str):
         self.prefix = prefix

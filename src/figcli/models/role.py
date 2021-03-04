@@ -1,10 +1,11 @@
-from dataclasses import dataclass
+from typing import Optional
+
+from pydantic import BaseModel
 
 
-@dataclass
-class Role:
+class Role(BaseModel):
     role: str
-    full_name: str
+    full_name: Optional[str]
 
     def __str__(self):
         return self.role
@@ -14,3 +15,4 @@ class Role:
 
     def __hash__(self):
         return hash(self.role)
+

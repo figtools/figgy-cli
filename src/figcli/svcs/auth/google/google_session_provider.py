@@ -1,9 +1,10 @@
 import re
 import xml.etree.ElementTree as ET
 
+from pydantic import BaseModel
+
 from figcli.config.sso import *
 from figcli.config.constants import GOOGLE_SESSION_CACHE_PATH
-from dataclasses import dataclass
 from typing import Optional, Any, List
 
 from figcli.models.assumable_role import AssumableRole
@@ -19,8 +20,7 @@ from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 from figcli.config.constants import ERROR_LOG_DIR, DISABLE_KEYRING
 
-@dataclass
-class GoogleConfig:
+class GoogleConfig(BaseModel):
     username: str
     password: str
     idp_id: str
@@ -93,8 +93,8 @@ class GoogleSessionProvider(SSOSessionProvider):
                     Utils.stc_error_exit(unparsable_msg)
                 else:
                     assumable_roles.append(AssumableRole(account_id=account_id,
-                                                         role=Role(role, full_name=role_name),
-                                                         run_env=RunEnv(run_env),
+                                                         role=Role(role=role, full_name=role_name),
+                                                         run_env=RunEnv(env=run_env),
                                                          provider_name=provider_name,
                                                          profile=None))
 

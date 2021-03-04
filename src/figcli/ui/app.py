@@ -5,7 +5,10 @@ from flask import Flask, render_template
 from flask_cors import CORS
 
 from figcli.commands.config_context import ConfigContext
+from figcli.svcs.auth.provider.session_provider import SessionProvider
+from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.config import ConfigService
+from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.api.config import ConfigController
 from figcli.ui.api.user import UserController
 from figcli.ui.controller import Controller
@@ -13,18 +16,17 @@ from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 
 class App:
-    def __init__(self, ssm: SsmDao, context: ConfigContext, config_svc: ConfigService, config_view: RBACLimitedConfigView):
-        self._ssm = ssm
+    def __init__(self, context: ConfigContext, session_mgr: SessionManager):
         self._context = context
-        self._config_svc = config_svc
-        self._config_view = config_view
+        self._session_mgr = session_mgr
+        self._svc_registry = ServiceRegistry(self._session_mgr, self._context)
         self.app: Flask = Flask(__name__, static_folder='assets', static_url_path='')
         self.controllers: List[Controller] = []
         self.init_controllers()
 
     def init_controllers(self):
         self.controllers.append(UserController('/user', self._context))
-        self.controllers.append(ConfigController('/config', self._context, self._config_svc, self._config_view))
+        self.controllers.append(ConfigController('/config', self._context, self._svc_registry))
 
     def run_app(self):
         self.app.run(host='0.0.0.0', port=5000, debug=False)

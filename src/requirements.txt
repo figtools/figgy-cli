@@ -7,7 +7,7 @@ beautifulsoup4==4.9.1 # MIT
 keyring==21.2.1 # MIT
 keyrings.alt==3.4.0 # MIT
 tabulate==0.8.7 # MIT
-jsonpickle==1.4.1 # BSD
+jsonpickle==2.0.0 # BSD
 urllib3==1.25.7 # MIT
 pyotp==2.3.0 # MIT
 python-u2flib-host==3.0.3 # BSD
@@ -21,7 +21,7 @@ cachetools==4.2.1
 git+git://github.com/figtools/figgy.lib@master
 
 # Must use git for this install b/c pre-compiled Cython breaks pyinstaller.
-git+https://github.com/samuelcolvin/pydantic.git@v1.5.1
+git+https://github.com/samuelcolvin/pydantic.git@master
 
 
 ## Figgy UI

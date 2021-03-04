@@ -159,7 +159,7 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
             else:
                 assumable_roles.append(AssumableRole(account_id=account_id,
                                                      role=Role(role, full_name=role_name),
-                                                     run_env=RunEnv(run_env),
+                                                     run_env=RunEnv(env=run_env),
                                                      provider_name=provider_name,
                                                      profile=None))
         return assumable_roles

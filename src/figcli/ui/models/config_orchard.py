@@ -1,15 +1,12 @@
-from dataclasses import dataclass
 from typing import List, Set
+
+from pydantic import BaseModel
 
 from figcli.ui.models.config_tree_data import ConfigTreeData
 
 
-@dataclass
-class ConfigOrchard:
-    trees: List[ConfigTreeData] = None
-
-    def __init__(self):
-        self.trees = []
+class ConfigOrchard(BaseModel):
+    trees: List[ConfigTreeData] = []
 
     def add_tree(self, tree: ConfigTreeData):
         self.trees.append(tree)

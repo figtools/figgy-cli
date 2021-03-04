@@ -90,7 +90,8 @@ class ConfigFactory(Factory):
         elif command == validate:
             return Validate(self._ssm, self._colors_enabled, self._config_context)
         elif command == ui:
-            return UI(self._ssm, self._colors_enabled, self._config_context, self._cfg_svc, self._config_view)
+            return UI(self._ssm, self._colors_enabled, self._config_context, self._cfg_svc, self._config_view,
+                      self._session_manager)
 
         else:
             self._utils.error_exit(f"{command} is not a valid command. You must select from: "

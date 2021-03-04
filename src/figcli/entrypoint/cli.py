@@ -100,7 +100,7 @@ class FiggyCLI:
 
             if role_override:
                 if role_override in [role.role.role for role in defaults.assumable_roles] or is_setup:
-                    return Role(role_override)
+                    return Role(role=role_override)
                 else:
                     self._utils.error_exit(f"Invalid role override provided of: {role_override}. "
                                            f"You do not have permissions to assume this role. Contact your system "
@@ -206,7 +206,7 @@ class FiggyCLI:
             else:
                 Utils.stc_validate(args.env in self._defaults.valid_envs,
                                    f'{ENV_HELP_TEXT} {self._defaults.valid_envs}. Provided: {args.env}')
-                self._run_env = RunEnv(args.env)
+                self._run_env = RunEnv(env=args.env)
 
         self._utils.validate(Utils.attr_exists(configure, args) or Utils.attr_exists(command, args),
                              f"No command found. Proper format is `{CLI_NAME} <resource> <command> --option(s)`")

@@ -17,4 +17,4 @@ class UserController(Controller, ABC):
                          assumable_roles=self.context.defaults.assumable_roles)
 
     def get_user(self):
-        return self.user.__dict__
+        return self.user.dict()

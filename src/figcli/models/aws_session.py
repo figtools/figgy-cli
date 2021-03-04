@@ -1,10 +1,11 @@
-from dataclasses import dataclass
 from typing import Dict
 
 
 # Todo add support for expiration and check for expiration rather than calling STS with session.
-@dataclass
-class FiggyAWSSession:
+from pydantic import BaseModel
+
+
+class FiggyAWSSession(BaseModel):
     access_key: str
     secret_key: str
     token: str

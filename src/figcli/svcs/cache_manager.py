@@ -76,7 +76,6 @@ class CacheManager:
         :param data: data read from the file to decrypt
         :return: decrypted data if it was decrypted, or just the data if there is no need to decrypt
         """
-
         if data == bytes(EMPTY_CACHE_STR, 'utf-8'):
             return jsonpickle.encode({})
 

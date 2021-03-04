@@ -201,7 +201,6 @@ class FiggySetup:
         cache_mgr = CacheManager(file_override=DEFAULTS_FILE_CACHE_PATH)
         try:
             last_write, defaults = cache_mgr.get(DEFAULTS_KEY)
-
             if not defaults:
                 if skip:
                     return CLIDefaults.unconfigured()

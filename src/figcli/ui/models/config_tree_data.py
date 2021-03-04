@@ -1,15 +1,16 @@
-from dataclasses import dataclass
-from typing import List
+from typing import List, Optional, Any
+
+from pydantic import BaseModel
 
 
-@dataclass
-class ConfigTreeData:
-    node_name: str
+class ConfigTreeData(BaseModel):
     full_name: str
-    dir_name: str
-    children: List["ConfigTreeData"]
+    node_name: Optional[str]
+    dir_name: Optional[str]
+    children: Optional[List["ConfigTreeData"]] = []
 
-    def __init__(self, full_name: str):
+    def __init__(self, full_name: str, **data: Any):
+        super().__init__(full_name=full_name, **data)
         self.node_name = full_name.split("/")[-1]
         self.full_name = full_name
         self.dir_name = "/".join(full_name.split("/")[:-1]) + "/"

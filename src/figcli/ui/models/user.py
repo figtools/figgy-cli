@@ -1,12 +1,12 @@
-from dataclasses import dataclass
 from typing import List
+
+from pydantic import BaseModel
 
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.role import Role
 
 
-@dataclass
-class User:
+class User(BaseModel):
     name: str
     role: Role
     assumable_roles: List[AssumableRole]

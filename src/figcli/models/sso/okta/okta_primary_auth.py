@@ -1,5 +1,4 @@
 import time
-from dataclasses import dataclass
 
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.sso.okta.okta_session import OktaSession

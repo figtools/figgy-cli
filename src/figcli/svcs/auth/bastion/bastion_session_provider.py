@@ -169,7 +169,7 @@ class BastionSessionProvider(SessionProvider):
             for role in user_roles:
                 assumable_roles.append(AssumableRole(
                     run_env=RunEnv(env=env_name, account_id=account_id),
-                    role=Role(role, full_name=f'{FIGGY_ROLE_NAME_PREFIX}{env_name}-{role}'),
+                    role=Role(role=role, full_name=f'{FIGGY_ROLE_NAME_PREFIX}{env_name}-{role}'),
                     account_id=account_id,
                     provider_name=Provider.AWS_BASTION.value,
                     profile=None

@@ -115,7 +115,7 @@ class ConfigService:
             if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                 raise ParameterUndecryptable(f'{e}')
 
-    def get_fig_simple(self, name: str) -> Fig:
+    def get_fig_simple(self, name: str):
         """
         Lookup a parameter's value and description.
         """

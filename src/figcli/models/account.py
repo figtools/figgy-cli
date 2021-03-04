@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Account:
+class Account(BaseModel):
     account: str
 
     def __str__(self):
