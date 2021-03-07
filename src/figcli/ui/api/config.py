@@ -35,27 +35,27 @@ class ConfigController(Controller, ABC):
         self._routes.append(Route('/isReplSource', self.is_repl_source, ["GET"]))
 
     def __cfg(self):
-        active_role = json.loads(request.headers.get('ActiveRole'))
-        return self.registry.config_svc(AssumableRole(**active_role))
+        # active_role = json.loads(request.headers.get('ActiveRole'))
+        # return self.registry.config_svc(AssumableRole(**active_role))
+        return self.registry.config_svc(self.context.defaults.assumable_roles[0])
 
     def __cfg_view(self):
         active_role = json.loads(request.headers.get('ActiveRole'))
         return self.registry.rbac_view(AssumableRole(**active_role))
 
+    @Controller.client_cache(seconds=10)
     def get_config_names(self) -> dict[str, list[str]]:
-        print(f"Got request: {request}")
         req_filter = request.args.get('filter')
         if req_filter:
             return {'names': list(self.__cfg().get_parameter_names_by_filter(req_filter))}
         else:
             return {'names': list(self.__cfg().get_parameter_names())}
 
-    @Controller.return_json
+    @Controller.client_cache(seconds=30)
     def get_browse_tree(self) -> ConfigOrchard:
         return self.__cfg_view().get_config_orchard()
 
-
-    @Controller.return_json
+    @Controller.client_cache(seconds=30)
     def get_config(self) -> Fig:
         name = request.args.get('name')
         type = request.args.get('type')
@@ -67,16 +67,19 @@ class ConfigController(Controller, ABC):
         else:
             return self.__cfg().get_fig(name)
 
+    @Controller.client_cache(seconds=30)
     def is_encrypted(self) -> Dict:
         # Todo add validation for expected args with decorator
         name = request.args.get('name')
         return {'is_encrypted': self.__cfg().is_encrypted(name)}
 
+    @Controller.client_cache(seconds=30)
     def is_repl_source(self):
         # Todo add validation for expected args with decorator
         name = request.args.get('name')
         return {'is_repl_source': self.__cfg().is_replication_source(name)}
 
+    @Controller.client_cache(seconds=30)
     def is_repl_dest(self):
         # Todo add validation for expected args with decorator
         name = request.args.get('name')

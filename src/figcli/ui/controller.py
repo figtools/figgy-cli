@@ -1,11 +1,15 @@
+import json
 import logging
+from datetime import datetime, timedelta
+from functools import wraps
 
 from typing import List
 from botocore.exceptions import ClientError
+from pydantic import BaseModel
 
 from figcli.ui.http_errors import Error
 from figcli.ui.route import Route
-from flask import make_response
+from flask import make_response, Response
 
 log = logging.getLogger(__name__)
 
@@ -40,11 +44,36 @@ class Controller:
     @staticmethod
     def return_json(func):
         """
-        Assumes the returned OBJ from the controller extends BaseModel therefore the .json() method can be called
-        and we will return a JSON representation of the returned object.
+        Converts the response to JSON unless it's a string, then we just return the string.
         """
 
         def wrapper(*args, **kwargs):
-                return func(*args, **kwargs).json()
+            result = func(*args, **kwargs)
+            if isinstance(result, str):
+                return result
+            elif isinstance(result, BaseModel):
+                return result.json()
+            else:
+                return json.dumps(result)
+
 
         return wrapper
+
+    @staticmethod
+    def client_cache(seconds=15, content_type='application/json; charset=utf-8'):
+        """ Flask decorator that allow to set Expire and Cache headers. """
+
+        def fwrap(f):
+            @wraps(f)
+            def wrapped_f(*args, **kwargs):
+                jsonWrappedF = Controller.return_json(f)
+                result = jsonWrappedF(*args, **kwargs)
+                then = datetime.now() + timedelta(seconds=seconds)
+                rsp = Response(result, content_type=content_type)
+                rsp.headers.add('Expires', then.strftime("%a, %d %b %Y %H:%M:%S GMT"))
+                rsp.headers.add('Cache-Control', 'public,max-age=%d' % int(seconds))
+                return rsp
+
+            return wrapped_f
+
+        return fwrap
