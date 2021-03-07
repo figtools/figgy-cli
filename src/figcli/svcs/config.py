@@ -11,6 +11,8 @@ from figgy.data.dao.ssm import SsmDao
 from figgy.data.models.config_item import ConfigState, ConfigItem
 from figgy.models.run_env import RunEnv
 from figgy.models.fig import Fig
+from figgy.svcs.fig_service import FigService
+
 from figcli.svcs.cache_manager import CacheManager
 from figcli.utils.utils import Utils
 
@@ -40,6 +42,7 @@ class ConfigService:
         self._cache_mgr = cache_mgr
         self._run_env = run_env
         self._ssm: SsmDao = ssm
+        self._fig_svc: FigService = FigService(ssm)
 
     def get_root_namespaces(self) -> List[str]:
         all_params = self.get_parameter_names()
@@ -115,9 +118,31 @@ class ConfigService:
             if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                 raise ParameterUndecryptable(f'{e}')
 
-    def get_fig_simple(self, name: str):
-        """
-        Lookup a parameter's value and description.
-        """
-        value, desc = self._ssm.get_parameter_with_description(name)
-        return Fig(name=name, value=value, description=desc).__dict__
+    def get_fig(self, name: str) -> Fig:
+        fig = self._fig_svc.get(name)
+        fig.is_repl_source = self.is_replication_source(name)
+        fig.is_repl_dest = self.is_replication_destination(name)
+        return fig
+
+    def get_fig_simple(self, name: str) -> Fig:
+        return self._fig_svc.get_simple(name)
+
+    def set_fig(self, fig: Fig):
+        self._fig_svc.set(fig)
+
+    @cached(TTLCache(maxsize=1024, ttl=30))
+    def is_encrypted(self, name: str) -> bool:
+        try:
+            return self.get_fig(name).kms_key_id is not None
+        except ClientError as e:
+            # If we get a AccessDenied exception to decrypt this parameter, it must be encrypted
+            if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
+                return True
+
+    @cached(TTLCache(maxsize=1024, ttl=120))
+    def is_replication_source(self, name: str) -> bool:
+        return bool(self._config_dao.get_cfgs_by_src(name))
+
+    @cached(TTLCache(maxsize=1024, ttl=120))
+    def is_replication_destination(self, name: str) -> bool:
+        return bool(self._config_dao.get_config_repl(name))

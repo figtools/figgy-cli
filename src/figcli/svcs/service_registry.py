@@ -23,12 +23,11 @@ class ServiceRegistry:
         self.context = context
         self.__env_lock = Lock()
         self.__mgr_lock = Lock()
-        self._cache_mgr = CacheManager(self.context.resource)
 
-    def config_svc(self, role: AssumableRole):
+    def config_svc(self, role: AssumableRole) -> ConfigService:
         if not self.CACHE.get(role, {}).get('config-svc'):
             self.CACHE[role]['config-svc'] = ConfigService(self.__config(role), self.__ssm(role),
-                                                           self._cache_mgr, role.run_env)
+                                                           self.__cache_mgr(role), role.run_env)
 
         return self.CACHE[role]['config-svc']
 
@@ -39,12 +38,19 @@ class ServiceRegistry:
         if not self.CACHE.get(role, {}).get('rbac-view'):
             self.CACHE[role] = self.CACHE.get(role, {}) | \
                                {'rbac-view': RBACLimitedConfigView(role=role.role,
-                                                                   cache_mgr=self._cache_mgr,
+                                                                   cache_mgr=self.__cache_mgr(role),
                                                                    ssm=self.__ssm(role),
                                                                    config_svc=self.config_svc(role),
                                                                    profile=role.profile)}
 
         return self.CACHE[role]['rbac-view']
+
+    def __cache_mgr(self, role: AssumableRole):
+        if not self.CACHE.get(role, {}).get('cache-mgr'):
+            self.CACHE[role] = self.CACHE.get(role, {}) | {
+                'cache-mgr': CacheManager(f'{role.role}-{role.run_env}-{role.account_id[-4]}')}
+
+        return self.CACHE[role]['cache-mgr']
 
     def __env_session(self, role: AssumableRole) -> boto3.session.Session:
         """

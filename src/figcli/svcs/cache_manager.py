@@ -1,13 +1,14 @@
-import logging
 import json
+import logging
 import os
+from typing import Dict, Any, Union, Set, Tuple, List, Callable
+
 import jsonpickle
 from filelock import FileLock
-from typing import Dict, Any, Union, Set, Tuple, List, Callable, FrozenSet
+
 from figcli.config import *
 from figcli.svcs.vault import FiggyVault
 from figcli.utils.utils import Utils
-from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -100,7 +101,8 @@ class CacheManager:
     def __read(self) -> str:
         with self._lock:
             with open(self._cache_file, 'rb') as cache:
-                return self.__decrypt(cache.read())
+                val =  self.__decrypt(cache.read())
+                return val
 
     def __write(self, data: str):
         with self._lock:
