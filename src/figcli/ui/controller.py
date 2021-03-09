@@ -7,7 +7,7 @@ from typing import List
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
-from figcli.ui.http_errors import Error
+from figcli.ui.models.figgy_response import FiggyResponse
 from figcli.ui.route import Route
 from flask import make_response, Response
 
@@ -22,24 +22,24 @@ class Controller:
     def routes(self) -> List[Route]:
         return self._routes
 
-    @staticmethod
-    def handle_errors(func):
-        """
-        Decorator that adds logging around function execution and function parameters.
-        """
-
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except ClientError as e:
-                error = e.response['Error']
-                if "AccessDeniedException" == error.get('Code') and \
-                        "ciphertext refers to" in error.get('Message'):
-                    return make_response(Error.KMS_DENIED)
-                else:
-                    raise
-
-        return wrapper
+    # @staticmethod
+    # def handle_errors(func):
+    #     """
+    #     Decorator that adds logging around function execution and function parameters.
+    #     """
+    #
+    #     def wrapper(*args, **kwargs):
+    #         try:
+    #             return func(*args, **kwargs)
+    #         except ClientError as e:
+    #             error = e.response['Error']
+    #             if "AccessDeniedException" == error.get('Code') and \
+    #                     "ciphertext refers to" in error.get('Message'):
+    #                 return make_response(Error.KMS_DENIED)
+    #             else:
+    #                 raise
+    #
+    #     return wrapper
 
     @staticmethod
     def return_json(func):
@@ -55,7 +55,6 @@ class Controller:
                 return result.json()
             else:
                 return json.dumps(result)
-
 
         return wrapper
 
@@ -73,6 +72,27 @@ class Controller:
                 rsp.headers.add('Expires', then.strftime("%a, %d %b %Y %H:%M:%S GMT"))
                 rsp.headers.add('Cache-Control', 'public,max-age=%d' % int(seconds))
                 return rsp
+
+            return wrapped_f
+
+        return fwrap
+
+    @staticmethod
+    def build_response():
+        """Builds a FiggyResponse from the current return type"""
+
+        def fwrap(func):
+            @wraps(func)
+            def wrapped_f(*args, **kwargs):
+                try:
+                    result = func(*args, **kwargs)
+                    return FiggyResponse(data=result)
+                except ClientError as e:
+                    # If we get a AccessDenied exception to decrypt this parameter, it must be encrypted
+                    if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
+                        return FiggyResponse.no_decrypt_access()
+                    elif "AccessDeniedException" == e.response['Error']['Code']:
+                        return FiggyResponse.no_access_to_parameter()
 
             return wrapped_f
 
