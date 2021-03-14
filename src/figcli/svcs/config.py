@@ -146,3 +146,7 @@ class ConfigService:
     @cached(TTLCache(maxsize=1024, ttl=120))
     def is_replication_destination(self, name: str) -> bool:
         return bool(self._config_dao.get_config_repl(name))
+
+    def save(self, fig: Fig):
+        self._fig_svc.save(fig)
+

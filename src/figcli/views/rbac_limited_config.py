@@ -6,6 +6,8 @@ from prompt_toolkit.completion import WordCompleter
 
 from figcli.config import *
 from figgy.data.dao.ssm import SsmDao
+
+from figcli.models.kms_key import KmsKey
 from figcli.models.role import Role
 from figgy.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
@@ -59,6 +61,10 @@ class RBACLimitedConfigView:
                 f"Invalid value found at path: {self.rbac_role_ns_path}. It must be a valid json List[str]")
 
         return authed_nses
+
+    def get_authorized_kms_keys_full(self, run_env: RunEnv) -> List[KmsKey]:
+        key_aliases: List[str] = self.get_authorized_kms_keys()
+        return [KmsKey(alias=key, id=self.get_authorized_key_id(key, run_env)) for key in key_aliases]
 
     def get_authorized_kms_keys(self) -> List[str]:
         """

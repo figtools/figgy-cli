@@ -48,7 +48,7 @@ class ServiceRegistry:
     def __cache_mgr(self, role: AssumableRole):
         if not self.CACHE.get(role, {}).get('cache-mgr'):
             self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'cache-mgr': CacheManager(f'{role.role}-{role.run_env}-{role.account_id[-4]}')}
+                'cache-mgr': CacheManager(f'{role.role}-{role.run_env}-{role.account_id[-4:]}')}
 
         return self.CACHE[role]['cache-mgr']
 

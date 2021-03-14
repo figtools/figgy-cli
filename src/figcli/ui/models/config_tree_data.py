@@ -20,4 +20,15 @@ class ConfigTreeData(BaseModel):
         self.children.append(child)
 
     def __gt__(self, o: "ConfigTreeData"):
-        return self.node_name > o.node_name
+        # If both have children, or both don't have children, compare equally
+        if o.children and self.children or \
+                not o.children and not self.children:
+            return self.node_name > o.node_name
+
+        if self.children and not o.children:
+            return True
+        elif o.children and not self.children:
+            return False
+        else:
+            # Shouldn't ever get here...
+            return self.node_name > o.node_name
