@@ -13,6 +13,7 @@ from figgy.models.run_env import RunEnv
 from figgy.models.fig import Fig
 from figgy.svcs.fig_service import FigService
 
+from figcli.config import PS_FIGGY_REPL_KEY_ID_PATH
 from figcli.svcs.cache_manager import CacheManager
 from figcli.utils.utils import Utils
 
@@ -146,6 +147,10 @@ class ConfigService:
     @cached(TTLCache(maxsize=1024, ttl=120))
     def is_replication_destination(self, name: str) -> bool:
         return bool(self._config_dao.get_config_repl(name))
+
+    @cached(TTLCache(maxsize=1024, ttl=3600))
+    def get_replication_key(self) -> str:
+        return self._fig_svc.get_simple(PS_FIGGY_REPL_KEY_ID_PATH).value
 
     def save(self, fig: Fig):
         self._fig_svc.save(fig)

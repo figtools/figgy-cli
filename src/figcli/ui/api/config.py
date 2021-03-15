@@ -21,12 +21,13 @@ class ConfigController(Controller, ABC):
         self.registry = svc_registry
         self.context: ConfigContext = config_context
         self._routes.append(Route('', self.get_config, ["GET"]))
+        self._routes.append(Route('', self.save_fig, ["POST"]))
         self._routes.append(Route('/names', self.get_config_names, ["GET"]))
         self._routes.append(Route('/tree', self.get_browse_tree, ["GET"]))
         self._routes.append(Route('/isEncrypted', self.is_encrypted, ["GET"]))
         self._routes.append(Route('/isReplDest', self.is_repl_dest, ["GET"]))
         self._routes.append(Route('/isReplSource', self.is_repl_source, ["GET"]))
-        self._routes.append(Route('', self.save_fig, ["POST"]))
+        self._routes.append(Route('/replicationKey', self.get_replication_key, ["GET"]))
 
     @Controller.client_cache(seconds=10)
     @Controller.build_response()
@@ -84,4 +85,9 @@ class ConfigController(Controller, ABC):
         log.info(f"Saving fig: {fig}")
         self._cfg().save(fig)
 
-
+    @Controller.client_cache(seconds=30)
+    @Controller.build_response()
+    def get_replication_key(self):
+        val = {'kms_key_id': self._cfg().get_replication_key()}
+        log.info(f"RETURNING: {val}")
+        return val
