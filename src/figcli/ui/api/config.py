@@ -28,6 +28,7 @@ class ConfigController(Controller, ABC):
         self._routes.append(Route('/isReplDest', self.is_repl_dest, ["GET"]))
         self._routes.append(Route('/isReplSource', self.is_repl_source, ["GET"]))
         self._routes.append(Route('/replicationKey', self.get_replication_key, ["GET"]))
+        self._routes.append(Route('/replicationSource', self.get_replication_source, ["GET"]))
 
     @Controller.client_cache(seconds=10)
     @Controller.build_response()
@@ -78,16 +79,17 @@ class ConfigController(Controller, ABC):
 
     @Controller.build_response()
     def save_fig(self):
-        name = request.args.get('name')
         payload: Dict = request.json
-        log.info(f"Payload: {payload}")
         fig: Fig = Fig(**payload)
-        log.info(f"Saving fig: {fig}")
         self._cfg().save(fig)
 
     @Controller.client_cache(seconds=30)
     @Controller.build_response()
     def get_replication_key(self):
-        val = {'kms_key_id': self._cfg().get_replication_key()}
-        log.info(f"RETURNING: {val}")
-        return val
+        return {'kms_key_id': self._cfg().get_replication_key()}
+
+    @Controller.client_cache(seconds=30)
+    @Controller.build_response()
+    def get_replication_source(self):
+        name = request.args.get('name')
+        return {'source': self._cfg().get_replication_config(name).source}

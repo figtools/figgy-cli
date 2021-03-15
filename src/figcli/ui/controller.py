@@ -87,9 +87,7 @@ class Controller:
             @wraps(func)
             def wrapped_f(*args, **kwargs):
                 try:
-                    log.info("Executing wrapped...")
                     result = func(*args, **kwargs) or {'response': '200'}
-                    log.info(f"Got result: {result}")
                     return Response(FiggyResponse(data=result).json(), content_type=JSON_CONTENT_TYPE)
                 except ClientError as e:
                     log.error(e)

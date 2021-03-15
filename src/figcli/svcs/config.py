@@ -9,6 +9,7 @@ from cachetools import cached, TTLCache
 from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.models.config_item import ConfigState, ConfigItem
+from figgy.models.replication_config import ReplicationConfig
 from figgy.models.run_env import RunEnv
 from figgy.models.fig import Fig
 from figgy.svcs.fig_service import FigService
@@ -151,6 +152,10 @@ class ConfigService:
     @cached(TTLCache(maxsize=1024, ttl=3600))
     def get_replication_key(self) -> str:
         return self._fig_svc.get_simple(PS_FIGGY_REPL_KEY_ID_PATH).value
+
+    @cached(TTLCache(maxsize=1024, ttl=5))
+    def get_replication_config(self, name: str) -> ReplicationConfig:
+        return self._config_dao.get_config_repl(name)
 
     def save(self, fig: Fig):
         self._fig_svc.save(fig)
