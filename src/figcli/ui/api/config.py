@@ -3,12 +3,13 @@ from abc import ABC
 from typing import Dict
 
 from figgy.models.fig import Fig
-from flask import request
+from flask import request, Response
 
 from figcli.commands.config_context import ConfigContext
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.controller import Controller
 from figcli.ui.models.config_orchard import ConfigOrchard
+from figcli.ui.models.figgy_response import FiggyResponse
 from figcli.ui.route import Route
 
 log = logging.getLogger(__name__)
@@ -22,12 +23,14 @@ class ConfigController(Controller, ABC):
         self.context: ConfigContext = config_context
         self._routes.append(Route('', self.get_config, ["GET"]))
         self._routes.append(Route('', self.save_fig, ["POST"]))
+        self._routes.append(Route('', self.delete_fig, ["DELETE"]))
         self._routes.append(Route('/names', self.get_config_names, ["GET"]))
         self._routes.append(Route('/tree', self.get_browse_tree, ["GET"]))
         self._routes.append(Route('/isEncrypted', self.is_encrypted, ["GET"]))
         self._routes.append(Route('/isReplDest', self.is_repl_dest, ["GET"]))
         self._routes.append(Route('/isReplSource', self.is_repl_source, ["GET"]))
         self._routes.append(Route('/replicationKey', self.get_replication_key, ["GET"]))
+        self._routes.append(Route('/replicationSource', self.get_replication_source, ["GET"]))
         self._routes.append(Route('/replicationSource', self.get_replication_source, ["GET"]))
 
     @Controller.client_cache(seconds=10)
@@ -49,12 +52,14 @@ class ConfigController(Controller, ABC):
     def get_config(self) -> Fig:
         name = request.args.get('name')
         type = request.args.get('type')
+        version = int(request.args.get('version', 0))
+
         if type == 'full':
-            return self._cfg().get_fig(name)
+            return self._cfg().get_fig(name, version=version)
         elif type == 'simple':
             return self._cfg().get_fig_simple(name)
         else:
-            return self._cfg().get_fig(name)
+            return self._cfg().get_fig(name, version=version)
 
     @Controller.client_cache(seconds=30)
     @Controller.build_response()
@@ -81,6 +86,7 @@ class ConfigController(Controller, ABC):
     def save_fig(self):
         payload: Dict = request.json
         fig: Fig = Fig(**payload)
+        log.info(f"SAVING FIG: {fig}")
         self._cfg().save(fig)
 
     @Controller.client_cache(seconds=30)
@@ -93,3 +99,8 @@ class ConfigController(Controller, ABC):
     def get_replication_source(self):
         name = request.args.get('name')
         return {'source': self._cfg().get_replication_config(name).source}
+
+    @Controller.build_response()
+    def delete_fig(self):
+        name = request.args.get('name')
+        self._cfg().delete(name)

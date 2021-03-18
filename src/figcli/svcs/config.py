@@ -25,14 +25,13 @@ class ParameterUndecryptable(Exception):
     pass
 
 
-# Todo, lots more from SSMDao should be moved here.
 class ConfigService:
     __CACHE_REFRESH_INTERVAL = 60 * 60 * 24 * 7 * 1000  # 1 week in MS
     """
     Service level class for interactive with config resources.
 
-    Currently contains some business logic to leverage a both local (filesystem) & remote (dynamodb)
-    cache for the fastest possible lookup times.
+    Currently contains some business logic to leverage memory, filesystem, & remote (dynamodb)
+    caches for the fastest possible lookup times.
     """
     _PS_NAME_CACHE_KEY = 'parameter_names'
     MEMORY_CACHED_NAMES: Set[str] = []
@@ -120,8 +119,9 @@ class ConfigService:
             if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                 raise ParameterUndecryptable(f'{e}')
 
-    def get_fig(self, name: str) -> Fig:
-        fig = self._fig_svc.get(name)
+    def get_fig(self, name: str, version: int = 0) -> Fig:
+        """ Version is defaulted to 0, which will return latest. """
+        fig = self._fig_svc.get(name, version)
         fig.is_repl_source = self.is_replication_source(name)
         fig.is_repl_dest = self.is_replication_destination(name)
         return fig
@@ -160,3 +160,5 @@ class ConfigService:
     def save(self, fig: Fig):
         self._fig_svc.save(fig)
 
+    def delete(self, name: str):
+        self._fig_svc.delete(name)

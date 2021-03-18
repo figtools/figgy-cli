@@ -43,7 +43,8 @@ class Promote(ConfigCommand):
                 parameters: List[Dict] = self._source_ssm.get_all_parameters([namespace])
 
                 if not parameters and self._source_ssm.get_parameter(namespace):
-                    parameters = [self._source_ssm.get_parameter_details(namespace)]
+                    parameters, latest_version = self._source_ssm.get_parameter_details(namespace)
+                    parameters = list(parameters)
 
                 if parameters:
                     repeat = False

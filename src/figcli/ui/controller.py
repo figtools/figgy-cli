@@ -2,21 +2,23 @@ import json
 import logging
 from datetime import datetime, timedelta
 from functools import wraps
-
 from typing import List, Any
+
 from botocore.exceptions import ClientError
+from flask import Response, request
 from pydantic import BaseModel
 
 from figcli.models.assumable_role import AssumableRole
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.models.figgy_response import FiggyResponse
 from figcli.ui.route import Route
-from flask import make_response, Response, request
 
 log = logging.getLogger(__name__)
-JSON_CONTENT_TYPE = 'application/json; charset=utf-8'
+
 
 class Controller:
+    JSON_CONTENT_TYPE = 'application/json; charset=utf-8'
+
     def __init__(self, prefix: str, svc_registry: ServiceRegistry):
         self.prefix = prefix
         self._routes: List[Route] = []
@@ -43,7 +45,6 @@ class Controller:
             return obj.json()
         else:
             return json.dumps(obj)
-
 
     @staticmethod
     def return_json(func) -> any:
@@ -88,14 +89,14 @@ class Controller:
             def wrapped_f(*args, **kwargs):
                 try:
                     result = func(*args, **kwargs) or {'response': '200'}
-                    return Response(FiggyResponse(data=result).json(), content_type=JSON_CONTENT_TYPE)
+                    return Response(FiggyResponse(data=result).json(), content_type=Controller.JSON_CONTENT_TYPE)
                 except ClientError as e:
                     log.error(e)
                     # If we get a AccessDenied exception to decrypt this parameter, it must be encrypted
                     if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
-                        return Response(FiggyResponse.no_decrypt_access().json(), content_type=JSON_CONTENT_TYPE)
+                        return Response(FiggyResponse.no_decrypt_access().json(), content_type=Controller.JSON_CONTENT_TYPE)
                     elif "AccessDeniedException" == e.response['Error']['Code']:
-                        return Response(FiggyResponse.no_access_to_parameter().json(), content_type=JSON_CONTENT_TYPE)
+                        return Response(FiggyResponse.no_access_to_parameter().json(), content_type=Controller.JSON_CONTENT_TYPE)
                 except BaseException as e1:
                     log.warning("Caught unexepcted exception")
                     log.error(e1)

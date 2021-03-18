@@ -20,4 +20,4 @@ class FiggyResponse(BaseModel):
 
     @staticmethod
     def no_access_to_parameter() -> "FiggyResponse":
-        return FiggyResponse(error=FiggyError(**Error.GET_PARAM_DENIED))
+        return FiggyResponse(error=FiggyError(**Error.PARAM_ACCESS_DENIED))
