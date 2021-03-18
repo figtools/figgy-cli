@@ -94,7 +94,7 @@ class Controller:
                         return Response(result.json(), content_type=Controller.JSON_CONTENT_TYPE)
 
                     response = Response(FiggyResponse(data=result).json(), content_type=Controller.JSON_CONTENT_TYPE)
-                    log.info(f"RETURNING RESPONSE: {response}")
+                    log.info(f"RETURNING RESPONSE: {response.data}")
                     return response
                 except ClientError as e:
                     log.error(e)
@@ -103,6 +103,8 @@ class Controller:
                         return Response(FiggyResponse.no_decrypt_access().json(), content_type=Controller.JSON_CONTENT_TYPE)
                     elif "AccessDeniedException" == e.response['Error']['Code']:
                         return Response(FiggyResponse.no_access_to_parameter().json(), content_type=Controller.JSON_CONTENT_TYPE)
+                    elif "ParameterNotFound" == e.response['Error']['Code']:
+                        return Response(FiggyResponse.fig_missing().json(), content_type=Controller.JSON_CONTENT_TYPE)
                 except BaseException as e1:
                     log.warning("Caught unexepcted exception")
                     log.error(e1)

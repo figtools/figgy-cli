@@ -45,7 +45,6 @@ class ConfigController(Controller, ABC):
     @Controller.build_response()
     def get_browse_tree(self) -> ConfigOrchard:
         tree = self._cfg_view().get_config_orchard()
-        log.info(f"RETURNING TREE: {tree}")
         return tree
 
     @Controller.client_cache(seconds=5)
