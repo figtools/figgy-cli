@@ -1,6 +1,6 @@
 import logging
 from abc import ABC
-from typing import Dict
+from typing import Dict, Union
 
 from figgy.models.fig import Fig
 from flask import request, Response
@@ -42,26 +42,32 @@ class ConfigController(Controller, ABC):
         else:
             return {'names': list(self._cfg().get_parameter_names())}
 
-    @Controller.client_cache(seconds=30)
     @Controller.build_response()
     def get_browse_tree(self) -> ConfigOrchard:
-        return self._cfg_view().get_config_orchard()
+        tree = self._cfg_view().get_config_orchard()
+        log.info(f"RETURNING TREE: {tree}")
+        return tree
 
     @Controller.client_cache(seconds=5)
     @Controller.build_response()
-    def get_config(self) -> Fig:
+    def get_config(self) -> Union[Fig, FiggyResponse]:
         name = request.args.get('name')
         type = request.args.get('type')
         version = int(request.args.get('version', 0))
 
         if type == 'full':
-            return self._cfg().get_fig(name, version=version)
+            fig = self._cfg().get_fig(name, version=version)
         elif type == 'simple':
-            return self._cfg().get_fig_simple(name)
+            fig = self._cfg().get_fig_simple(name)
         else:
-            return self._cfg().get_fig(name, version=version)
+            fig = self._cfg().get_fig(name, version=version)
 
-    @Controller.client_cache(seconds=30)
+        if fig.is_missing():
+            return FiggyResponse.fig_missing()
+        else:
+            return fig
+
+
     @Controller.build_response()
     def is_encrypted(self):
         # Todo add validation for expected args with decorator

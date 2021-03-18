@@ -89,7 +89,13 @@ class Controller:
             def wrapped_f(*args, **kwargs):
                 try:
                     result = func(*args, **kwargs) or {'response': '200'}
-                    return Response(FiggyResponse(data=result).json(), content_type=Controller.JSON_CONTENT_TYPE)
+
+                    if isinstance(result, FiggyResponse):
+                        return Response(result.json(), content_type=Controller.JSON_CONTENT_TYPE)
+
+                    response = Response(FiggyResponse(data=result).json(), content_type=Controller.JSON_CONTENT_TYPE)
+                    log.info(f"RETURNING RESPONSE: {response}")
+                    return response
                 except ClientError as e:
                     log.error(e)
                     # If we get a AccessDenied exception to decrypt this parameter, it must be encrypted

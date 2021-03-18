@@ -161,4 +161,15 @@ class ConfigService:
         self._fig_svc.save(fig)
 
     def delete(self, name: str):
+        """
+            If targeted configuration is a replication source throw error, you cannot delete repl sources.
+
+            If this config is a repl destination, delete it, if not, try anyways, it's harmless & faster
+            than checking first.
+        """
+        if self.is_replication_source(name):
+            raise ValueError("Cannot delete fig, it is a source of replication!")
+
+        # Todo: Wipe caches. Here
+        self._config_dao.delete_config(name)
         self._fig_svc.delete(name)

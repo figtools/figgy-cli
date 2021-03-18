@@ -1,3 +1,4 @@
+import logging
 from threading import Thread
 from typing import List
 
@@ -11,6 +12,7 @@ from figcli.ui.api.config import ConfigController
 from figcli.ui.api.user import UserController
 from figcli.ui.controller import Controller
 
+log = logging.getLogger(__name__)
 
 class App:
     def __init__(self, context: ConfigContext, session_mgr: SessionManager):
@@ -32,12 +34,11 @@ class App:
         CORS(self.app)
         for ctlr in self.controllers:
             for route in ctlr.routes():
-                print(f"Adding route {route}")
                 self.app.add_url_rule(f'{ctlr.prefix}{route.url_path}', f'{route.url_path}{route.methods[0]}',
                                       view_func=route.fn, methods=route.methods)
 
         for rule in self.app.url_map.iter_rules():
-            print(rule)
+            log.info(rule)
 
         app_thread = Thread(target=self.run_app, args=())
         app_thread.start()

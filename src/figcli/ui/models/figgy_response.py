@@ -21,3 +21,7 @@ class FiggyResponse(BaseModel):
     @staticmethod
     def no_access_to_parameter() -> "FiggyResponse":
         return FiggyResponse(error=FiggyError(**Error.PARAM_ACCESS_DENIED))
+
+    @staticmethod
+    def fig_missing() -> "FiggyResponse":
+        return FiggyResponse(error=FiggyError(**Error.FIG_MISSING))
