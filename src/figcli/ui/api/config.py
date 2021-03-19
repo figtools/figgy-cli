@@ -33,7 +33,7 @@ class ConfigController(Controller, ABC):
         self._routes.append(Route('/replicationSource', self.get_replication_source, ["GET"]))
         self._routes.append(Route('/replicationSource', self.get_replication_source, ["GET"]))
 
-    @Controller.client_cache(seconds=10)
+    @Controller.client_cache(seconds=5)
     @Controller.build_response()
     def get_config_names(self) -> dict[str, list[str]]:
         req_filter = request.args.get('filter')
@@ -67,20 +67,21 @@ class ConfigController(Controller, ABC):
             return fig
 
 
+    @Controller.client_cache(seconds=10)
     @Controller.build_response()
     def is_encrypted(self):
         # Todo add validation for expected args with decorator
         name = request.args.get('name')
         return {'is_encrypted': self._cfg().is_encrypted(name)}
 
-    @Controller.client_cache(seconds=30)
+    @Controller.client_cache(seconds=10)
     @Controller.build_response()
     def is_repl_source(self):
         # Todo add validation for expected args with decorator
         name = request.args.get('name')
         return {'is_repl_source': self._cfg().is_replication_source(name)}
 
-    @Controller.client_cache(seconds=30)
+    @Controller.client_cache(seconds=10)
     @Controller.build_response()
     def is_repl_dest(self):
         # Todo add validation for expected args with decorator
