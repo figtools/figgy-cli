@@ -10,3 +10,7 @@ class Error:
     FIG_MISSING = {'error_code': 'FIG_MISSING',
                   'message': 'Target configuration does not exist in parameter store.',
                   'status_code': 200}
+
+    FIG_INVALID = {'error_code': 'FIG_INVALID',
+                  'message': 'Provided configuration is invalid and cannot be saved to ParameterStore.',
+                  'status_code': 400}

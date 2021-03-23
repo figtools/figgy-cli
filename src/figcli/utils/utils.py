@@ -4,6 +4,8 @@ import os
 import platform
 import re
 import time
+import traceback
+
 import botocore
 import urllib3
 
@@ -527,7 +529,6 @@ class Utils:
                 return []
             else:
                 return default
-
 
 class InvalidSessionError(Exception):
     pass

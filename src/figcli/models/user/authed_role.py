@@ -9,3 +9,4 @@ from figcli.models.kms_key import KmsKey
 class AuthedRole(BaseModel):
     assumable_role: AssumableRole
     authed_kms_keys: List[KmsKey]
+    authed_namespaces: List[str]

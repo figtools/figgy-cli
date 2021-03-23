@@ -9,6 +9,7 @@ from cachetools import cached, TTLCache
 from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.models.config_item import ConfigState, ConfigItem
+from figgy.models.n_replication_config import NReplicationConfig
 from figgy.models.replication_config import ReplicationConfig
 from figgy.models.run_env import RunEnv
 from figgy.models.fig import Fig
@@ -141,11 +142,11 @@ class ConfigService:
             if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                 return True
 
-    @cached(TTLCache(maxsize=1024, ttl=120))
+    @cached(TTLCache(maxsize=1024, ttl=10))
     def is_replication_source(self, name: str) -> bool:
         return bool(self._config_dao.get_cfgs_by_src(name))
 
-    @cached(TTLCache(maxsize=1024, ttl=120))
+    @cached(TTLCache(maxsize=1024, ttl=10))
     def is_replication_destination(self, name: str) -> bool:
         return bool(self._config_dao.get_config_repl(name))
 
@@ -156,6 +157,12 @@ class ConfigService:
     @cached(TTLCache(maxsize=1024, ttl=5))
     def get_replication_config(self, name: str) -> ReplicationConfig:
         return self._config_dao.get_config_repl(name)
+
+    @cached(TTLCache(maxsize=1024, ttl=5))
+    def get_replication_configs_by_source(self, name: str) -> List[NReplicationConfig]:
+        replCfgs: List[ReplicationConfig] = self._config_dao.get_cfgs_by_src(name)
+        return [NReplicationConfig(**cfg.__dict__) for cfg in replCfgs]
+
 
     def save(self, fig: Fig):
         self._fig_svc.save(fig)
