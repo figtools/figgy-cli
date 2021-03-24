@@ -165,6 +165,7 @@ class ConfigService:
 
 
     def save(self, fig: Fig):
+        log.info(f'Saving Fig: {fig}')
         self._fig_svc.save(fig)
 
     def delete(self, name: str):

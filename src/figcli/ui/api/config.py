@@ -107,7 +107,8 @@ class ConfigController(Controller, ABC):
     @Controller.build_response()
     def get_replication_source(self):
         name = request.args.get('name')
-        return {'source': self._cfg().get_replication_config(name).source}
+        cfg = self._cfg().get_replication_config(name)
+        return {'source': cfg.source if cfg else None}
 
     @Controller.build_response()
     def delete_fig(self):
