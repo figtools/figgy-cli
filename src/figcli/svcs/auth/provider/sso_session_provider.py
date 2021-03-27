@@ -87,7 +87,7 @@ class SSOSessionProvider(SessionProvider, ABC):
                         log.info("Invalid session detected in cache. Raising session error.")
                         raise InvalidSessionError("Invalid Session Detected")
 
-                    log.info("Valid session returned from cache.")
+                    log.info("Valid SSO session returned from cache.")
                     return session
                 else:
                     raise InvalidSessionError("Forcing new session, cache is empty.")
@@ -101,14 +101,16 @@ class SSOSessionProvider(SessionProvider, ABC):
                         encoded_assertion = base64.b64encode(assertion.encode('utf-8')).decode('utf-8')
                         response = self._sts.assume_role_with_saml(RoleArn=role_arn,
                                                                    PrincipalArn=principal_arn,
-                                                                   SAMLAssertion=encoded_assertion)
+                                                                   SAMLAssertion=encoded_assertion,
+                                                                   DurationSeconds=900)
                     except ClientError:
                         log.info("Refreshing SAML assertion, auth failed with cached or refreshed version.")
                         assertion = self.get_saml_assertion(prompt)
                         encoded_assertion = base64.b64encode(assertion.encode('utf-8')).decode('utf-8')
                         response = self._sts.assume_role_with_saml(RoleArn=role_arn,
                                                                    PrincipalArn=principal_arn,
-                                                                   SAMLAssertion=encoded_assertion)
+                                                                   SAMLAssertion=encoded_assertion,
+                                                                   DurationSeconds=900)
 
                     response['Credentials']['Expiration'] = "cleared"
                     session = FiggyAWSSession.from_sts_response(response)

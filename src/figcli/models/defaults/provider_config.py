@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
@@ -101,7 +102,7 @@ class OktaProviderConfig(BaseModel, ProviderConfig):
                   Looks something like this: https://your-company.okta.com/home/amazon_aws/ASDF12351fg1/234'
     """
     app_link: str
-    factor_type: str
+    factor_type: Optional[str]
 
     @property
     def base_url(self) -> str:

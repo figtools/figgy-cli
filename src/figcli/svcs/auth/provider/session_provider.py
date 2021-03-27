@@ -1,9 +1,12 @@
 import logging
+import time
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Set, Dict
 
 import boto3
 from botocore.exceptions import ClientError
+from pydantic import validator
+from pydantic.decorator import BaseModel
 
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
@@ -11,13 +14,33 @@ from figcli.models.defaults.defaults import CLIDefaults
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 from threading import Lock
+
 log = logging.getLogger(__name__)
+
+
+class SessionTokenCache(BaseModel):
+    MAX_LIFE = 600  # 10 mins
+    token: str
+    time_inserted: Optional[int] = 0
+
+    @validator('time_inserted', pre=True)
+    def init_error(cls, value):
+        if not value:
+            value = time.time()
+
+        return value
+
+    def is_valid(self):
+        return time.time() - self.time_inserted < self.MAX_LIFE
+
+    def __eq__(self, o):
+        return o.token == self.token
 
 
 class SessionProvider(ABC):
     def __init__(self, defaults: CLIDefaults):
         self._defaults = defaults
-        self._valid_tokens = set()
+        self._valid_tokens: Dict[str: SessionTokenCache] = {}
         self._lock = Lock()
         self._secrets_mgr = SecretsManager()
 
@@ -28,14 +51,14 @@ class SessionProvider(ABC):
         with self._lock:
             token = session.get_credentials().get_frozen_credentials().token
             if token in self._valid_tokens:
-                log.info(f"Session with token: {token} was already validated.")
-                return True
+                log.info(f"Session with token: {token} has validity: {self._valid_tokens[token].is_valid()}")
+                return self._valid_tokens[token].is_valid()
             else:
                 try:
                     log.info(f"Testing session with token: {token}")
                     sts = session.client('sts')
                     sts.get_caller_identity()
-                    self._valid_tokens.add(token)
+                    self._valid_tokens[token] = SessionTokenCache(token=token)
                     return True
                 except ClientError:
                     return False
@@ -47,7 +70,6 @@ class SessionProvider(ABC):
     def get_session_and_role(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True) \
             -> Tuple[boto3.Session, AssumableRole]:
         return self.get_session(assumable_role, prompt, exit_on_fail), assumable_role
-
 
     @abstractmethod
     def cleanup_session_cache(self):

@@ -28,6 +28,7 @@ class ResponseBuilder:
         resp.status_code = response.status_code
         return resp
 
+
 class Controller:
     JSON_CONTENT_TYPE = 'application/json; charset=utf-8'
 
@@ -36,12 +37,12 @@ class Controller:
         self._routes: List[Route] = []
         self._registry = svc_registry
 
-    def _cfg(self):
-        return self._registry.config_svc(self.get_role())
+    def _cfg(self, refresh: bool = False):
+        return self._registry.config_svc(self.get_role(), refresh)
         # return self.registry.config_svc(self.context.defaults.assumable_roles[0])
 
-    def _cfg_view(self) -> RBACLimitedConfigView:
-        return self._registry.rbac_view(self.get_role())
+    def _cfg_view(self, refresh: bool = False) -> RBACLimitedConfigView:
+        return self._registry.rbac_view(self.get_role(), refresh)
 
     def routes(self) -> List[Route]:
         return self._routes
@@ -93,41 +94,50 @@ class Controller:
         return fwrap
 
     @staticmethod
-    def build_response() -> any:
+    def handle_result(result):
+        if result is None:
+            result = {}
+
+        if isinstance(result, FiggyResponse):
+            return Response(result.json(), content_type=Controller.JSON_CONTENT_TYPE)
+
+        response = Response(FiggyResponse(data=result).json(), content_type=Controller.JSON_CONTENT_TYPE)
+        log.info(f"RETURNING RESPONSE: {response.data}")
+        return response
+
+    @staticmethod
+    def build_response(func):
         """Builds a FiggyResponse from the current return type"""
 
-        def fwrap(func):
-            @wraps(func)
-            def wrapped_f(*args, **kwargs):
-                try:
-                    result = func(*args, **kwargs)
+        @wraps(func)
+        def wrapped_f(*args, **kwargs):
+            try:
+                result = func(*args, **kwargs)
+                return Controller.handle_result(result)
+            except ClientError as e:
+                log.exception(e)
+                # If we get a AccessDenied exception to decrypt this parameter, it must be encrypted
+                if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
+                    return ResponseBuilder.build(FiggyResponse.no_decrypt_access())
+                elif "AccessDeniedException" == e.response['Error']['Code']:
+                    return ResponseBuilder.build(FiggyResponse.no_access_to_parameter())
+                elif "ParameterNotFound" == e.response['Error']['Code']:
+                    return ResponseBuilder.build(FiggyResponse.fig_missing())
+                elif "ExpiredTokenException" == e.response['Error']['Code']:
+                    try:
+                        log.warning(f'Found expired session, triggering rerunning function with refresh=True')
+                        result = func(*args, **kwargs, refresh=True)
+                        return Controller.handle_result(result)
+                    except BaseException as e3:
+                        log.error("Failed to reauth after catching ExpiredTokenException.")
+                        log.exception(e3)
+            except botocore.exceptions.ParamValidationError as e2:
+                log.warning(f'Caught parameter validation exception: ${e2}')
+                log.exception(e2)
+                return ResponseBuilder.build(FiggyResponse.fig_invalid())
+            except BaseException as e1:
+                log.warning('Caught unexpected exception: {e1}')
+                log.exception(e1)
 
-                    if result is None:
-                        result = {}
+        return wrapped_f
 
-                    if isinstance(result, FiggyResponse):
-                        return Response(result.json(), content_type=Controller.JSON_CONTENT_TYPE)
-
-                    response = Response(FiggyResponse(data=result).json(), content_type=Controller.JSON_CONTENT_TYPE)
-                    log.info(f"RETURNING RESPONSE: {response.data}")
-                    return response
-                except ClientError as e:
-                    log.exception(e)
-                    # If we get a AccessDenied exception to decrypt this parameter, it must be encrypted
-                    if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
-                        return ResponseBuilder.build(FiggyResponse.fig_missing())
-                    elif "AccessDeniedException" == e.response['Error']['Code']:
-                        return ResponseBuilder.build(FiggyResponse.no_access_to_parameter())
-                    elif "ParameterNotFound" == e.response['Error']['Code']:
-                        return ResponseBuilder.build(FiggyResponse.fig_missing())
-                except botocore.exceptions.ParamValidationError as e2:
-                    log.warning(f'Caught parameter validation exception: ${e2}')
-                    log.exception(e2)
-                    return ResponseBuilder.build(FiggyResponse.fig_invalid())
-                except BaseException as e1:
-                    log.warning('Caught unexpected exception: {e1}')
-                    log.exception(e1)
-
-            return wrapped_f
-
-        return fwrap

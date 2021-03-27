@@ -253,7 +253,7 @@ class Google:
             passwd_challenge_url = form.get('action')
         else:
             # sometimes they serve up a different page
-            logging.info("Handling new-style login page")
+            logging.debug("Handling new-style login page")
             form = challenge_page.find('form', {'id': 'challenge'})
             passwd_challenge_url = 'https://accounts.google.com' + form.get('action')
 

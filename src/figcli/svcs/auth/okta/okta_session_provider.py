@@ -67,7 +67,7 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
 
                     if self._defaults.mfa_enabled:
                         color = Utils.default_colors() if self._defaults.colors_enabled else None
-                        mfa = self._secrets_mgr.generate_mfa(self._defaults.user) if self._defaults.auto_mfa else\
+                        mfa = self._secrets_mgr.get_next_mfa(self._defaults.user) if self._defaults.auto_mfa else\
                                 Input.get_mfa(display_hint=True, color=color)
                     else:
                         mfa = None
@@ -104,13 +104,13 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
                           " Likely invalid MFA or Password?\r\n")
                     failure_count += 1
 
-                print(f"GOT INVALID SESSION: {e}")
+                log.debug(f" invalid session: {e}")
                 user = self._get_user(prompt)
                 password = self._get_password(user, prompt=prompt, save=True)
 
                 if self._defaults.mfa_enabled:
                     color = Utils.default_colors() if self._defaults.colors_enabled else None
-                    mfa = self._secrets_mgr.generate_mfa(user) if self._defaults.auto_mfa else \
+                    mfa = self._secrets_mgr.get_next_mfa(user) if self._defaults.auto_mfa else \
                         Input.get_mfa(display_hint=True, color=color)
                 else:
                     mfa = None
@@ -158,11 +158,11 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
                 Utils.stc_error_exit(unparsable_msg)
             else:
                 assumable_roles.append(AssumableRole(account_id=account_id,
-                                                     role=Role(role, full_name=role_name),
+                                                     role=Role(role=role, full_name=role_name),
                                                      run_env=RunEnv(env=run_env),
                                                      provider_name=provider_name,
                                                      profile=None))
         return assumable_roles
 
     def cleanup_session_cache(self):
-        self._write_okta_session_to_cache(OktaSession("", ""))
+        self._write_okta_session_to_cache(OktaSession(session_id='', session_token=''))

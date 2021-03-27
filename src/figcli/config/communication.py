@@ -143,12 +143,12 @@ is_secret = [
 ]
 
 # Config defaults descriptions:
-MFA_DESC = "Does the user above have multi-factor authentication enabled?"
+MFA_DESC = "Set to true if this user requires Multi-factor authentication."
 
 AUTO_MFA_DESC = "By enabling this option you will never be prompted for MFA. Instead figgy will save your " \
-                "multi-factor secret in your OS keychain andwill generated one-time passcodes on your behalf. " \
-                "You will need your MFA secret handy. **This is your MFA secret, NOT your six-digit code that " \
-                "regularly generated."
+                "multi-factor secret in your OS keychain and generated one-time passcodes on your behalf. " \
+                "You will need your MFA secret handy. **Your MFA secret is a long password-like string, " \
+                "it is NOT the six-digit code that is regularly rotated.**"
 
 OKTA_APP_LINK_DESC = "This is the 'Embed URL' linked to your OKTA SAML integration with AWS. For more details see " \
                      "the Figgy Docs OKTA setup guide."

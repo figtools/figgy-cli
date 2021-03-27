@@ -103,7 +103,7 @@ class BastionSessionProvider(SessionProvider):
                         log.info("Invalid session detected in cache. Raising session error.")
                         raise InvalidSessionError("Invalid Session Detected")
 
-                    log.info("Valid session returned from cache.")
+                    log.info("Valid bastion SSO session returned from cache.")
                     return session
                 else:
                     raise InvalidSessionError("Forcing new session, cache is empty.")
@@ -112,7 +112,7 @@ class BastionSessionProvider(SessionProvider):
                     if self._defaults.mfa_enabled:
                         self._defaults.mfa_serial = self.get_mfa_serial()
                         color = Utils.default_colors() if self._defaults.colors_enabled else None
-                        mfa = self._secrets_mgr.generate_mfa(self._defaults.user) if self._defaults.auto_mfa else \
+                        mfa = self._secrets_mgr.get_next_mfa(self._defaults.user) if self._defaults.auto_mfa else \
                                                             Input.get_mfa(display_hint=True, color=color)
 
                         response = self.__get_sts().assume_role(RoleArn=assumable_role.role_arn,

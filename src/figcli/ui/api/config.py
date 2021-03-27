@@ -16,7 +16,8 @@ from figcli.ui.route import Route
 
 log = logging.getLogger(__name__)
 
-# Todo: Create replicatoin config controller and migrate stuff
+
+# Todo: Create replication config controller and migrate stuff
 class ConfigController(Controller, ABC):
 
     def __init__(self, prefix: str, config_context: ConfigContext, svc_registry: ServiceRegistry):
@@ -37,92 +38,91 @@ class ConfigController(Controller, ABC):
         self._routes.append(Route('/replicationConfig', self.get_replication_config, ["GET"]))
 
     @Controller.client_cache(seconds=5)
-    @Controller.build_response()
-    def get_config_names(self) -> dict[str, list[str]]:
+    @Controller.build_response
+    def get_config_names(self, refresh: bool = False) -> dict[str, list[str]]:
         req_filter = request.args.get('filter')
         if req_filter:
-            return {'names': list(self._cfg().get_parameter_names_by_filter(req_filter))}
+            return {'names': list(self._cfg(refresh).get_parameter_names_by_filter(req_filter))}
         else:
-            return {'names': list(self._cfg().get_parameter_names())}
+            return {'names': list(self._cfg(refresh).get_parameter_names())}
 
-    @Controller.build_response()
-    def get_browse_tree(self) -> ConfigOrchard:
-        tree = self._cfg_view().get_config_orchard()
+    @Controller.build_response
+    def get_browse_tree(self, refresh: bool = False) -> ConfigOrchard:
+        refresh and log.warning("REFRESH SET FOR get_browse_tree call!!!")
+        tree = self._cfg_view(refresh).get_config_orchard()
         return tree
 
     # @Controller.client_cache(seconds=5)
-    @Controller.build_response()
-    def get_config(self) -> Union[Fig, FiggyResponse]:
+
+    @Controller.build_response
+    def get_config(self, refresh: bool = False) -> Union[Fig, FiggyResponse]:
+        refresh and log.warning("REFRESH SET FOR get_config call!!!")
         name = request.args.get('name')
         type = request.args.get('type')
         version = int(request.args.get('version', 0))
 
         if type == 'full':
-            fig = self._cfg().get_fig(name, version=version)
+            fig = self._cfg(refresh).get_fig(name, version=version)
         elif type == 'simple':
-            fig = self._cfg().get_fig_simple(name)
+            fig = self._cfg(refresh).get_fig_simple(name)
         else:
-            fig = self._cfg().get_fig(name, version=version)
+            fig = self._cfg(refresh).get_fig(name, version=version)
 
         if fig.is_missing():
             return FiggyResponse.fig_missing()
         else:
             return fig
 
-
-    # @Controller.client_cache(seconds=10)
-    @Controller.build_response()
-    def is_encrypted(self):
+    @Controller.build_response
+    def is_encrypted(self, refresh: bool = False):
         # Todo add validation for expected args with decorator
         name = request.args.get('name')
-        return {'is_encrypted': self._cfg().is_encrypted(name)}
+        return {'is_encrypted': self._cfg(refresh).is_encrypted(name)}
 
-    # @Controller.client_cache(seconds=10)
-    @Controller.build_response()
-    def is_repl_source(self):
+    @Controller.build_response
+    def is_repl_source(self, refresh: bool = False):
         # Todo add validation for expected args with decorator
         name = request.args.get('name')
-        return {'is_repl_source': self._cfg().is_replication_source(name)}
+        return {'is_repl_source': self._cfg(refresh).is_replication_source(name)}
 
-    # @Controller.client_cache(seconds=10)
-    @Controller.build_response()
-    def is_repl_dest(self):
+    @Controller.build_response
+    def is_repl_dest(self, refresh: bool = False):
         # Todo add validation for expected args with decorator
         name = request.args.get('name')
-        return {'is_repl_dest': self._cfg().is_replication_destination(name)}
+        return {'is_repl_dest': self._cfg(refresh).is_replication_destination(name)}
 
-    @Controller.build_response()
-    def save_fig(self):
+    @Controller.build_response
+    def save_fig(self, refresh: bool = False):
         payload: Dict = request.json
         fig: Fig = Fig(**payload)
         log.info(f"SAVING FIG: {fig}")
-        self._cfg().save(fig)
+        self._cfg(refresh).save(fig)
 
     @Controller.client_cache(seconds=30)
-    @Controller.build_response()
-    def get_replication_key(self):
-        return {'kms_key_id': self._cfg().get_replication_key()}
+    @Controller.build_response
+    def get_replication_key(self, refresh: bool = False):
+        return {'kms_key_id': self._cfg(refresh).get_replication_key()}
 
     @Controller.client_cache(seconds=30)
-    @Controller.build_response()
-    def get_replication_source(self):
+    @Controller.build_response
+    def get_replication_source(self, refresh: bool = False):
         name = request.args.get('name')
-        cfg = self._cfg().get_replication_config(name)
+        cfg = self._cfg(refresh).get_replication_config(name)
         return {'source': cfg.source if cfg else None}
 
-    @Controller.build_response()
-    def delete_fig(self):
+    @Controller.build_response
+    def delete_fig(self, refresh: bool = False):
         name = request.args.get('name')
-        self._cfg().delete(name)
+        self._cfg(refresh).delete(name)
 
-    @Controller.build_response()
-    def get_replication_destinations(self) -> List[NReplicationConfig]:
+    @Controller.build_response
+    def get_replication_destinations(self, refresh: bool = False) -> List[NReplicationConfig]:
         source = request.args.get('name')
 
-        return self._cfg().get_replication_configs_by_source(source)
+        return self._cfg(refresh).get_replication_configs_by_source(source)
 
-    @Controller.build_response()
-    def get_replication_config(self):
+    @Controller.build_response
+    def get_replication_config(self, refresh: bool = False):
         source = request.args.get('name')
 
-        return self._cfg().get_replication_config(source)
+        return self._cfg(refresh).get_replication_config(source)
