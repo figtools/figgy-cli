@@ -66,7 +66,9 @@ class CacheManager:
             os.makedirs("/".join(file_override.split('/')[:-1]), exist_ok=True)
 
         self.vault = vault
-        self._lock = FileLock(f'{self._cache_file}.lock')
+
+    def __get_lock(self):
+        return FileLock(f'{self._cache_file}.lock')
 
     def __decrypt(self, data: bytes) -> str:
         """
@@ -99,13 +101,13 @@ class CacheManager:
             return bytes(data, 'utf-8')
 
     def __read(self) -> str:
-        with self._lock:
+        with self.__get_lock():
             with open(self._cache_file, 'rb') as cache:
-                val =  self.__decrypt(cache.read())
+                val = self.__decrypt(cache.read())
                 return val
 
     def __write(self, data: str):
-        with self._lock:
+        with self.__get_lock():
             with open(self._cache_file, 'wb') as cache:
                 cache.write(self.__encrypt(data))
 

@@ -127,7 +127,7 @@ class BastionSessionProvider(SessionProvider):
                                                                     self._defaults.user),
                                                                 DurationSeconds=self._defaults.session_duration)
 
-                    session = FiggyAWSSession.from_sts_response(response)
+                    session = FiggyAWSSession(**response.get('Credentials', {}))
                     log.info(f"Got session response: {response}")
                     self._sts_cache.write(assumable_role.role.full_name, session)
                 except (ClientError, ParamValidationError) as e:

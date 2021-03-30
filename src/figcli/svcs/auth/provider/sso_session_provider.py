@@ -1,4 +1,5 @@
 import os
+import threading
 from json import JSONDecodeError
 from typing import List
 
@@ -9,6 +10,7 @@ import json
 from abc import ABC, abstractmethod
 
 from botocore.exceptions import NoCredentialsError, ParamValidationError, ClientError
+from filelock import FileLock
 
 from figcli.config import *
 from figcli.models.assumable_role import AssumableRole
@@ -57,74 +59,86 @@ class SSOSessionProvider(SessionProvider, ABC):
 
         returns: Hydrated session for role + account that match the specified one in the provided AssumableRole
         """
+        log.info(f"Waiting for lock lock: {SAML_SESSION_CACHE_PATH}-provider.lock")
 
-        role_arn = f"arn:aws:iam::{assumable_role.account_id}:role/{assumable_role.role.full_name}"
-        principal_arn = f"arn:aws:iam::{assumable_role.account_id}:saml-provider/{assumable_role.provider_name}"
-        forced = False
-        log.info(f"Getting session for role: {role_arn} in env: {assumable_role.run_env.env} "
-                 f"with principal: {principal_arn}")
-        attempts = 0
-        while True:
-            try:
-                if prompt and not forced:
-                    forced = True
-                    raise InvalidSessionError("Forcing new session due to prompt.")
-
-                creds: FiggyAWSSession = self._sts_cache.get_val(assumable_role.role.full_name)
-                if creds:
-                    session = boto3.Session(
-                        aws_access_key_id=creds.access_key,
-                        aws_secret_access_key=creds.secret_key,
-                        aws_session_token=creds.token,
-                        region_name=self._defaults.region
-                    )
-
-                    if not self._is_valid_session(session):
-                        self._utils.validate(attempts < self._MAX_ATTEMPTS,
-                                             f"Failed to authenticate with AWS after {attempts} attempts. Exiting. ")
-
-                        attempts = attempts + 1
-                        log.info("Invalid session detected in cache. Raising session error.")
-                        raise InvalidSessionError("Invalid Session Detected")
-
-                    log.info("Valid SSO session returned from cache.")
-                    return session
-                else:
-                    raise InvalidSessionError("Forcing new session, cache is empty.")
-            except (FileNotFoundError, JSONDecodeError, NoCredentialsError, InvalidSessionError) as e:
+        # Prevent multiple requests from differing threads all generating new sessions / authing at the same time.
+        # Sessions are encrypted and cached in the lockbox, so we want to re-auth once, then read from the lockbox.
+        # This cannot be an instance variable, it does not work properly evne though there is only one instantiated
+        # SSOSessionProvider
+        lock = FileLock(f'{SAML_SESSION_CACHE_PATH}-provider.lock')
+        with lock:
+            log.info(f"Got lock: {SAML_SESSION_CACHE_PATH}-provider.lock")
+            role_arn = f"arn:aws:iam::{assumable_role.account_id}:role/{assumable_role.role.full_name}"
+            principal_arn = f"arn:aws:iam::{assumable_role.account_id}:saml-provider/{assumable_role.provider_name}"
+            forced = False
+            log.info(f"Getting session for role: {role_arn} in env: {assumable_role.run_env.env} "
+                     f"with principal: {principal_arn}")
+            attempts = 0
+            while True:
                 try:
-                    # Todo Remove requiring raw saml and instead work with b64 encoded saml?
-                    try:
-                        assertion: str = self._saml_cache.get_val_or_refresh(SAML_ASSERTION_CACHE_KEY,
-                                                                             self.get_saml_assertion, prompt,
-                                                                             max_age=SAML_ASSERTION_MAX_AGE)
-                        encoded_assertion = base64.b64encode(assertion.encode('utf-8')).decode('utf-8')
-                        response = self._sts.assume_role_with_saml(RoleArn=role_arn,
-                                                                   PrincipalArn=principal_arn,
-                                                                   SAMLAssertion=encoded_assertion,
-                                                                   DurationSeconds=900)
-                    except ClientError:
-                        log.info("Refreshing SAML assertion, auth failed with cached or refreshed version.")
-                        assertion = self.get_saml_assertion(prompt)
-                        encoded_assertion = base64.b64encode(assertion.encode('utf-8')).decode('utf-8')
-                        response = self._sts.assume_role_with_saml(RoleArn=role_arn,
-                                                                   PrincipalArn=principal_arn,
-                                                                   SAMLAssertion=encoded_assertion,
-                                                                   DurationSeconds=900)
+                    if prompt and not forced:
+                        forced = True
+                        raise InvalidSessionError("Forcing new session due to prompt.")
 
-                    response['Credentials']['Expiration'] = "cleared"
-                    session = FiggyAWSSession.from_sts_response(response)
-                    self._saml_cache.write(SAML_ASSERTION_CACHE_KEY, assertion)
-                    log.info(f"Got session response: {response}")
-                    self._sts_cache.write(assumable_role.role.full_name, session)
-                except (ClientError, ParamValidationError) as e:
-                    if isinstance(e, ParamValidationError) or "AccessDenied" == e.response['Error']['Code']:
-                        if exit_on_fail:
-                            self._utils.error_exit(f"Error authenticating with AWS from SAML Assertion: {e}")
+                    log.info(f"Trying to get session from cache for name: {assumable_role.role.full_name}")
+                    creds: FiggyAWSSession = self._sts_cache.get_val(assumable_role.role.full_name)
+                    log.info(f"Got creds from cache: {creds}")
+
+                    if creds:
+                        session = boto3.Session(
+                            aws_access_key_id=creds.access_key,
+                            aws_secret_access_key=creds.secret_key,
+                            aws_session_token=creds.token,
+                            region_name=self._defaults.region
+                        )
+
+                        if creds.expires_soon() or not self._is_valid_session(session):
+                            self._utils.validate(attempts < self._MAX_ATTEMPTS,
+                                                 f"Failed to authenticate with AWS after {attempts} attempts. Exiting. ")
+
+                            attempts = attempts + 1
+                            log.info("Invalid session detected in cache. Raising session error.")
+                            raise InvalidSessionError("Invalid Session Detected")
+
+                        log.info("Valid SSO session returned from cache.")
+                        return session
                     else:
-                        if exit_on_fail:
-                            print(e)
-                            self._utils.error_exit(
-                                f"Error getting session for role: {role_arn} -- Are you sure you have permissions?")
+                        raise InvalidSessionError("Forcing new session, cache is empty.")
+                except (FileNotFoundError, JSONDecodeError, NoCredentialsError, InvalidSessionError) as e:
+                    log.info(f"SessionProvider -- got expected error: {e}")
+                    try:
+                        # Todo Remove requiring raw saml and instead work with b64 encoded saml?
+                        try:
+                            assertion: str = self._saml_cache.get_val_or_refresh(SAML_ASSERTION_CACHE_KEY,
+                                                                                 self.get_saml_assertion, prompt,
+                                                                                 max_age=SAML_ASSERTION_MAX_AGE)
+                            encoded_assertion = base64.b64encode(assertion.encode('utf-8')).decode('utf-8')
+                            response = self._sts.assume_role_with_saml(RoleArn=role_arn,
+                                                                       PrincipalArn=principal_arn,
+                                                                       SAMLAssertion=encoded_assertion,
+                                                                       DurationSeconds=900)
+                        except ClientError:
+                            log.info("Refreshing SAML assertion, auth failed with cached or refreshed version.")
+                            assertion = self.get_saml_assertion(prompt)
+                            encoded_assertion = base64.b64encode(assertion.encode('utf-8')).decode('utf-8')
+                            response = self._sts.assume_role_with_saml(RoleArn=role_arn,
+                                                                       PrincipalArn=principal_arn,
+                                                                       SAMLAssertion=encoded_assertion,
+                                                                       DurationSeconds=900)
 
-                    raise e
+                        # response['Credentials']['Expiration'] = "cleared"
+                        session = FiggyAWSSession(**response.get('Credentials', {}))
+                        self._saml_cache.write(SAML_ASSERTION_CACHE_KEY, assertion)
+                        log.info(f"Got session response: {response}")
+                        self._sts_cache.write(assumable_role.role.full_name, session)
+                    except (ClientError, ParamValidationError) as e:
+                        if isinstance(e, ParamValidationError) or "AccessDenied" == e.response['Error']['Code']:
+                            if exit_on_fail:
+                                self._utils.error_exit(f"Error authenticating with AWS from SAML Assertion: {e}")
+                        else:
+                            if exit_on_fail:
+                                print(e)
+                                self._utils.error_exit(
+                                    f"Error getting session for role: {role_arn} -- Are you sure you have permissions?")
+
+                        raise e

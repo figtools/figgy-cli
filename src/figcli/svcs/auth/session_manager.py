@@ -1,18 +1,11 @@
-import json
 import logging
-import os
 
 import boto3
 
-from botocore.errorfactory import ClientError
-from botocore.exceptions import NoCredentialsError, ParamValidationError
-from json import JSONDecodeError
-from figcli.config import *
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
-from figcli.svcs.auth.okta.okta import Okta
 from figcli.svcs.auth.provider.session_provider import SessionProvider
-from figcli.utils.utils import Utils, InvalidSessionError
+from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
 

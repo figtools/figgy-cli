@@ -18,6 +18,7 @@ from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 log = logging.getLogger(__name__)
 
+
 class ServiceRegistry:
     CACHE: Dict = {}
 
@@ -79,7 +80,8 @@ class ServiceRegistry:
         """
 
         if not self.CACHE.get(role, {}).get('ssm') or refresh:
-            self.CACHE[role] = self.CACHE.get(role, {}) | {'ssm': SsmDao(self.__env_session(role, refresh).client('ssm'))}
+            self.CACHE[role] = self.CACHE.get(role, {}) | {
+                'ssm': SsmDao(self.__env_session(role, refresh).client('ssm'))}
 
         return self.CACHE[role]['ssm']
 
@@ -89,7 +91,8 @@ class ServiceRegistry:
         """
 
         if not self.CACHE.get(role, {}).get('kms') or refresh:
-            self.CACHE[role] = self.CACHE.get(role, {}) | {'kms': KmsSvc(self.__env_session(role, refresh).client('kms'))}
+            self.CACHE[role] = self.CACHE.get(role, {}) | {
+                'kms': KmsSvc(self.__env_session(role, refresh).client('kms'))}
 
         return self.CACHE[role]['kms']
 
