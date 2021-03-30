@@ -81,6 +81,7 @@ PROFILE_HELP_TEXT = "Overrides all other figgy configurations and instead pulls 
                     "~/.aws/credentials file and uses that for all types of authorization. Ideal for CICD pipelines."
 IAM_RESTORE_HELP_TEXT = "Restores any credentials in ~/.aws/credentials that were automatically backed up by figgy."
 UI_HELP_TEXT = "Loads the Figgy UI in your default browser."
+RUN_HELP_TEXT = "Runs the Figgy UI -- this command is optional and can be run by default with `figgy ui`. "
 
 # Point in time (--point-in-time)
 POINT_IN_TIME = "Restore all parameters to a point in time."
@@ -130,7 +131,8 @@ HELP_TEXT_MAP = {
     profile: PROFILE_HELP_TEXT,
     upgrade: UPGRADE_HELP_TEXT,
     iam_restore: IAM_RESTORE_HELP_TEXT,
-    ui: UI_HELP_TEXT
+    ui: UI_HELP_TEXT,
+    run: RUN_HELP_TEXT
 }
 
 # Other

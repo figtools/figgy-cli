@@ -3,6 +3,7 @@ import time
 import logging
 import uuid
 
+from figcli.commands.command_context import CommandContext
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.config_factory import ConfigFactory
 from figcli.commands.help_context import HelpContext
@@ -10,6 +11,7 @@ from figcli.commands.help_factory import HelpFactory
 from figcli.commands.iam_context import IAMContext
 from figcli.commands.iam_factory import IAMFactory
 from figcli.commands.factory import Factory
+from figcli.commands.ui_factory import UIFactory
 from figcli.models.defaults.defaults import CLIDefaults
 from figgy.models.run_env import RunEnv
 from figcli.commands.figgy_context import FiggyContext
@@ -58,7 +60,7 @@ class CommandFactory(Factory):
 
     def __session_provider(self) -> SessionProvider:
         if not self._session_provider:
-            self._session_provider = SessionProviderFactory(self._cli_defaults).instance()
+            self._session_provider = SessionProviderFactory(self._cli_defaults, self._context).instance()
 
         return self._session_provider
 
@@ -179,7 +181,9 @@ class CommandFactory(Factory):
         factory: Factory = None
         start = time.time()
         if self._context.command in config_commands and self._context.resource == config:
-            self.__init_sessions()
+            if self._context.command != ui:
+                self.__init_sessions()
+
             context = ConfigContext(self._context.run_env, self._context.role, self._context.args, config,
                                     defaults=self._cli_defaults)
 
@@ -209,6 +213,9 @@ class CommandFactory(Factory):
             context = HelpContext(self._context.resource, self._context.command, optional_args, self._context.run_env,
                                   defaults=self._cli_defaults, role=self._context.role)
             factory = HelpFactory(self._context.command, context)
+        elif self._context.command in ui_commands or self._context.resource == ui:
+            context = CommandContext(self._context.run_env, self._context.command, defaults=self._cli_defaults)
+            factory = UIFactory(self._context.command, context, self.__session_manager())
         else:
             if self._context.command is None or self._context.resource:
                 self._utils.error_exit(f"Proper {CLI_NAME} syntax is `{CLI_NAME} <resource> <command> --options`. "

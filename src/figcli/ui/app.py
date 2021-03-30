@@ -5,6 +5,7 @@ from typing import List
 from flask import Flask
 from flask_cors import CORS
 
+from figcli.commands.command_context import CommandContext
 from figcli.commands.config_context import ConfigContext
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.service_registry import ServiceRegistry
@@ -15,7 +16,7 @@ from figcli.ui.controller import Controller
 log = logging.getLogger(__name__)
 
 class App:
-    def __init__(self, context: ConfigContext, session_mgr: SessionManager):
+    def __init__(self, context: CommandContext, session_mgr: SessionManager):
         self._context = context
         self._session_mgr = session_mgr
         self._svc_registry = ServiceRegistry(self._session_mgr, self._context)

@@ -1,7 +1,7 @@
 import logging
 import boto3
 
-from typing import Dict
+from typing import Dict, Optional, List
 
 from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
@@ -27,6 +27,14 @@ class ServiceRegistry:
         self.context = context
         self.__env_lock = Lock()
         self.__mgr_lock = Lock()
+
+    def init_role(self, role: AssumableRole, mfa: Optional[str] = None):
+        log.info(f'Initializing session for role: {role.role_arn} and MFA: {mfa}')
+        self.session_mgr.get_session(role, prompt=False, mfa=mfa)
+
+    def auth_roles(self, roles: List[AssumableRole], mfa: Optional[str] = None):
+        for role in roles:
+            self.init_role(role, mfa)
 
     def config_svc(self, role: AssumableRole, refresh: bool = False) -> ConfigService:
 

@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 from pydantic import validator
 from pydantic.decorator import BaseModel
 
+from figcli.commands.figgy_context import FiggyContext
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
@@ -39,10 +40,12 @@ class SessionTokenCache(BaseModel):
     def __eq__(self, o):
         return o.token == self.token
 
+
 # Todo: Does multithreading fuck this up?
 class SessionProvider(ABC):
-    def __init__(self, defaults: CLIDefaults):
+    def __init__(self, defaults: CLIDefaults, context: FiggyContext):
         self._defaults = defaults
+        self._context = context
         self._valid_tokens: Dict[str: SessionTokenCache] = {}
         # self._lock = Lock()
         self._secrets_mgr = SecretsManager()
@@ -70,7 +73,7 @@ class SessionProvider(ABC):
                 return False
 
     @abstractmethod
-    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True) -> boto3.Session:
+    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
         pass
 
     def get_session_and_role(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True) \

@@ -26,7 +26,7 @@ from figcli.utils.utils import *
 class ConfigFactory(Factory):
     """
     This factory is used to initialize and return all different types of CONFIG commands. For other resources, there
-    would hypothetically be other factories.
+    are other factories.
     """
 
     def __init__(self, command: CliCommand, context: ConfigContext, ssm: SsmDao, config_svc: ConfigService,
@@ -89,10 +89,6 @@ class ConfigFactory(Factory):
             return Generate(self._colors_enabled, self._config_context)
         elif command == validate:
             return Validate(self._ssm, self._colors_enabled, self._config_context)
-        elif command == ui:
-            return UI(self._ssm, self._colors_enabled, self._config_context, self._cfg_svc, self._config_view,
-                      self._session_manager)
-
         else:
             self._utils.error_exit(f"{command} is not a valid command. You must select from: "
                                    f"[{CollectionUtils.printable_set(config_commands)}]. Try using --help for more info.")

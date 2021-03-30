@@ -1,7 +1,7 @@
 import os
 import threading
 from json import JSONDecodeError
-from typing import List
+from typing import List, Optional
 
 import boto3
 import logging
@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 from botocore.exceptions import NoCredentialsError, ParamValidationError, ClientError
 from filelock import FileLock
 
+from figcli.commands.figgy_context import FiggyContext
 from figcli.config import *
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.aws_session import FiggyAWSSession
@@ -28,10 +29,11 @@ log = logging.getLogger(__name__)
 class SSOSessionProvider(SessionProvider, ABC):
     _MAX_ATTEMPTS = 5
 
-    def __init__(self, defaults: CLIDefaults):
-        super().__init__(defaults)
+    def __init__(self, defaults: CLIDefaults, context: FiggyContext):
+        super().__init__(defaults, context)
         self._utils = Utils(defaults.colors_enabled)
         self._sts = boto3.client('sts')
+        self._context = context
         keychain_enabled = defaults.extras.get(DISABLE_KEYRING) is not True
         vault = FiggyVault(keychain_enabled=keychain_enabled, secrets_mgr=self._secrets_mgr)
         self._sts_cache: CacheManager = CacheManager(file_override=STS_SESSION_CACHE_PATH, vault=vault)
@@ -46,20 +48,22 @@ class SSOSessionProvider(SessionProvider, ABC):
         pass
 
     @abstractmethod
-    def get_saml_assertion(self, prompt: bool = False):
+    def get_saml_assertion(self, prompt: bool = False, mfa: Optional[str] = None):
         pass
 
-    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True) -> boto3.Session:
+    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
         """
         Creates a session in the specified ENV for the target role from a SAML assertion returned by SSO authentication.
         Args:
             assumable_role: AssumableRole - The role to be leveraged to authenticate this session
             prompt: If prompt is set, we will not use a cached session and will generate new sessions for okta and mgmt.
             exit_on_fail: Exit the program if this session hydration fails.
+            mfa: MFA to use with authentication attempt.
 
         returns: Hydrated session for role + account that match the specified one in the provided AssumableRole
         """
         log.info(f"Waiting for lock lock: {SAML_SESSION_CACHE_PATH}-provider.lock")
+        log.info(f"Getting session, was provided MFA: {mfa}")
 
         # Prevent multiple requests from differing threads all generating new sessions / authing at the same time.
         # Sessions are encrypted and cached in the lockbox, so we want to re-auth once, then read from the lockbox.
@@ -110,7 +114,7 @@ class SSOSessionProvider(SessionProvider, ABC):
                         # Todo Remove requiring raw saml and instead work with b64 encoded saml?
                         try:
                             assertion: str = self._saml_cache.get_val_or_refresh(SAML_ASSERTION_CACHE_KEY,
-                                                                                 self.get_saml_assertion, prompt,
+                                                                                 self.get_saml_assertion, (prompt, mfa),
                                                                                  max_age=SAML_ASSERTION_MAX_AGE)
                             encoded_assertion = base64.b64encode(assertion.encode('utf-8')).decode('utf-8')
                             response = self._sts.assume_role_with_saml(RoleArn=role_arn,
@@ -119,7 +123,7 @@ class SSOSessionProvider(SessionProvider, ABC):
                                                                        DurationSeconds=900)
                         except ClientError:
                             log.info("Refreshing SAML assertion, auth failed with cached or refreshed version.")
-                            assertion = self.get_saml_assertion(prompt)
+                            assertion = self.get_saml_assertion(prompt, mfa=mfa)
                             encoded_assertion = base64.b64encode(assertion.encode('utf-8')).decode('utf-8')
                             response = self._sts.assume_role_with_saml(RoleArn=role_arn,
                                                                        PrincipalArn=principal_arn,

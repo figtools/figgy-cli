@@ -7,6 +7,7 @@ from figgy.models.n_replication_config import NReplicationConfig
 from figgy.models.replication_config import ReplicationConfig
 from flask import request, Response
 
+from figcli.commands.command_context import CommandContext
 from figcli.commands.config_context import ConfigContext
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.controller import Controller
@@ -20,10 +21,9 @@ log = logging.getLogger(__name__)
 # Todo: Create replication config controller and migrate stuff
 class ConfigController(Controller, ABC):
 
-    def __init__(self, prefix: str, config_context: ConfigContext, svc_registry: ServiceRegistry):
-        super().__init__(prefix, svc_registry)
+    def __init__(self, prefix: str, context: CommandContext, svc_registry: ServiceRegistry):
+        super().__init__(prefix, context, svc_registry)
         self.registry = svc_registry
-        self.context: ConfigContext = config_context
         self._routes.append(Route('', self.get_config, ["GET"]))
         self._routes.append(Route('', self.save_fig, ["POST"]))
         self._routes.append(Route('', self.delete_fig, ["DELETE"]))

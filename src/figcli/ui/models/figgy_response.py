@@ -38,3 +38,11 @@ class FiggyResponse(BaseModel):
     @staticmethod
     def fig_invalid() -> "FiggyResponse":
         return FiggyResponse(error=FiggyError(**Error.FIG_INVALID))
+
+    @staticmethod
+    def mfa_required() -> "FiggyResponse":
+        return FiggyResponse(error=FiggyError(**Error.MFA_REQUIRED))
+
+    @staticmethod
+    def force_reauth() -> "FiggyResponse":
+        return FiggyResponse(error=FiggyError(**Error.FORCE_REAUTHENTICATION))

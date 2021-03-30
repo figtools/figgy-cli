@@ -9,11 +9,12 @@ from botocore.exceptions import ClientError
 from flask import Response, request
 from pydantic import BaseModel
 
+from figcli.commands.command_context import CommandContext
 from figcli.models.assumable_role import AssumableRole
 from figcli.svcs.service_registry import ServiceRegistry
+from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException
 from figcli.ui.models.figgy_response import FiggyResponse
 from figcli.ui.route import Route
-from figcli.utils.utils import Utils
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 log = logging.getLogger(__name__)
@@ -32,10 +33,11 @@ class ResponseBuilder:
 class Controller:
     JSON_CONTENT_TYPE = 'application/json; charset=utf-8'
 
-    def __init__(self, prefix: str, svc_registry: ServiceRegistry):
+    def __init__(self, prefix: str, context: CommandContext, svc_registry: ServiceRegistry):
         self.prefix = prefix
         self._routes: List[Route] = []
         self._registry = svc_registry
+        self.context = context
 
     def _cfg(self, refresh: bool = False):
         return self._registry.config_svc(self.get_role(), refresh)
@@ -105,14 +107,15 @@ class Controller:
         log.info(f"RETURNING RESPONSE: {response.data}")
         return response
 
+
     @staticmethod
-    def build_response(func):
+    def build_response(method):
         """Builds a FiggyResponse from the current return type"""
 
-        @wraps(func)
-        def wrapped_f(*args, **kwargs):
+        @wraps(method)
+        def impl(self, *args, **kwargs):
             try:
-                result = func(*args, **kwargs)
+                result = method(self, *args, **kwargs)
                 return Controller.handle_result(result)
             except ClientError as e:
                 log.exception(e)
@@ -126,18 +129,34 @@ class Controller:
                 elif "ExpiredTokenException" == e.response['Error']['Code']:
                     try:
                         log.warning(f'Found expired session, triggering rerunning function with refresh=True')
-                        result = func(*args, **kwargs, refresh=True)
+                        result = method(self, *args, **kwargs, refresh=True)
                         return Controller.handle_result(result)
-                    except BaseException as e3:
-                        log.error("Failed to reauth after catching ExpiredTokenException.")
-                        log.exception(e3)
+                    except ClientError as e3:
+                        if "ExpiredTokenException" == e3.response['Error']['Code']:
+                            if self.context.defaults.mfa_enabled:
+                                log.info("Caught EXPIRED TOKEN TWICE! We might need MFA")
+                                return ResponseBuilder.build(FiggyResponse.mfa_required())
+                            else:
+                                log.info("Expired TOKEN TWICE (but also we don't need MFA) - this is perplexing...")
+                                return ResponseBuilder.build(FiggyResponse.force_reauth())
+                        else:
+                            log.error("Failed to reauth after catching ExpiredTokenException.")
+                            log.exception(e3)
+
             except botocore.exceptions.ParamValidationError as e2:
                 log.warning(f'Caught parameter validation exception: ${e2}')
                 log.exception(e2)
                 return ResponseBuilder.build(FiggyResponse.fig_invalid())
+            except CannotRetrieveMFAException as e4:
+                log.info(f"MFA auth is required. Notifying UI of expired session.")
+                log.exception(e4)
+                return ResponseBuilder.build(FiggyResponse.mfa_required())
+            except InvalidCredentialsException as e5:
+                log.info(f"INVALID creds provided!")
+                return ResponseBuilder.build(FiggyResponse.force_reauth())
             except BaseException as e1:
                 log.warning('Caught unexpected exception: {e1}')
                 log.exception(e1)
 
-        return wrapped_f
+        return impl
 

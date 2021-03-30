@@ -111,7 +111,7 @@ class CacheManager:
             with open(self._cache_file, 'wb') as cache:
                 cache.write(self.__encrypt(data))
 
-    def get_val_or_refresh(self, cache_key: str, refresher: Callable, *args, max_age: int = DEFAULT_REFRESH_INTERVAL) \
+    def get_val_or_refresh(self, cache_key: str, refresher: Callable, args, max_age: int = DEFAULT_REFRESH_INTERVAL) \
             -> Any:
         last_write, val = self.get_or_refresh(cache_key, refresher, *args, max_age=max_age)
         return val

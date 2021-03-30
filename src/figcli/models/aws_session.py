@@ -3,7 +3,6 @@ import time
 import logging
 from typing import Dict
 
-
 # Todo add support for expiration and check for expiration rather than calling STS with session.
 from pydantic import BaseModel, Field, validator
 
@@ -12,8 +11,8 @@ EXPIRATION_WINDOW = 60 * 10
 
 log = logging.getLogger(__name__)
 
-class FiggyAWSSession(BaseModel):
 
+class FiggyAWSSession(BaseModel):
     access_key: str = Field(None, alias="AccessKeyId")
     secret_key: str = Field(None, alias="SecretAccessKey")
     token: str = Field(None, alias="SessionToken")
@@ -37,7 +36,6 @@ class FiggyAWSSession(BaseModel):
     def expires_soon(self):
         # log.info(f"Returning expires soon: {time.time() + EXPIRATION_WINDOW > self.expiration} -- expiration is in {self.expiration - time.time()} seconds.")
         return time.time() + EXPIRATION_WINDOW > self.expiration
-
 
 
 """
