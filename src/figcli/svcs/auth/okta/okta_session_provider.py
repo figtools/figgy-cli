@@ -61,9 +61,9 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
 
                 cached_session = self._get_session_from_cache()
                 if not cached_session:
-                    raise InvalidSessionError
+                    raise InvalidSessionError("No session found in cache.")
 
-                okta = Okta(OktaSessionAuth(cached_session))
+                okta = Okta(OktaSessionAuth(self._defaults, cached_session))
                 return okta
             except (FileNotFoundError, InvalidSessionError, JSONDecodeError, AttributeError) as e:
                 try:
@@ -86,12 +86,14 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
                     log.error(f"Caught error when authing with OKTA & caching session: {e}. ")
                     time.sleep(1)
                     count += 1
-                    if count > 2:
+                    if count > 1:
                         if self._context.command == ui:
-                            raise InvalidCredentialsException("Failed OKTA authentication. Invalid user, password, or MFA.")
+                            raise InvalidCredentialsException(
+                                "Failed OKTA authentication. Invalid user, password, or MFA.")
                         else:
-                            Utils.stc_error_exit("Unable to autheticate with OKTA with your provided credentials. Perhaps your"
-                                             f"user, password, or MFA changed? Try rerunning `{CLI_NAME} --configure` again.")
+                            Utils.stc_error_exit(
+                                "Unable to autheticate with OKTA with your provided credentials. Perhaps your"
+                                f"user, password, or MFA changed? Try rerunning `{CLI_NAME} --configure` again.")
                     # self._defaults = self._setup.basic_configure(configure_provider=self._defaults.provider_config is None)
 
     @Utils.trace
