@@ -55,7 +55,7 @@ class Input:
             if input_role not in valid_roles:
                 print(f"{input_role} is not a valid user type. Please select from: {valid_roles}")
 
-        return Role(input_role)
+        return Role(role=input_role)
 
     @staticmethod
     def select_region() -> str:
@@ -80,7 +80,7 @@ class Input:
             if environment not in valid_envs:
                 print(f"{environment} is not a valid environment type. Please select from: {valid_envs}")
 
-        return RunEnv(environment)
+        return RunEnv(env=environment)
 
     @staticmethod
     def select_enable_colors() -> bool:
@@ -111,8 +111,8 @@ class Input:
     def get_mfa_secret() -> str:
         print(f"You have selected that you would like to have `{CLI_NAME}` auto-generate one-time pass codes for you. "
               f"This is going to save you a lot of time, but we'll need to save your MFA secret to your OS keychain.\n"
-              f"\nYour keychain secret is a text string that looks something like this: `LYV5Z1SNBM4KKUZO`. This "
-              f"is the text representation of the QR Code you would would scan. \n\n")
+              f"\nYour MFA secret is a text string that looks something like this: `LYV5Z1SNBM4KKUZO`. This "
+              f"is the text representation of the QR Code you would would scan with an authenticator app. \n\n")
         secret = input('Please input your MFA secret: -> ')
         return secret
 
@@ -168,7 +168,7 @@ class Input:
         Utils.stc_validate(input_env in valid_envs,
                            f"{input_env} is not a valid Run Environment. Please select from: {valid_envs}")
 
-        return RunEnv(input_env)
+        return RunEnv(env=input_env)
 
     @staticmethod
     def is_secret() -> bool:

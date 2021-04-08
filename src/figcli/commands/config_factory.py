@@ -12,6 +12,7 @@ from figcli.commands.config.promote import Promote
 from figcli.commands.config.restore import Restore
 from figcli.commands.config.share import *
 from figcli.commands.config.sync import *
+from figcli.commands.config.ui import UI
 from figcli.commands.config.validate import Validate
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.factory import Factory
@@ -25,15 +26,15 @@ from figcli.utils.utils import *
 class ConfigFactory(Factory):
     """
     This factory is used to initialize and return all different types of CONFIG commands. For other resources, there
-    would hypothetically be other factories.
+    are other factories.
     """
 
-    def __init__(self, command: frozenset, context: ConfigContext, ssm: SsmDao, config_svc: ConfigService,
+    def __init__(self, command: CliCommand, context: ConfigContext, ssm: SsmDao, config_svc: ConfigService,
                  cfg: ConfigDao, kms: KmsSvc, s3_resource: ServiceResource, colors_enabled: bool,
                  config_view: RBACLimitedConfigView,
                  session_manager: SessionManager):
 
-        self._command: frozenset = command
+        self._command: CliCommand = command
         self._config_context: ConfigContext = context
         self._ssm: SsmDao = ssm
         self._config: ConfigDao = cfg
@@ -50,7 +51,7 @@ class ConfigFactory(Factory):
     def instance(self):
         return self.get(self._command)
 
-    def get(self, command: frozenset):
+    def get(self, command: CliCommand):
         if command == sync:
             return Sync(self._ssm, self._config, self._colors_enabled, self._config_context, self.get(get),
                         self.get(put))
@@ -89,5 +90,5 @@ class ConfigFactory(Factory):
         elif command == validate:
             return Validate(self._ssm, self._colors_enabled, self._config_context)
         else:
-            self._utils.error_exit(f"{Utils.get_first(command)} is not a valid command. You must select from: "
+            self._utils.error_exit(f"{command} is not a valid command. You must select from: "
                                    f"[{CollectionUtils.printable_set(config_commands)}]. Try using --help for more info.")

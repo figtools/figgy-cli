@@ -1,10 +1,13 @@
 import base64
 import logging
 import re
+import time
 import xml.etree.ElementTree as ET
 from abc import ABC
 from json import JSONDecodeError
-from typing import List
+from typing import List, Optional
+
+from figcli.commands.figgy_context import FiggyContext
 from figcli.config import *
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
@@ -17,6 +20,7 @@ from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.auth.okta.okta import Okta, InvalidSessionError
 from figcli.svcs.auth.provider.sso_session_provider import SSOSessionProvider
 from figcli.svcs.vault import FiggyVault
+from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 
@@ -26,8 +30,8 @@ log = logging.getLogger(__name__)
 class OktaSessionProvider(SSOSessionProvider, ABC):
     _SESSION_CACHE_KEY = 'session'
 
-    def __init__(self, defaults: CLIDefaults):
-        super().__init__(defaults)
+    def __init__(self, defaults: CLIDefaults, context: FiggyContext):
+        super().__init__(defaults, context)
         keychain_enabled = defaults.extras.get(DISABLE_KEYRING) is not True
         vault = FiggyVault(keychain_enabled=keychain_enabled, secrets_mgr=self._secrets_mgr)
         self._cache_manager: CacheManager = CacheManager(file_override=OKTA_SESSION_CACHE_PATH, vault=vault)
@@ -40,7 +44,7 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
         last_write, session = self._cache_manager.get(self._SESSION_CACHE_KEY)
         return session
 
-    def get_sso_session(self, prompt: bool = False) -> Okta:
+    def get_sso_session(self, prompt: bool = False, mfa: Optional[str] = None) -> Okta:
         """
         Pulls the last okta session from cache, if cache doesn't exist, generates a new session and writes it to cache.
         From this session, the OKTA SVC is hydrated and returned.
@@ -57,43 +61,55 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
 
                 cached_session = self._get_session_from_cache()
                 if not cached_session:
-                    raise InvalidSessionError
+                    raise InvalidSessionError("No session found in cache.")
 
-                okta = Okta(OktaSessionAuth(cached_session))
+                okta = Okta(OktaSessionAuth(self._defaults, cached_session))
                 return okta
             except (FileNotFoundError, InvalidSessionError, JSONDecodeError, AttributeError) as e:
                 try:
                     password = self._secrets_mgr.get_password(self._defaults.user)
 
-                    if self._defaults.mfa_enabled:
-                        color = Utils.default_colors() if self._defaults.colors_enabled else None
-                        mfa = self._secrets_mgr.generate_mfa(self._defaults.user) if self._defaults.auto_mfa else\
+                    if not mfa:
+                        if self._context.command == commands.ui and not self._defaults.auto_mfa:
+                            raise CannotRetrieveMFAException("Cannot retrieve MFA, UI mode is activated.")
+                        else:
+                            color = Utils.default_colors() if self._defaults.colors_enabled else None
+                            mfa = self._secrets_mgr.get_next_mfa(self._defaults.user) if self._defaults.auto_mfa else \
                                 Input.get_mfa(display_hint=True, color=color)
-                    else:
-                        mfa = None
+
+                    log.info(f"Getting OKTA primary auth with mfa: {mfa}")
                     primary_auth = OktaPrimaryAuth(self._defaults, password, mfa)
                     self._write_okta_session_to_cache(primary_auth.get_session())
                     return Okta(primary_auth)
                 except InvalidSessionError as e:
-                    count += 1
                     prompt = True
                     log.error(f"Caught error when authing with OKTA & caching session: {e}. ")
-                    if count > 3:
-                        Utils.stc_error_exit("Unable to autheticate with OKTA with your provided credentials. Perhaps your"
-                                         f"user, password, or MFA changed? Try reunning `{CLI_NAME} --configure` again.")
+                    time.sleep(1)
+                    count += 1
+                    if count > 1:
+                        if self._context.command == ui:
+                            raise InvalidCredentialsException(
+                                "Failed OKTA authentication. Invalid user, password, or MFA.")
+                        else:
+                            Utils.stc_error_exit(
+                                "Unable to autheticate with OKTA with your provided credentials. Perhaps your"
+                                f"user, password, or MFA changed? Try rerunning `{CLI_NAME} --configure` again.")
                     # self._defaults = self._setup.basic_configure(configure_provider=self._defaults.provider_config is None)
 
     @Utils.trace
-    def get_saml_assertion(self, prompt: bool = False) -> str:
+    def get_saml_assertion(self, prompt: bool = False, mfa: Optional[str] = None) -> str:
         """
         Lookup OKTA session from cache, if it's valid, use it, otherwise, generate new assertion with MFA
         Args:
             prompt: Used for forcing prompts of username / password and always generating a new assertion
+            mfa: MFA to use for generating the new OKTA session with.
             force_new: Forces a new session, abandons one from cache
         """
+        log.info(f'Getting SAML assertion. Provided MFA override: {mfa}')
         invalid_session = True
-        okta = self.get_sso_session(prompt)
+        okta = self.get_sso_session(prompt, mfa)
         failure_count = 0
+        # Todo: is this an infinite loop after a request from UI with a bad MFA?
         while invalid_session:
             try:
                 assertion = okta.get_assertion()
@@ -104,13 +120,13 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
                           " Likely invalid MFA or Password?\r\n")
                     failure_count += 1
 
-                print(f"GOT INVALID SESSION: {e}")
+                log.debug(f" invalid session: {e}")
                 user = self._get_user(prompt)
                 password = self._get_password(user, prompt=prompt, save=True)
 
                 if self._defaults.mfa_enabled:
                     color = Utils.default_colors() if self._defaults.colors_enabled else None
-                    mfa = self._secrets_mgr.generate_mfa(user) if self._defaults.auto_mfa else \
+                    mfa = self._secrets_mgr.get_next_mfa(user) if self._defaults.auto_mfa else \
                         Input.get_mfa(display_hint=True, color=color)
                 else:
                     mfa = None
@@ -158,11 +174,11 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
                 Utils.stc_error_exit(unparsable_msg)
             else:
                 assumable_roles.append(AssumableRole(account_id=account_id,
-                                                     role=Role(role, full_name=role_name),
-                                                     run_env=RunEnv(run_env),
+                                                     role=Role(role=role, full_name=role_name),
+                                                     run_env=RunEnv(env=run_env),
                                                      provider_name=provider_name,
                                                      profile=None))
         return assumable_roles
 
     def cleanup_session_cache(self):
-        self._write_okta_session_to_cache(OktaSession("", ""))
+        self._write_okta_session_to_cache(OktaSession(session_id='', session_token=''))

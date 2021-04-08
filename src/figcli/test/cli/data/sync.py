@@ -20,7 +20,7 @@ class DataSync(FiggyTest):
         self.step("Prepping workspace, deleting any existing values.")
         self.prep()
 
-        child = TestUtils.spawn(f'{CLI_NAME} {Utils.get_first(config)} {Utils.get_first(sync)} '
+        child = TestUtils.spawn(f'{CLI_NAME} {config.name} {sync.name} '
                               f'--env {DEFAULT_ENV} --config figcli/test/assets/data_repl_conf.json '
                               f'--skip-upgrade --replication-only {self.extra_args}', timeout=30)
         time.sleep(2)

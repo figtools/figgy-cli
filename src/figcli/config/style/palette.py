@@ -1,17 +1,15 @@
-from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Any
 
 from sty import fg, FgRegister, rs
 
 
-@dataclass
 class Palette:
     # Default palette colors
-    BLUE = (5, 156, 205)
-    GREEN = (51, 222, 136)
-    RED = (240, 70, 87)
-    YELLOW = (249, 149, 72)
-    ORANGE = (232, 149, 39)
+    BLUE: Tuple = (5, 156, 205)
+    GREEN: Tuple = (51, 222, 136)
+    RED: Tuple = (240, 70, 87)
+    YELLOW: Tuple = (249, 149, 72)
+    ORANGE: Tuple = (232, 149, 39)
 
     BL_HX: str = '#%02x%02x%02x' % BLUE
     GR_HX: str = '#%02x%02x%02x' % GREEN

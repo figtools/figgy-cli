@@ -36,9 +36,9 @@ class Login(HelpCommand, ABC):
         self._utils = Utils(self._defaults.colors_enabled)
         self._aws_cfg = AWSConfig(color=self.c)
 
-        self.example = f"\n\n{self.c.fg_bl}{CLI_NAME} {Utils.get_first(login)} \n" \
+        self.example = f"\n\n{self.c.fg_bl}{CLI_NAME} {login.name} \n" \
                        f"{self.c.rs}{self.c.fg_yl}  --or--{self.c.rs}\n" \
-                       f"{self.c.fg_bl}{CLI_NAME} {Utils.get_first(login)} {Utils.get_first(sandbox)}{self.c.rs}"
+                       f"{self.c.fg_bl}{CLI_NAME} {login.name} {sandbox.name}{self.c.rs}"
 
     def login(self):
         self._utils.validate(self._defaults.provider.name in Provider.names(),
@@ -92,7 +92,7 @@ class Login(HelpCommand, ABC):
         config_mgr = ConfigManager.figgy()
         config_mgr.set(Config.Section.Bastion.PROFILE, FIGGY_SANDBOX_PROFILE)
         defaults = self._setup.configure_extras(defaults)
-        defaults = self._setup.configure_roles(current_defaults=defaults, role=Role(role), run_env=run_env)
+        defaults = self._setup.configure_roles(current_defaults=defaults, role=Role(role=role), run_env=run_env)
         defaults = self._setup.configure_figgy_defaults(defaults)
         self._setup.save_defaults(defaults)
 

@@ -13,6 +13,6 @@ class ConfigCommand(Command, ABC):
     Config command class from which all other config command classes inherit.
     """
 
-    def __init__(self, command_type: frozenset, colors_enabled: bool, context: ConfigContext):
+    def __init__(self, command_type: CliCommand, colors_enabled: bool, context: ConfigContext):
         super().__init__(command_type, colors_enabled, context)
         self.role = context.role

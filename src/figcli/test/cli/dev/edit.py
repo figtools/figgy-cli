@@ -27,7 +27,7 @@ class DevEdit(FiggyTest):
 
     def edit(self):
         # Get Value
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(edit)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {edit.name} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}')
 
         child.expect('.*Please input a PS Name.*')

@@ -14,14 +14,14 @@ class Command(ABC):
     Root command class from which all other command classes inherit.
     """
 
-    def __init__(self, command_type: frozenset, colors_enabled: bool,
+    def __init__(self, command_type: CliCommand, colors_enabled: bool,
                  context: Union[CommandContext, HelpContext, ConfigContext]):
         self.type = command_type
         self.run_env = context.run_env
         self.c = TerminalFactory(colors_enabled).instance().get_colors()
-        self.command_printable = list(self.type)[0]
+        self.command_printable = self.type.name
         self.context = context
-        self.example = f"{self.c.fg_bl}{CLI_NAME} {Utils.get_first(context.resource)} {self.command_printable} " \
+        self.example = f"{self.c.fg_bl}{CLI_NAME} {context.resource} {self.command_printable} " \
                        f"--env dev{self.c.rs}"
 
     @abstractmethod

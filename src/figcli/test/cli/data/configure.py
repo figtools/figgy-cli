@@ -12,8 +12,8 @@ class DataConfigure(FiggyTest):
         super().__init__(None)
 
     def run(self):
-        print(f"Testing `{CLI_NAME} --{Utils.get_first(configure)}`")
-        child = pexpect.spawn(f'{CLI_NAME} --{Utils.get_first(configure)} --skip-upgrade', timeout=3, encoding='utf-8')
+        print(f"Testing `{CLI_NAME} --{configure.name}`")
+        child = pexpect.spawn(f'{CLI_NAME} --{configure.name} --skip-upgrade', timeout=3, encoding='utf-8')
         user_name = os.environ.get(SNAGBOT_USER_ENV_KEY)
         password = os.environ.get(SNAGBOT_PASSWORD_ENV_KEY)
 

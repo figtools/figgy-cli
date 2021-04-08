@@ -24,10 +24,10 @@ class DevList(FiggyTest):
     def test_empty_input(self):
         self.step("Testing empty input for list.")
         self._setup(1, 3)
-        print(f"Testing {CLI_NAME} config {Utils.get_first(list_com)} --env dev")
+        print(f"Testing {CLI_NAME} config {list_com.name} --env dev")
         print("Waiting for cache population.")
         time.sleep(70)
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(list_com)} --env {DEFAULT_ENV} '
+        child = pexpect.spawn(f'{CLI_NAME} config {list_com.name} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}', timeout=20, encoding='utf-8')
         child.logfile = sys.stdout
         child.delaybeforesend = .25
@@ -53,8 +53,8 @@ class DevList(FiggyTest):
         time.sleep(70)
 
         self.step("Testing successful list.")
-        print(f"Testing {CLI_NAME} config {Utils.get_first(list_com)} --env dev")
-        child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(list_com)} --env {DEFAULT_ENV} '
+        print(f"Testing {CLI_NAME} config {list_com.name} --env dev")
+        child = pexpect.spawn(f'{CLI_NAME} config {list_com.name} --env {DEFAULT_ENV} '
                               f'--skip-upgrade {self.extra_args}',
                               timeout=20, encoding='utf-8')
         child.logfile = sys.stdout

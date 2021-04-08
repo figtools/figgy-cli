@@ -2,9 +2,10 @@ import time
 import os
 import logging
 import platform
-from dataclasses import dataclass, field
 import requests
 from typing import List, Dict
+
+from pydantic import BaseModel
 
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.svcs.cache_manager import CacheManager
@@ -16,16 +17,15 @@ from figcli.config import *
 log = logging.getLogger(__name__)
 
 
-@dataclass
-class FiggyMetrics:
+class FiggyMetrics(BaseModel):
     COUNT_KEY = 'count'
     user_id: str
-    metrics: Dict[str, Dict] = field(default_factory=dict)
+    metrics: Dict[str, Dict] = {}
     last_report: int = Utils.millis_since_epoch()
 
     def increment_count(self, command: str) -> None:
         metric = self.metrics.get(command, {})
-        metric[FiggyMetrics.COUNT_KEY] = metric.get(FiggyMetrics.COUNT_KEY, 0) + 1
+        metric[self.COUNT_KEY] = metric.get(self.COUNT_KEY, 0) + 1
         self.metrics[command] = metric
 
 
@@ -71,7 +71,7 @@ class AnonymousUsageTracker:
 
             command = getattr(self, 'type', None)
             if command:
-                command = Utils.get_first(command)
+                command = command.name
                 cache = CacheManager(AnonymousUsageTracker._CACHE_NAME)
 
                 if hasattr(self, 'context') and hasattr(self.context, 'defaults') and self.context.defaults is not None:

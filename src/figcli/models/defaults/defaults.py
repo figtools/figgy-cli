@@ -1,20 +1,20 @@
 import jsonpickle
 import uuid
 import os
+
+from pydantic import BaseModel
+
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.provider import Provider
 from figcli.models.defaults.provider_config import ProviderConfig, ProviderConfigFactory, BastionProviderConfig
 from figcli.models.role import Role
 from figgy.models.run_env import RunEnv
-from figcli.config.constants import APP_NS_OVERRIDE
 from figcli.config import *
 from typing import Dict, Optional, List, Any
-from dataclasses import dataclass, field
 from figcli.utils.utils import Utils
 
 
-@dataclass
-class CLIDefaults:
+class CLIDefaults(BaseModel):
     """
     Defaults are parsed from the ~/.figgy/devops/defaults file and then hydrate this object
     """
@@ -33,10 +33,10 @@ class CLIDefaults:
     provider_config: Optional[Any]
     mfa_serial: Optional[str]
     user: Optional[str]
-    valid_envs: Optional[List[RunEnv]] = field(default_factory=list)
-    valid_roles: Optional[List[Role]] = field(default_factory=list)
-    assumable_roles: Optional[List[AssumableRole]] = field(default_factory=list)
-    extras: Optional[Dict] = field(default_factory=dict)
+    valid_envs: Optional[List[RunEnv]] = []
+    valid_roles: Optional[List[Role]] = []
+    assumable_roles: Optional[List[AssumableRole]] = []
+    extras: Optional[Dict] = []
 
     def __str__(self):
         return f"Role: {self.role}\nColors Enabled: {self.colors_enabled}\nOkta User: {self.user}\n" \
@@ -44,10 +44,10 @@ class CLIDefaults:
 
     @staticmethod
     def unconfigured():
-        return CLIDefaults(role=Role("unconfigured"),
+        return CLIDefaults(role=Role(role="unconfigured"),
                            colors_enabled=False,
                            user=None,
-                           run_env=RunEnv("unconfigured"),
+                           run_env=RunEnv(env="unconfigured"),
                            provider=Provider.UNSELECTED,
                            session_duration=DEFAULT_SESSION_DURATION,
                            region="us-east-1",
@@ -63,16 +63,16 @@ class CLIDefaults:
 
     @staticmethod
     def sandbox(user: str, role: str, colors: bool):
-        return CLIDefaults(role=Role(role),
+        return CLIDefaults(role=Role(role=role),
                            colors_enabled=colors,
                            user=user,
-                           run_env=RunEnv("unconfigured"),
+                           run_env=RunEnv(env="unconfigured"),
                            provider=Provider.AWS_BASTION,
                            session_duration=SANDBOX_SESSION_DURATION,
                            region=FIGGY_SANDBOX_REGION,
                            mfa_enabled=False,
                            mfa_serial=None,
-                           provider_config=BastionProviderConfig(FIGGY_SANDBOX_PROFILE),
+                           provider_config=BastionProviderConfig(profile_name=FIGGY_SANDBOX_PROFILE),
                            report_errors=False,
                            auto_mfa=False,
                            user_id=str(uuid.uuid4()),
@@ -82,10 +82,10 @@ class CLIDefaults:
 
     @staticmethod
     def from_profile(profile):
-        return CLIDefaults(role=Role(profile),
+        return CLIDefaults(role=Role(role=profile),
                            colors_enabled=Utils.not_windows(),
                            user=profile,
-                           run_env=RunEnv(profile),
+                           run_env=RunEnv(env=profile),
                            provider=Provider.PROFILE,
                            session_duration=DEFAULT_SESSION_DURATION,
                            region="us-east-1",
@@ -98,6 +98,3 @@ class CLIDefaults:
                            service_ns=os.environ.get(APP_NS_OVERRIDE) or "/app",
                            usage_tracking=True,
                            extras={})
-
-    def __str__(self) -> str:
-        return jsonpickle.encode(self)

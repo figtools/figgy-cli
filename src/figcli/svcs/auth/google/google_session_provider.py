@@ -1,9 +1,11 @@
 import re
 import xml.etree.ElementTree as ET
 
+from pydantic import BaseModel
+
+from figcli.commands.figgy_context import FiggyContext
 from figcli.config.sso import *
 from figcli.config.constants import GOOGLE_SESSION_CACHE_PATH
-from dataclasses import dataclass
 from typing import Optional, Any, List
 
 from figcli.models.assumable_role import AssumableRole
@@ -19,8 +21,7 @@ from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 from figcli.config.constants import ERROR_LOG_DIR, DISABLE_KEYRING
 
-@dataclass
-class GoogleConfig:
+class GoogleConfig(BaseModel):
     username: str
     password: str
     idp_id: str
@@ -33,8 +34,8 @@ class GoogleSessionProvider(SSOSessionProvider):
     _SAML_CACHE_KEY = 'saml_assertion'
     _SAML_MAX_AGE = 60 * 60 * 8 * 1000  # 12 hours
 
-    def __init__(self, defaults: CLIDefaults):
-        super().__init__(defaults)
+    def __init__(self, defaults: CLIDefaults, context: FiggyContext):
+        super().__init__(defaults, context)
         keychain_enabled = defaults.extras.get(DISABLE_KEYRING) is not True
         vault = FiggyVault(keychain_enabled=keychain_enabled, secrets_mgr=self._secrets_mgr)
         self._cache_manager: CacheManager = CacheManager(file_override=GOOGLE_SESSION_CACHE_PATH, vault=vault)
@@ -93,8 +94,8 @@ class GoogleSessionProvider(SSOSessionProvider):
                     Utils.stc_error_exit(unparsable_msg)
                 else:
                     assumable_roles.append(AssumableRole(account_id=account_id,
-                                                         role=Role(role, full_name=role_name),
-                                                         run_env=RunEnv(run_env),
+                                                         role=Role(role=role, full_name=role_name),
+                                                         run_env=RunEnv(env=run_env),
                                                          provider_name=provider_name,
                                                          profile=None))
 
@@ -104,8 +105,8 @@ class GoogleSessionProvider(SSOSessionProvider):
         self._google.do_login()
         return self._google.parse_saml().decode('utf-8')
 
-    def get_saml_assertion(self, prompt: bool = False) -> str:
-        return self._cache_manager.get_val_or_refresh(SAML_ASSERTION_CACHE_KEY, self._get_decoded_saml,
+    def get_saml_assertion(self, prompt: bool = False, mfa: Optional[str] = None) -> str:
+        return self._cache_manager.get_val_or_refresh(SAML_ASSERTION_CACHE_KEY, self._get_decoded_saml, None,
                                                       max_age=SAML_ASSERTION_MAX_AGE)
 
     def cleanup_session_cache(self):

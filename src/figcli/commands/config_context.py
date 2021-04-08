@@ -17,7 +17,7 @@ class ConfigContext(CommandContext):
     The context also contains optional parameter values passed in via the original invoked command vai the CLI
     """
 
-    def __init__(self, run_env: RunEnv, role: Role, args, resource: frozenset, defaults: Optional[CLIDefaults]):
+    def __init__(self, run_env: RunEnv, role: Role, args, resource: CliCommand, defaults: Optional[CLIDefaults]):
         super().__init__(run_env, resource, defaults=defaults)
         self.role = role  # type: Role
         self.args = args

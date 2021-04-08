@@ -43,7 +43,8 @@ class Promote(ConfigCommand):
                 parameters: List[Dict] = self._source_ssm.get_all_parameters([namespace])
 
                 if not parameters and self._source_ssm.get_parameter(namespace):
-                    parameters = [self._source_ssm.get_parameter_details(namespace)]
+                    parameters, latest_version = self._source_ssm.get_parameter_details(namespace)
+                    parameters = list(parameters)
 
                 if parameters:
                     repeat = False
@@ -61,7 +62,7 @@ class Promote(ConfigCommand):
         valid_envs.remove(self.run_env.env)  # Remove current env, we can't promote from dev -> dev
         next_env = Input.select(f'Please select the destination environment.', valid_options=list(valid_envs))
 
-        matching_role = [role for role in matching_roles if role.run_env == RunEnv(next_env)][0]
+        matching_role = [role for role in matching_roles if role.run_env == RunEnv(env=next_env)][0]
         dest_ssm = SsmDao(self._session_mgr.get_session(matching_role, prompt=False).client('ssm'))
 
         for param in parameters:

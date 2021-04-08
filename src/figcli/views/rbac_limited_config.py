@@ -2,14 +2,17 @@ import json
 import logging
 from typing import List
 
+from cachetools import TTLCache, cached
+from figgy.data.dao.ssm import SsmDao
+from figgy.models.run_env import RunEnv
 from prompt_toolkit.completion import WordCompleter
 
 from figcli.config import *
-from figgy.data.dao.ssm import SsmDao
+from figcli.models.kms_key import KmsKey
 from figcli.models.role import Role
-from figgy.models.run_env import RunEnv
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config import ConfigService
+from figcli.ui.models.config_orchard import ConfigOrchard
 from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
@@ -32,6 +35,7 @@ class RBACLimitedConfigView:
         self._config_completer = None
         self._profile = profile
 
+    @cached(TTLCache(maxsize=5, ttl=500))
     def get_authorized_namespaces(self) -> List[str]:
         """
         Looks up the user-defined namespaces that users of this type can access. This enables us to prevent the
@@ -58,6 +62,11 @@ class RBACLimitedConfigView:
 
         return authed_nses
 
+    @cached(TTLCache(maxsize=5, ttl=500))
+    def get_authorized_kms_keys_full(self, run_env: RunEnv) -> List[KmsKey]:
+        key_aliases: List[str] = self.get_authorized_kms_keys()
+        return [KmsKey(alias=key, id=self.get_authorized_key_id(key, run_env)) for key in key_aliases]
+
     def get_authorized_kms_keys(self) -> List[str]:
         """
         Looks up the user-defined KMS keys that users of this type can access. This enables us to prevent the
@@ -68,9 +77,11 @@ class RBACLimitedConfigView:
         cache_key = f'{self._role.role}-authed-keys'
 
         if self._profile:
-            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter, self.rbac_profile_kms_keys_path)
+            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter,
+                                                             self.rbac_profile_kms_keys_path)
         else:
-            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter, self.rbac_role_kms_path)
+            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter,
+                                                             self.rbac_role_kms_path)
 
         if authed_nses:
             authed_nses = json.loads(authed_nses)
@@ -141,3 +152,8 @@ class RBACLimitedConfigView:
 
         # print(f"Cache Count: {len(all_names)}")
         return self._config_completer
+
+    @Utils.trace
+    def get_config_orchard(self) -> ConfigOrchard:
+        all_children = set(self.get_config_names())
+        return ConfigOrchard.build_orchard(all_children)

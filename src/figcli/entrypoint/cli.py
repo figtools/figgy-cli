@@ -10,6 +10,7 @@ import boto3
 from figcli.commands.command_factory import CommandFactory
 from figcli.commands.figgy_context import FiggyContext
 from figcli.commands.types.command import Command
+from figcli.models.cli_command import CliCommand
 from figcli.config import *
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
@@ -21,7 +22,7 @@ from figcli.svcs.setup import FiggySetup
 from figcli.utils.utils import Utils
 
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.CRITICAL)
+root_logger.setLevel(logging.INFO)
 root_logger.handlers = []
 stdout_handler = logging.StreamHandler(sys.stdout)
 
@@ -31,7 +32,7 @@ log = logging.getLogger(__name__)
 class FiggyCLI:
     @staticmethod
     def add_arg(com_parser, com_arg, cmd, rsc):
-        com_parser.add_argument(f'--{Utils.get_first(com_arg)}', help=HELP_TEXT_MAP[com_arg],
+        com_parser.add_argument(f'--{com_arg.name}', help=HELP_TEXT_MAP[com_arg],
                                 action=arg_options[rsc][cmd][com_arg][action],
                                 required=arg_options[rsc][cmd][com_arg][required])
 
@@ -41,21 +42,21 @@ class FiggyCLI:
         Parses Figgy command line arguments and returns generic "args" object.
         """
         parser = argparse.ArgumentParser(description=RESOURCE_PARSER_DESC)
-        parser.add_argument(f'--{Utils.get_first(configure)}', help=CONFIGURE_HELP_TEXT, action=store_true)
-        parser.add_argument(f'--{Utils.get_first(prompt_com)}', help=PROMPT_HELP_TEXT, action=store_true)
-        parser.add_argument(f'--{Utils.get_first(version)}', help=VERSION_HELP_TEXT, action=store_true)
-        parser.add_argument(f'--{Utils.get_first(skip_upgrade)}', help=SKIP_UPGRADE_HELP_TEXT, action=store_true)
-        parser.add_argument(f'--{Utils.get_first(upgrade)}', help=UPGRADE_HELP_TEXT, action=store_true)
+        parser.add_argument(f'--{configure.name}', help=CONFIGURE_HELP_TEXT, action=store_true)
+        parser.add_argument(f'--{prompt_com.name}', help=PROMPT_HELP_TEXT, action=store_true)
+        parser.add_argument(f'--{version.name}', help=VERSION_HELP_TEXT, action=store_true)
+        parser.add_argument(f'--{skip_upgrade.name}', help=SKIP_UPGRADE_HELP_TEXT, action=store_true)
+        parser.add_argument(f'--{upgrade.name}', help=UPGRADE_HELP_TEXT, action=store_true)
 
         resource_subparsers = parser.add_subparsers(title='resources', dest='resource', metavar='')
 
         for rsc in resource_map:
-            cmd_parser = resource_subparsers.add_parser(Utils.get_first(rsc), help=HELP_TEXT_MAP[rsc])
-            subparser = cmd_parser.add_subparsers(title=f'{Utils.get_first(rsc)} commands', dest='command', metavar='',
+            cmd_parser = resource_subparsers.add_parser(rsc.name, help=HELP_TEXT_MAP[rsc])
+            subparser = cmd_parser.add_subparsers(title=f'{rsc.name} commands', dest='command', metavar='',
                                                   help=HELP_TEXT_MAP[rsc])
 
             for cmd in resource_map[rsc]:
-                com_parser = subparser.add_parser(Utils.get_first(cmd), help=HELP_TEXT_MAP[cmd])
+                com_parser = subparser.add_parser(cmd.name, help=HELP_TEXT_MAP[cmd])
                 for com_arg, val in arg_options[rsc][cmd].items():
                     FiggyCLI.add_arg(com_parser, com_arg, cmd, rsc)
 
@@ -99,12 +100,12 @@ class FiggyCLI:
 
             if role_override:
                 if role_override in [role.role.role for role in defaults.assumable_roles] or is_setup:
-                    return Role(role_override)
+                    return Role(role=role_override)
                 else:
                     self._utils.error_exit(f"Invalid role override provided of: {role_override}. "
                                            f"You do not have permissions to assume this role. Contact your system "
                                            f"administrator to receive permissions then rerun `{CLI_NAME} "
-                                           f"--{Utils.get_first(configure)}`.")
+                                           f"--{configure.name}`.")
 
             return defaults.role
         else:
@@ -171,10 +172,12 @@ class FiggyCLI:
     @staticmethod
     def is_setup_command(args):
         """
-        Returns True for 'special' commands that configure figgy itself or follow non-normal executiion paths.
+        Returns True for 'special' commands that configure figgy itself or follow non-normal execution paths.
         Needed to skip past steps that are not necessary because figgy isn't set up yet, or to support a special
         use case (like sandbox logins).
         """
+
+
         return Utils.is_set_true(configure, args) \
                or Utils.command_set(sandbox, args) \
                or Utils.is_set_true(version, args) \
@@ -203,7 +206,7 @@ class FiggyCLI:
             else:
                 Utils.stc_validate(args.env in self._defaults.valid_envs,
                                    f'{ENV_HELP_TEXT} {self._defaults.valid_envs}. Provided: {args.env}')
-                self._run_env = RunEnv(args.env)
+                self._run_env = RunEnv(env=args.env)
 
         self._utils.validate(Utils.attr_exists(configure, args) or Utils.attr_exists(command, args),
                              f"No command found. Proper format is `{CLI_NAME} <resource> <command> --option(s)`")
@@ -211,10 +214,11 @@ class FiggyCLI:
         self._assumable_role = self.find_assumable_role(self._run_env, self._role, skip=self._is_setup_command,
                                                         profile=self._profile)
 
-        command_val = Utils.attr_if_exists(command, args)
-        resource_val = Utils.attr_if_exists(resource, args)
-        found_command: frozenset = frozenset({Utils.attr_if_exists(command, args)}) if command_val else None
-        found_resource: frozenset = frozenset({Utils.attr_if_exists(resource, args)}) if resource_val else None
+        command_name = Utils.attr_if_exists(command, args)
+        resource_name = Utils.attr_if_exists(resource, args)
+
+        found_command: CliCommand = Utils.find_command(str(command_name))
+        found_resource: CliCommand = Utils.find_resource(str(resource_name))
 
         self._context = FiggyContext(self.get_colors_enabled(), found_resource, found_command,
                                      self._run_env, self._assumable_role, args)

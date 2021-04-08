@@ -35,3 +35,9 @@ assertion.xml
 #
 ## Pyinstalelr stuffs
 #*.spec
+
+src/ui/web-app/dist
+src/ui/web-app/node_modules
+src/figcli/ui/templates
+src/figcli/ui/assets
+src/figgy_cli.egg-info

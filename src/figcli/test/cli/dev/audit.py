@@ -40,7 +40,7 @@ class DevAudit(FiggyTest):
         self.audit(f'/doesnt/exist/{new_uuid}', expect_results=False)
 
     def audit(self, name, audit_another=False, expect_results=True):
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(audit)} --env {DEFAULT_ENV} --skip-upgrade'
+        child = TestUtils.spawn(f'{CLI_NAME} config {audit.name} --env {DEFAULT_ENV} --skip-upgrade'
                               f' {self.extra_args}')
 
         self.step(f"Auditing: {name}")

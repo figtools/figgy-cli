@@ -124,7 +124,7 @@ class FiggySetup:
             print("\n")
         else:
             print(f"\nYour default environment has been set to: {run_env}. Commands without the "
-                  f"--{Utils.get_first(env)} option will run against this account.")
+                  f"--{env.name} option will run against this account.")
 
         updated_defaults.run_env = run_env
         updated_defaults.valid_envs = valid_envs
@@ -169,7 +169,7 @@ class FiggySetup:
     def basic_configure(self, configure_provider=True) -> CLIDefaults:
         defaults: CLIDefaults = self.get_defaults()
         if not defaults:
-            Utils.stc_error_exit(f"Please run {CLI_NAME} --{Utils.get_first(configure)} to set up Figgy, "
+            Utils.stc_error_exit(f"Please run {CLI_NAME} --{configure.name} to set up Figgy, "
                                  f"you've got problems friend!")
         else:
             defaults = self.configure_auth(defaults, configure_provider=configure_provider)
@@ -201,14 +201,13 @@ class FiggySetup:
         cache_mgr = CacheManager(file_override=DEFAULTS_FILE_CACHE_PATH)
         try:
             last_write, defaults = cache_mgr.get(DEFAULTS_KEY)
-
             if not defaults:
                 if skip:
                     return CLIDefaults.unconfigured()
                 else:
                     Utils.stc_error_exit(f'{CLI_NAME} has not been configured.\n\nIf your organization has already '
                                          f'installed Figgy Cloud, please run '
-                                         f'`{CLI_NAME} --{Utils.get_first(configure)}`.\n\n'
+                                         f'`{CLI_NAME} --{configure.name}`.\n\n'
                                          f'You may also provide the `--profile` flag, or log-in to our free sandbox with '
                                          f'`figgy login sandbox` to experiment with {CLI_NAME}.')
 

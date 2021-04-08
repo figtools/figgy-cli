@@ -39,7 +39,7 @@ class Prune(ConfigCommand):
         self._out = Output(colors_enabled)
 
         # If user passes in --info flag, we don't need all of this to be initialized.
-        if not hasattr(args, Utils.get_first(info)) or args.info is False:
+        if not hasattr(args, info.name) or args.info is False:
             # Validate & parse figgy.json
             self._config = self._utils.get_ci_config(self._config_path)  # type: Dict
             self._shared_names = set(self._utils.get_config_key_safe(SHARED_KEY, self._config, default=[]))  # type: Set

@@ -8,8 +8,8 @@ from figcli.utils.utils import *
 
 class DataDelete(FiggyTest):
     def __init__(self, extra_args=""):
-        print(f"Testing `{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV}`")
-        super().__init__(pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV}'
+        print(f"Testing `{CLI_NAME} config {delete.name} --env {DEFAULT_ENV}`")
+        super().__init__(pexpect.spawn(f'{CLI_NAME} config {delete.name} --env {DEFAULT_ENV}'
                                        f' --skip-upgrade {extra_args}',
                                     timeout=20, encoding='utf-8'), extra_args=extra_args)
 

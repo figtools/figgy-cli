@@ -1,12 +1,21 @@
 import logging
+from functools import cache, lru_cache
 from typing import Set, List, Tuple, Optional
 
+import cachetools as cachetools
 from botocore.exceptions import ClientError
+from cachetools import cached, TTLCache
 
 from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.models.config_item import ConfigState, ConfigItem
+from figgy.models.n_replication_config import NReplicationConfig
+from figgy.models.replication_config import ReplicationConfig
 from figgy.models.run_env import RunEnv
+from figgy.models.fig import Fig
+from figgy.svcs.fig_service import FigService
+
+from figcli.config import PS_FIGGY_REPL_KEY_ID_PATH
 from figcli.svcs.cache_manager import CacheManager
 from figcli.utils.utils import Utils
 
@@ -17,28 +26,32 @@ class ParameterUndecryptable(Exception):
     pass
 
 
-# Todo, lots more from SSMDao should be moved here.
 class ConfigService:
     __CACHE_REFRESH_INTERVAL = 60 * 60 * 24 * 7 * 1000  # 1 week in MS
     """
     Service level class for interactive with config resources.
 
-    Currently contains some business logic to leverage a both local (filesystem) & remote (dynamodb)
-    cache for the fastest possible lookup times.
+    Currently contains some business logic to leverage memory, filesystem, & remote (dynamodb)
+    caches for the fastest possible lookup times.
     """
     _PS_NAME_CACHE_KEY = 'parameter_names'
+    MEMORY_CACHED_NAMES: Set[str] = []
+    MEMORY_CACHE_REFRESH_INTERVAL: int = 5000
+    MEMORY_CACHE_LAST_REFRESH_TIME: int = 0
 
     def __init__(self, config_dao: ConfigDao, ssm: SsmDao, cache_mgr: CacheManager, run_env: RunEnv):
         self._config_dao = config_dao
         self._cache_mgr = cache_mgr
         self._run_env = run_env
         self._ssm: SsmDao = ssm
+        self._fig_svc: FigService = FigService(ssm)
 
     def get_root_namespaces(self) -> List[str]:
         all_params = self.get_parameter_names()
         return sorted(list(set([f"/{p.split('/')[1]}" for p in all_params])))
 
     @Utils.trace
+    @cached(TTLCache(maxsize=10, ttl=5))
     def get_parameter_names(self) -> Set[str]:
         """
         Looks up local cached configs, then queries new config names from the remote cache, merges the two, and
@@ -87,6 +100,9 @@ class ConfigService:
 
         return all_parameters
 
+    def get_parameter_names_by_filter(self, filter_str: str):
+        return filter(lambda x: filter_str in x, self.get_parameter_names())
+
     def get_parameter_with_description(self, name: str) -> Tuple[Optional[str], Optional[str]]:
         """
         Returns a parameter's value and description from its provided name. Returns `None, None` tuple
@@ -103,3 +119,65 @@ class ConfigService:
         except ClientError as e:
             if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                 raise ParameterUndecryptable(f'{e}')
+
+    def get_fig(self, name: str, version: int = 0) -> Fig:
+        """ Version is defaulted to 0, which will return latest. """
+        fig = self._fig_svc.get(name, version)
+        fig.is_repl_source = self.is_replication_source(name)
+        fig.is_repl_dest = self.is_replication_destination(name)
+        return fig
+
+    def get_fig_simple(self, name: str) -> Fig:
+        return self._fig_svc.get_simple(name)
+
+    def set_fig(self, fig: Fig):
+        self._fig_svc.set(fig)
+
+    @cached(TTLCache(maxsize=1024, ttl=30))
+    def is_encrypted(self, name: str) -> bool:
+        try:
+            return self.get_fig(name).kms_key_id is not None
+        except ClientError as e:
+            # If we get a AccessDenied exception to decrypt this parameter, it must be encrypted
+            if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
+                return True
+
+    @cached(TTLCache(maxsize=1024, ttl=10))
+    def is_replication_source(self, name: str) -> bool:
+        return bool(self._config_dao.get_cfgs_by_src(name))
+
+    @cached(TTLCache(maxsize=1024, ttl=10))
+    def is_replication_destination(self, name: str) -> bool:
+        return bool(self._config_dao.get_config_repl(name))
+
+    @cached(TTLCache(maxsize=1024, ttl=3600))
+    def get_replication_key(self) -> str:
+        return self._fig_svc.get_simple(PS_FIGGY_REPL_KEY_ID_PATH).value
+
+    @cached(TTLCache(maxsize=1024, ttl=5))
+    def get_replication_config(self, name: str) -> ReplicationConfig:
+        return self._config_dao.get_config_repl(name)
+
+    @cached(TTLCache(maxsize=1024, ttl=5))
+    def get_replication_configs_by_source(self, name: str) -> List[NReplicationConfig]:
+        replCfgs: List[ReplicationConfig] = self._config_dao.get_cfgs_by_src(name)
+        return [NReplicationConfig(**cfg.__dict__) for cfg in replCfgs]
+
+
+    def save(self, fig: Fig):
+        log.info(f'Saving Fig: {fig}')
+        self._fig_svc.save(fig)
+
+    def delete(self, name: str):
+        """
+            If targeted configuration is a replication source throw error, you cannot delete repl sources.
+
+            If this config is a repl destination, delete it, if not, try anyways, it's harmless & faster
+            than checking first.
+        """
+        if self.is_replication_source(name):
+            raise ValueError("Cannot delete fig, it is a source of replication!")
+
+        # Todo: Wipe caches. Here
+        self._config_dao.delete_config(name)
+        self._fig_svc.delete(name)
