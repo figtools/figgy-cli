@@ -14,7 +14,7 @@ python-u2flib-host==3.0.3 # BSD
 cryptography==3.3.2 # BSD
 requests==2.23.0 # Apache
 filelock==3.0.12
-pygments==2.6.1
+pygments==2.7.4
 cachetools==4.2.1
 
 # Internal Figgy-lib
