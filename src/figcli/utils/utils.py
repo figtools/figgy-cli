@@ -49,7 +49,7 @@ class Utils:
                     if retries > MAX_RETRIES:
                         raise e
 
-                    Utils.notify("Network connectivity issues detected. Retrying with back off...")
+                    Utils.stc_notify("Network connectivity issues detected. Retrying with back off...")
                     retries += 1
                     time.sleep(retries * BACKOFF)
 
@@ -160,6 +160,10 @@ class Utils:
 
     def notify(self, message: str):
         print(f'{self.c.fg_bl}{message}{self.c.rs}')
+
+    @staticmethod
+    def stc_notify(message: str):
+        print(message)
 
     def merge_config_contents(self, a: Dict, b: Dict, a_path: str, b_path: str):
         for key in b:

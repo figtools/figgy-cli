@@ -77,20 +77,21 @@ class RBACLimitedConfigView:
         cache_key = f'{self._role.role}-authed-keys'
 
         if self._profile:
-            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter,
+            es, kms_keys = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter,
                                                              self.rbac_profile_kms_keys_path)
         else:
-            es, authed_nses = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter,
+            es, kms_keys = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter,
                                                              self.rbac_role_kms_path)
 
-        if authed_nses:
-            authed_nses = json.loads(authed_nses)
+        # Convert from str to List
+        if kms_keys:
+            kms_keys = json.loads(kms_keys)
 
-        if not isinstance(authed_nses, list):
+        if not isinstance(kms_keys, list):
             raise ValueError(
                 f"Invalid value found at path: {self.rbac_role_kms_path}. It must be a valid json List[str]")
 
-        return authed_nses
+        return kms_keys
 
     def get_authorized_key_id(self, authorized_key_name: str, run_env: RunEnv) -> str:
         """

@@ -10,10 +10,12 @@ from figcli.commands.config_context import ConfigContext
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.api.config import ConfigController
+from figcli.ui.api.maintenance import MaintenanceController
 from figcli.ui.api.user import UserController
 from figcli.ui.controller import Controller
 
 log = logging.getLogger(__name__)
+
 
 class App:
     def __init__(self, context: CommandContext, session_mgr: SessionManager):
@@ -27,6 +29,7 @@ class App:
     def init_controllers(self):
         self.controllers.append(UserController('/user', self._context, self._svc_registry))
         self.controllers.append(ConfigController('/config', self._context, self._svc_registry))
+        self.controllers.append(MaintenanceController('/maintenance', self._context, self._svc_registry))
 
     def run_app(self):
         self.app.run(host='0.0.0.0', port=5000, debug=False)

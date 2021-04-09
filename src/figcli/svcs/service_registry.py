@@ -8,6 +8,7 @@ from figgy.data.dao.ssm import SsmDao
 
 from figcli.commands.command_context import CommandContext
 from figcli.models.assumable_role import AssumableRole
+from figcli.svcs.audit import AuditService
 from figcli.svcs.auth.session_manager import SessionManager
 from threading import Lock
 
@@ -17,6 +18,10 @@ from figcli.svcs.kms import KmsSvc
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 log = logging.getLogger(__name__)
+
+AUDIT_SVC = 'audit-svc'
+CONFIG_SVC = 'config-svc'
+RBAC_VIEW = 'rbac-view'
 
 
 class ServiceRegistry:
@@ -36,33 +41,42 @@ class ServiceRegistry:
         for role in roles:
             self.init_role(role, mfa)
 
+    def audit_svc(self, role: AssumableRole, refresh: bool = False) -> AuditService:
+        if not self.CACHE.get(role, {}).get(AUDIT_SVC) or refresh:
+            if refresh:
+                log.info("Refreshing audit-svc due to refresh parameter.")
+
+            self.CACHE[role][AUDIT_SVC] = AuditService(self.__config(role, refresh), self.__cache_mgr(role))
+
+        return self.CACHE[role][AUDIT_SVC]
+
     def config_svc(self, role: AssumableRole, refresh: bool = False) -> ConfigService:
 
-        if not self.CACHE.get(role, {}).get('config-svc') or refresh:
+        if not self.CACHE.get(role, {}).get(CONFIG_SVC) or refresh:
             if refresh:
-                log.info("Refreshing config-svc due to refresh paramter.")
+                log.info("Refreshing config-svc due to refresh parameter.")
 
-            self.CACHE[role]['config-svc'] = ConfigService(self.__config(role, refresh), self.__ssm(role, refresh),
-                                                           self.__cache_mgr(role), role.run_env)
+            self.CACHE[role][CONFIG_SVC] = ConfigService(self.__config(role, refresh), self.__ssm(role, refresh),
+                                                         self.__cache_mgr(role), role.run_env)
 
-        return self.CACHE[role]['config-svc']
+        return self.CACHE[role][CONFIG_SVC]
 
     def rbac_view(self, role: AssumableRole, refresh: bool = False) -> RBACLimitedConfigView:
         """
         Returns a hydrated ConfigDao for the selected environment.
         """
-        if not self.CACHE.get(role, {}).get('rbac-view') or refresh:
+        if not self.CACHE.get(role, {}).get(RBAC_VIEW) or refresh:
             if refresh:
                 log.info("Refreshing RBAC-VIEW due to refresh parameter.")
 
             self.CACHE[role] = self.CACHE.get(role, {}) | \
-                               {'rbac-view': RBACLimitedConfigView(role=role.role,
-                                                                   cache_mgr=self.__cache_mgr(role),
-                                                                   ssm=self.__ssm(role, refresh),
-                                                                   config_svc=self.config_svc(role, refresh),
-                                                                   profile=role.profile)}
+                               {RBAC_VIEW: RBACLimitedConfigView(role=role.role,
+                                                                 cache_mgr=self.__cache_mgr(role),
+                                                                 ssm=self.__ssm(role, refresh),
+                                                                 config_svc=self.config_svc(role, refresh),
+                                                                 profile=role.profile)}
 
-        return self.CACHE[role]['rbac-view']
+        return self.CACHE[role][RBAC_VIEW]
 
     def __cache_mgr(self, role: AssumableRole):
         if not self.CACHE.get(role, {}).get('cache-mgr'):

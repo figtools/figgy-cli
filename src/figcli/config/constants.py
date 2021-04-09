@@ -82,6 +82,7 @@ PLUGIN_KEY = 'plugins'
 PS_FIGGY_ACCOUNTS_PREFIX = '/figgy/accounts/'
 PS_FIGGY_DEFAULT_SERVICE_NS_PATH = '/figgy/defaults/service-namespace'
 PS_FIGGY_REPL_KEY_ID_PATH = '/figgy/kms/replication-key-id'
+PS_FIGGY_ALL_KMS_KEYS_PATH = '/figgy/kms/all-keys'
 
 # Replication Types:
 repl_types = [REPL_TYPE_APP, REPL_TYPE_MERGE]

@@ -1,12 +1,10 @@
 import logging
-
 from abc import ABC
 from typing import List
 
 from flask import request
 
 from figcli.commands.command_context import CommandContext
-from figcli.commands.config_context import ConfigContext
 from figcli.models.kms_key import KmsKey
 from figcli.models.user.authed_role import AuthedRole
 from figcli.models.user.user import User

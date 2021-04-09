@@ -181,7 +181,7 @@ class CacheManager:
         contents: Dict = jsonpickle.decode(cache_contents)
         cache = contents.get(cache_key, {})
         result = cache.get(self._LAST_WRITE_KEY, 0), cache.get(self._STORE_KEY, default)
-        log.info(f'Returning items from cache for cache key: {cache_key}')
+        log.debug(f'Returning items from cache for cache key: {cache_key}')
         return result
 
     def get_val(self, cache_key: str, default=None) -> Any:
@@ -204,7 +204,7 @@ class CacheManager:
             objects = list(objects)
 
         if len(objects) > 0:
-            log.info(f'Appending {len(objects)} items to local cache: {objects}')
+            log.debug(f'Appending {len(objects)} items to local cache: {objects}')
 
             contents: Dict = jsonpickle.decode(self.__read())
             cache = contents.get(cache_key, {})

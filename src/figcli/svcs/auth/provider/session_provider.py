@@ -22,9 +22,9 @@ log = logging.getLogger(__name__)
 class SessionTokenCache(BaseModel):
     MAX_LIFE = 600  # 10 mins
     token: str
-    time_inserted: Optional[int] = time.time()
+    time_inserted: Optional[int]
 
-    @validator('time_inserted', pre=True)
+    @validator('time_inserted', pre=True, always=True)
     def init_error(cls, value):
         log.info(f"Time was: {value}")
         value = time.time()
@@ -41,13 +41,11 @@ class SessionTokenCache(BaseModel):
         return o.token == self.token
 
 
-# Todo: Does multithreading fuck this up?
 class SessionProvider(ABC):
     def __init__(self, defaults: CLIDefaults, context: FiggyContext):
         self._defaults = defaults
         self._context = context
         self._valid_tokens: Dict[str: SessionTokenCache] = {}
-        # self._lock = Lock()
         self._secrets_mgr = SecretsManager()
 
     @Utils.retry
@@ -55,7 +53,6 @@ class SessionProvider(ABC):
     def _is_valid_session(self, session: boto3.Session):
         """Tests whether a cached session is valid or not."""
         log.info(f"Checking session validity for session: {session.get_credentials().get_frozen_credentials().token}")
-        # with self._lock:
         token = session.get_credentials().get_frozen_credentials().token
         if token in self._valid_tokens:
             log.info(f"Session with token: {token} has validity: {self._valid_tokens[token].is_valid()}")

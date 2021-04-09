@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from figcli.commands.command_context import CommandContext
 from figcli.models.assumable_role import AssumableRole
+from figcli.svcs.audit import AuditService
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException
 from figcli.ui.models.figgy_response import FiggyResponse
@@ -41,16 +42,28 @@ class Controller:
 
     def _cfg(self, refresh: bool = False):
         return self._registry.config_svc(self.get_role(), refresh)
-        # return self.registry.config_svc(self.context.defaults.assumable_roles[0])
 
     def _cfg_view(self, refresh: bool = False) -> RBACLimitedConfigView:
         return self._registry.rbac_view(self.get_role(), refresh)
+
+    def _audit(self, refresh: bool = False) -> AuditService:
+        return self._registry.audit_svc(self.get_role(), refresh)
 
     def routes(self) -> List[Route]:
         return self._routes
 
     def get_role(self) -> AssumableRole:
+        # return self.context.defaults.assumable_roles[0]
         return AssumableRole(**json.loads(request.headers.get('ActiveRole')))
+
+    def get_param(self, name: str, required=True, default: any = None):
+        param = request.args.get(name)
+
+        if (required and not default) and (not param or param == 'null' or param == 'undefined'):
+            raise ValueError(f'Expected query parameter missing: {name}')
+
+        # Return parameter if it's set, else default. Passed in strings of 'null' or 'undefined' count as not set.
+        return param if (param and param != 'null' and param != 'undefined') else default
 
     @staticmethod
     def to_json(obj: Any):
@@ -107,7 +120,6 @@ class Controller:
         log.info(f"RETURNING RESPONSE: {response.data}")
         return response
 
-
     @staticmethod
     def build_response(method):
         """Builds a FiggyResponse from the current return type"""
@@ -159,4 +171,3 @@ class Controller:
                 log.exception(e1)
 
         return impl
-

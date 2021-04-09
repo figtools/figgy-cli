@@ -1,21 +1,20 @@
+import json
 import logging
-from functools import cache, lru_cache
 from typing import Set, List, Tuple, Optional
 
-import cachetools as cachetools
 from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
-
 from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.models.config_item import ConfigState, ConfigItem
+from figgy.models.fig import Fig
 from figgy.models.n_replication_config import NReplicationConfig
 from figgy.models.replication_config import ReplicationConfig
 from figgy.models.run_env import RunEnv
-from figgy.models.fig import Fig
 from figgy.svcs.fig_service import FigService
 
-from figcli.config import PS_FIGGY_REPL_KEY_ID_PATH
+from figcli.config import PS_FIGGY_REPL_KEY_ID_PATH, PS_FIGGY_ALL_KMS_KEYS_PATH
+from figcli.models.kms_key import KmsKey
 from figcli.svcs.cache_manager import CacheManager
 from figcli.utils.utils import Utils
 
@@ -163,6 +162,22 @@ class ConfigService:
         replCfgs: List[ReplicationConfig] = self._config_dao.get_cfgs_by_src(name)
         return [NReplicationConfig(**cfg.__dict__) for cfg in replCfgs]
 
+    @cached(TTLCache(maxsize=2, ttl=3600))
+    def get_all_encryption_keys(self) -> List[KmsKey]:
+        keys: str = self._ssm.get_parameter(PS_FIGGY_ALL_KMS_KEYS_PATH)
+
+        if not keys:
+            raise ValueError(f"Required parameter {PS_FIGGY_ALL_KMS_KEYS_PATH} is missing!")
+        else:
+            key_aliases = json.loads(keys)
+            return [KmsKey(alias=alias, id=self.get_kms_key_id(alias)) for alias in key_aliases]
+
+    @cached(TTLCache(maxsize=20, ttl=2000))
+    def get_kms_key_id(self, alias: str):
+        key_path = f'/figgy/kms/{alias}-key-id'
+        cache_key = f'kms-{alias}-{self._run_env.env}'
+        es, key_id = self._cache_mgr.get_or_refresh(cache_key, self._ssm.get_parameter, key_path)
+        return key_id
 
     def save(self, fig: Fig):
         log.info(f'Saving Fig: {fig}')

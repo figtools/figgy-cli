@@ -36,11 +36,12 @@ class ConfigController(Controller, ABC):
         self._routes.append(Route('/replicationSource', self.get_replication_source, ["GET"]))
         self._routes.append(Route('/replicationDestinations', self.get_replication_destinations, ["GET"]))
         self._routes.append(Route('/replicationConfig', self.get_replication_config, ["GET"]))
+        self._routes.append(Route('/kmsKeys', self.get_all_kms_keys, ["GET"]))
 
     @Controller.client_cache(seconds=5)
     @Controller.build_response
     def get_config_names(self, refresh: bool = False) -> dict[str, list[str]]:
-        req_filter = request.args.get('filter')
+        req_filter = self.get_param('filter', required=False)
         if req_filter:
             return {'names': list(self._cfg(refresh).get_parameter_names_by_filter(req_filter))}
         else:
@@ -57,9 +58,9 @@ class ConfigController(Controller, ABC):
     @Controller.build_response
     def get_config(self, refresh: bool = False) -> Union[Fig, FiggyResponse]:
         refresh and log.warning("REFRESH SET FOR get_config call!!!")
-        name = request.args.get('name')
-        type = request.args.get('type')
-        version = int(request.args.get('version', 0))
+        name = self.get_param('name')
+        type = self.get_param('type')
+        version = int(self.get_param('version', default=0, required=False))
 
         if type == 'full':
             fig = self._cfg(refresh).get_fig(name, version=version)
@@ -75,20 +76,17 @@ class ConfigController(Controller, ABC):
 
     @Controller.build_response
     def is_encrypted(self, refresh: bool = False):
-        # Todo add validation for expected args with decorator
-        name = request.args.get('name')
+        name = self.get_param('name')
         return {'is_encrypted': self._cfg(refresh).is_encrypted(name)}
 
     @Controller.build_response
     def is_repl_source(self, refresh: bool = False):
-        # Todo add validation for expected args with decorator
-        name = request.args.get('name')
+        name = self.get_param('name')
         return {'is_repl_source': self._cfg(refresh).is_replication_source(name)}
 
     @Controller.build_response
     def is_repl_dest(self, refresh: bool = False):
-        # Todo add validation for expected args with decorator
-        name = request.args.get('name')
+        name = self.get_param('name')
         return {'is_repl_dest': self._cfg(refresh).is_replication_destination(name)}
 
     @Controller.build_response
@@ -106,23 +104,27 @@ class ConfigController(Controller, ABC):
     @Controller.client_cache(seconds=30)
     @Controller.build_response
     def get_replication_source(self, refresh: bool = False):
-        name = request.args.get('name')
+        name = self.get_param('name')
         cfg = self._cfg(refresh).get_replication_config(name)
         return {'source': cfg.source if cfg else None}
 
     @Controller.build_response
     def delete_fig(self, refresh: bool = False):
-        name = request.args.get('name')
+        name = self.get_param('name')
         self._cfg(refresh).delete(name)
 
     @Controller.build_response
     def get_replication_destinations(self, refresh: bool = False) -> List[NReplicationConfig]:
-        source = request.args.get('name')
+        source = self.get_param('name')
 
         return self._cfg(refresh).get_replication_configs_by_source(source)
 
     @Controller.build_response
     def get_replication_config(self, refresh: bool = False):
-        source = request.args.get('name')
+        source = self.get_param('name')
 
         return self._cfg(refresh).get_replication_config(source)
+
+    @Controller.build_response
+    def get_all_kms_keys(self, refresh: bool = False):
+        return self._cfg(refresh).get_all_encryption_keys()
