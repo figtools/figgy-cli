@@ -1,6 +1,8 @@
 import logging
 from typing import List
 
+from cachetools import TTLCache, cached
+from figgy.data.dao.audit import AuditDao
 from figgy.data.dao.config import ConfigDao
 from figgy.models.audit_log import AuditLog
 
@@ -11,16 +13,31 @@ log = logging.getLogger(__name__)
 
 class AuditService:
 
-    def __init__(self, cfg_dao: ConfigDao, cache_mgr: CacheManager):
+    def __init__(self, audit_dao: AuditDao, cfg_dao: ConfigDao, cache_mgr: CacheManager):
+        self._audit = audit_dao
         self._cfg = cfg_dao
         self.cache_mgr = cache_mgr
 
-    def get_unrotated_secrets(self, not_rotated_since: int, filter: str = None) -> List[str]:
-        stale_cfgs: List[AuditLog] = self._cfg.get_unrotated_configs(not_rotated_since, filter=filter, secrets_only=True)
+    @cached(TTLCache(maxsize=5, ttl=30))
+    def get_parameters_matching(self, filter: str = None,
+                                parameter_type: str = None,
+                                before: int = None,
+                                after: int = None) -> List[str]:
 
-        log.info(f'Found stale configs {stale_cfgs}')
+        logs: List[AuditLog] = self._audit.find_logs(filter=filter, parameter_type=parameter_type, before=before,
+                                                     after=after)
 
-        return [cfg.parameter_name for cfg in stale_cfgs]
+        return [cfg.parameter_name for cfg in logs]
 
-    def get_unrotated_audit_logs(self, not_rotated_since: int, filter: str) -> List[AuditLog]:
-        return self._cfg.get_unrotated_configs(not_rotated_since, filter=filter, secrets_only=True)
+    @cached(TTLCache(maxsize=5, ttl=30))
+    def get_audit_logs_matching(self, filter: str = None,
+                                parameter_type: str = None,
+                                before: int = None,
+                                after: int = None) -> List[AuditLog]:
+
+        return self._audit.find_logs(filter=filter, parameter_type=parameter_type, before=before, after=after)
+
+    @cached(TTLCache(maxsize=5, ttl=30))
+    def get_parameter_logs(self, name: str) -> List[AuditLog]:
+
+        return self._audit.get_audit_logs(ps_name=name)

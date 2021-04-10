@@ -3,7 +3,9 @@ import boto3
 
 from typing import Dict, Optional, List
 
+from figgy.data.dao.audit import AuditDao
 from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.replication import ReplicationDao
 from figgy.data.dao.ssm import SsmDao
 
 from figcli.commands.command_context import CommandContext
@@ -46,7 +48,8 @@ class ServiceRegistry:
             if refresh:
                 log.info("Refreshing audit-svc due to refresh parameter.")
 
-            self.CACHE[role][AUDIT_SVC] = AuditService(self.__config(role, refresh), self.__cache_mgr(role))
+            self.CACHE[role][AUDIT_SVC] = AuditService(self.__audit(role, refresh), self.__config(role, refresh),
+                                                       self.__cache_mgr(role))
 
         return self.CACHE[role][AUDIT_SVC]
 
@@ -57,7 +60,8 @@ class ServiceRegistry:
                 log.info("Refreshing config-svc due to refresh parameter.")
 
             self.CACHE[role][CONFIG_SVC] = ConfigService(self.__config(role, refresh), self.__ssm(role, refresh),
-                                                         self.__cache_mgr(role), role.run_env)
+                                                         self.__repl(role, refresh), self.__cache_mgr(role),
+                                                         role.run_env)
 
         return self.CACHE[role][CONFIG_SVC]
 
@@ -122,8 +126,28 @@ class ServiceRegistry:
         """
         Returns a hydrated ConfigDao for the selected environment.
         """
-        if not self.CACHE.get(role, {}).get('dynamodb') or refresh:
+        if not self.CACHE.get(role, {}).get('cfg') or refresh:
             self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'dynamodb': ConfigDao(self.__env_session(role, refresh).resource('dynamodb'))}
+                'cfg': ConfigDao(self.__env_session(role, refresh).resource('dynamodb'))}
 
-        return self.CACHE[role]['dynamodb']
+        return self.CACHE[role]['cfg']
+
+    def __audit(self, role: AssumableRole, refresh: bool) -> AuditDao:
+        """
+        Returns a hydrated AuditDao for the selected environment.
+        """
+        if not self.CACHE.get(role, {}).get('audit') or refresh:
+            self.CACHE[role] = self.CACHE.get(role, {}) | {
+                'audit': AuditDao(self.__env_session(role, refresh).resource('dynamodb'))}
+
+        return self.CACHE[role]['audit']
+
+    def __repl(self, role: AssumableRole, refresh: bool) -> ReplicationDao:
+        """
+        Returns a hydrated ReplicationDao for the selected environment.
+        """
+        if not self.CACHE.get(role, {}).get('repl') or refresh:
+            self.CACHE[role] = self.CACHE.get(role, {}) | {
+                'repl': ReplicationDao(self.__env_session(role, refresh).resource('dynamodb'))}
+
+        return self.CACHE[role]['repl']

@@ -30,7 +30,7 @@ class FiggyMetrics(BaseModel):
 
 
 class AnonymousUsageTracker:
-    """
+    """`
     We want to track the usage counts of various commands and the version of Figgy people are currently using.
     This data will be valuable for informing future decisions & when considering upgrade paths or potentially
     introducing breaking changes and their impacts.

@@ -53,8 +53,6 @@ class ConfigController(Controller, ABC):
         tree = self._cfg_view(refresh).get_config_orchard()
         return tree
 
-    # @Controller.client_cache(seconds=5)
-
     @Controller.build_response
     def get_config(self, refresh: bool = False) -> Union[Fig, FiggyResponse]:
         refresh and log.warning("REFRESH SET FOR get_config call!!!")
@@ -114,7 +112,7 @@ class ConfigController(Controller, ABC):
         self._cfg(refresh).delete(name)
 
     @Controller.build_response
-    def get_replication_destinations(self, refresh: bool = False) -> List[NReplicationConfig]:
+    def get_replication_destinations(self, refresh: bool = False) -> List[ReplicationConfig]:
         source = self.get_param('name')
 
         return self._cfg(refresh).get_replication_configs_by_source(source)

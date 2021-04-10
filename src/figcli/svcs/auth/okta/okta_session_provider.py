@@ -7,21 +7,21 @@ from abc import ABC
 from json import JSONDecodeError
 from typing import List, Optional
 
+from figgy.models.run_env import RunEnv
+
 from figcli.commands.figgy_context import FiggyContext
 from figcli.config import *
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.role import Role
-from figgy.models.run_env import RunEnv
 from figcli.models.sso.okta.okta_primary_auth import OktaPrimaryAuth, OktaSession
 from figcli.models.sso.okta.okta_session_auth import OktaSessionAuth
-from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.auth.okta.okta import Okta, InvalidSessionError
 from figcli.svcs.auth.provider.sso_session_provider import SSOSessionProvider
+from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.vault import FiggyVault
 from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException
-from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)

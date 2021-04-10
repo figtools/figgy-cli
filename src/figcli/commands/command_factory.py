@@ -3,6 +3,9 @@ import time
 import logging
 import uuid
 
+from figgy.data.dao.audit import AuditDao
+from figgy.data.dao.replication import ReplicationDao
+
 from figcli.commands.command_context import CommandContext
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.config_factory import ConfigFactory
@@ -30,6 +33,7 @@ from concurrent.futures import ThreadPoolExecutor, thread, as_completed
 
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 from threading import Lock
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,6 +59,8 @@ class CommandFactory(Factory):
         self._config_svc = None
         self._cache_mgr = None
         self._rbac_config_view = None
+        self._audit = None
+        self._repl = None
         self.__env_lock = Lock()
         self.__mgr_lock = Lock()
 
@@ -87,6 +93,18 @@ class CommandFactory(Factory):
                     prompt=False)
 
         return self._env_session
+
+    def __audit(self) -> AuditDao:
+        if not self._audit:
+            self._audit = AuditDao(self.__env_session().resource('dynamodb'))
+
+        return self._audit
+
+    def __repl(self) -> ReplicationDao:
+        if not self._repl:
+            self._repl = ReplicationDao(self.__env_session().resource('dynamodb'))
+
+        return self._repl
 
     def __ssm(self) -> SsmDao:
         """
@@ -154,7 +172,7 @@ class CommandFactory(Factory):
     def __config_service(self) -> ConfigService:
         """Returns a hydrated ConfigService."""
         if not self._config_svc:
-            self._config_svc = ConfigService(self.__config(), self.__ssm(),
+            self._config_svc = ConfigService(self.__config(), self.__ssm(), self.__repl(),
                                              self.__cache_mgr(), self._context.run_env)
 
         return self._config_svc
@@ -171,8 +189,8 @@ class CommandFactory(Factory):
         Bootstraps sessions (blocking) before we do threaded lookups that require these sessions.
         """
         self.__session_manager().get_session(
-                self._context.selected_role,
-                prompt=False)
+            self._context.selected_role,
+            prompt=False)
 
     def instance(self):
         """
@@ -187,7 +205,6 @@ class CommandFactory(Factory):
             context = ConfigContext(self._context.run_env, self._context.role, self._context.args, config,
                                     defaults=self._cli_defaults)
 
-
             futures = set()
             # Multiple threads to init resources saves 500 - 1000 MS
             with ThreadPoolExecutor(max_workers=5) as pool:
@@ -200,7 +217,7 @@ class CommandFactory(Factory):
 
             factory = ConfigFactory(self._context.command, context, self.__ssm(), self.__config_service(),
                                     self.__config(), self.__kms(), self.__s3_resource(), self._context.colors_enabled,
-                                    self.__rbac_config_view(), self.__session_manager())
+                                    self.__rbac_config_view(), self.__audit(), self.__repl(), self.__session_manager())
 
         elif self._context.command in iam_commands and self._context.resource == iam:
             self.__init_sessions()
@@ -208,14 +225,17 @@ class CommandFactory(Factory):
                                  defaults=self._cli_defaults)
             factory = IAMFactory(self._context.command, context, self.__env_session(),
                                  all_sessions=self.__all_sessions())
+
         elif self._context.find_matching_optional_arguments(help_commands) or self._context.resource in help_commands:
             optional_args = self._context.find_matching_optional_arguments(help_commands)
             context = HelpContext(self._context.resource, self._context.command, optional_args, self._context.run_env,
                                   defaults=self._cli_defaults, role=self._context.role)
-            factory = HelpFactory(self._context.command, context)
+            factory = HelpFactory(self._context.command, context, self._context)
+
         elif self._context.command in ui_commands or self._context.resource == ui:
             context = CommandContext(self._context.run_env, self._context.command, defaults=self._cli_defaults)
-            factory = UIFactory(self._context.command, context, self.__session_manager())
+            factory = UIFactory(self._context.command, context, self.__session_manager(), self._context)
+
         else:
             if self._context.command is None or self._context.resource:
                 self._utils.error_exit(f"Proper {CLI_NAME} syntax is `{CLI_NAME} <resource> <command> --options`. "

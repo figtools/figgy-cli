@@ -1,4 +1,6 @@
 from boto3.resources.base import ServiceResource
+from figgy.data.dao.audit import AuditDao
+from figgy.data.dao.replication import ReplicationDao
 
 from figcli.commands.config.list import List as FigList
 from figcli.commands.config.audit import Audit
@@ -31,7 +33,7 @@ class ConfigFactory(Factory):
 
     def __init__(self, command: CliCommand, context: ConfigContext, ssm: SsmDao, config_svc: ConfigService,
                  cfg: ConfigDao, kms: KmsSvc, s3_resource: ServiceResource, colors_enabled: bool,
-                 config_view: RBACLimitedConfigView,
+                 config_view: RBACLimitedConfigView, audit: AuditDao, repl: ReplicationDao,
                  session_manager: SessionManager):
 
         self._command: CliCommand = command
@@ -42,6 +44,8 @@ class ConfigFactory(Factory):
         self._kms: KmsSvc = kms
         self._colors_enabled: bool = colors_enabled
         self._config_view = config_view
+        self._repl: ReplicationDao = repl
+        self._audit: AuditDao  = audit
         self._s3_resource: ServiceResource = s3_resource
         self._utils = Utils(colors_enabled)
         self._args = context.args
@@ -78,7 +82,8 @@ class ConfigFactory(Factory):
         elif command == dump:
             return Dump(self._ssm, self._config_completer, self._colors_enabled, self._config_context)
         elif command == restore:
-            return Restore(self._ssm, self._kms, self._config, self._config_view, self._colors_enabled,
+            return Restore(self._ssm, self._kms, self._config, self._repl, self._audit,
+                           self._config_view, self._colors_enabled,
                            self._config_context, self._config_completer, self.get(delete))
         elif command == promote:
             return Promote(self._ssm, self._config_completer, self._colors_enabled,

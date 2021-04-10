@@ -157,7 +157,7 @@ class FiggyCLI:
 
     def __setup(self) -> FiggySetup:
         if not self._setup:
-            self._setup = FiggySetup()
+            self._setup = FiggySetup(self._context)
 
         return self._setup
 
@@ -220,7 +220,7 @@ class FiggyCLI:
         found_command: CliCommand = Utils.find_command(str(command_name))
         found_resource: CliCommand = Utils.find_resource(str(resource_name))
 
-        self._context = FiggyContext(self.get_colors_enabled(), found_resource, found_command,
+        self._context: FiggyContext = FiggyContext(self.get_colors_enabled(), found_resource, found_command,
                                      self._run_env, self._assumable_role, args)
 
 

@@ -1,6 +1,7 @@
 from figcli.commands.command_context import CommandContext
 from figcli.commands.config.ui import UI
 from figcli.commands.factory import Factory
+from figcli.commands.figgy_context import FiggyContext
 from figcli.config import *
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.setup import FiggySetup
@@ -8,11 +9,14 @@ from figcli.utils.utils import Utils, CollectionUtils
 
 
 class UIFactory(Factory):
-    def __init__(self, command: CliCommand, context: CommandContext, session_manager: SessionManager):
+    def __init__(self, command: CliCommand,
+                 context: CommandContext,
+                 session_manager: SessionManager,
+                 figgy_context: FiggyContext):
         self._command = command
         self._context = context
         self._utils = Utils(False)
-        self._setup: FiggySetup = FiggySetup()
+        self._setup: FiggySetup = FiggySetup(figgy_context)
         self._session_manager = session_manager
 
     def instance(self):

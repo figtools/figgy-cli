@@ -4,11 +4,12 @@ from typing import Set, List, Tuple, Optional
 
 from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
+from figgy.data.dao.audit import AuditDao
 from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.replication import ReplicationDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.models.config_item import ConfigState, ConfigItem
 from figgy.models.fig import Fig
-from figgy.models.n_replication_config import NReplicationConfig
 from figgy.models.replication_config import ReplicationConfig
 from figgy.models.run_env import RunEnv
 from figgy.svcs.fig_service import FigService
@@ -38,10 +39,12 @@ class ConfigService:
     MEMORY_CACHE_REFRESH_INTERVAL: int = 5000
     MEMORY_CACHE_LAST_REFRESH_TIME: int = 0
 
-    def __init__(self, config_dao: ConfigDao, ssm: SsmDao, cache_mgr: CacheManager, run_env: RunEnv):
+    def __init__(self, config_dao: ConfigDao, ssm: SsmDao,  replication_dao: ReplicationDao,
+                 cache_mgr: CacheManager, run_env: RunEnv):
         self._config_dao = config_dao
         self._cache_mgr = cache_mgr
         self._run_env = run_env
+        self._repl = replication_dao
         self._ssm: SsmDao = ssm
         self._fig_svc: FigService = FigService(ssm)
 
@@ -143,11 +146,11 @@ class ConfigService:
 
     @cached(TTLCache(maxsize=1024, ttl=10))
     def is_replication_source(self, name: str) -> bool:
-        return bool(self._config_dao.get_cfgs_by_src(name))
+        return bool(self._repl.get_cfgs_by_src(name))
 
     @cached(TTLCache(maxsize=1024, ttl=10))
     def is_replication_destination(self, name: str) -> bool:
-        return bool(self._config_dao.get_config_repl(name))
+        return bool(self._repl.get_config_repl(name))
 
     @cached(TTLCache(maxsize=1024, ttl=3600))
     def get_replication_key(self) -> str:
@@ -155,12 +158,11 @@ class ConfigService:
 
     @cached(TTLCache(maxsize=1024, ttl=5))
     def get_replication_config(self, name: str) -> ReplicationConfig:
-        return self._config_dao.get_config_repl(name)
+        return self._repl.get_config_repl(name)
 
     @cached(TTLCache(maxsize=1024, ttl=5))
-    def get_replication_configs_by_source(self, name: str) -> List[NReplicationConfig]:
-        replCfgs: List[ReplicationConfig] = self._config_dao.get_cfgs_by_src(name)
-        return [NReplicationConfig(**cfg.__dict__) for cfg in replCfgs]
+    def get_replication_configs_by_source(self, name: str) -> List[ReplicationConfig]:
+        return self._repl.get_cfgs_by_src(name)
 
     @cached(TTLCache(maxsize=2, ttl=3600))
     def get_all_encryption_keys(self) -> List[KmsKey]:
@@ -194,5 +196,5 @@ class ConfigService:
             raise ValueError("Cannot delete fig, it is a source of replication!")
 
         # Todo: Wipe caches. Here
-        self._config_dao.delete_config(name)
+        self._repl.delete_config(name)
         self._fig_svc.delete(name)
