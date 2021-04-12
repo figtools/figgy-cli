@@ -3,8 +3,8 @@ class Error:
                   'message': 'Provided role does not have access to decrypt the specified configuration.',
                   'status_code': 403}
     PARAM_ACCESS_DENIED = {'error_code': 'PARAM_ACCESS_DENIED',
-                           'message': 'Provided role does not have access to perform the attempted action on the specified '
-                                      'configuration',
+                           'message': 'Provided role does not have access to perform the attempted action on the '
+                                      'specified configuration',
                            'status_code': 403}
 
     FIG_MISSING = {'error_code': 'FIG_MISSING',
@@ -20,5 +20,9 @@ class Error:
                     'status_code': 401}
 
     FORCE_REAUTHENTICATION = {'error_code': 'FORCE_REAUTH',
-                    'message': 'Please reauthenticate.',
-                    'status_code': 401}
+                              'message': 'Please reauthenticate.',
+                              'status_code': 401}
+
+    BAD_REQUEST = {'error_code': 'BAD_REQUEST',
+                     'message': 'Invalid request submitted.',
+                     'status_code': 400}

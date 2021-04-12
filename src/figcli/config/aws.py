@@ -13,9 +13,3 @@ AWS_CFG_SECRET_KEY = 'aws_secret_access_key'
 AWS_CFG_TOKEN = 'aws_session_token'
 AWS_CFG_REGION = 'region'
 AWS_CFG_OUTPUT = 'output'
-
-
-# # Colors:
-# green = 'green'
-# blue = 'blue'
-# red = 'red'

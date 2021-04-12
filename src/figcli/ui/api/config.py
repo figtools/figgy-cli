@@ -91,7 +91,6 @@ class ConfigController(Controller, ABC):
     def save_fig(self, refresh: bool = False):
         payload: Dict = request.json
         fig: Fig = Fig(**payload)
-        log.info(f"SAVING FIG: {fig}")
         self._cfg(refresh).save(fig)
 
     @Controller.client_cache(seconds=30)

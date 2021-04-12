@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 from pydantic import BaseModel, validator
 
@@ -46,3 +46,10 @@ class FiggyResponse(BaseModel):
     @staticmethod
     def force_reauth() -> "FiggyResponse":
         return FiggyResponse(error=FiggyError(**Error.FORCE_REAUTHENTICATION))
+
+    @staticmethod
+    def invalid_parameters(missing_parameters: List[str]) -> "FiggyResponse":
+        error = FiggyError(**Error.BAD_REQUEST)
+        error.message = error.message + f" The following request parameter(s) were expected but missing or invalid: " \
+                                        f"{missing_parameters}"
+        return FiggyResponse(error=error)

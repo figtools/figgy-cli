@@ -5,6 +5,7 @@ from typing import Dict, Optional, List
 
 from figgy.data.dao.audit import AuditDao
 from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.kms import KmsDao
 from figgy.data.dao.replication import ReplicationDao
 from figgy.data.dao.ssm import SsmDao
 
@@ -24,6 +25,7 @@ log = logging.getLogger(__name__)
 AUDIT_SVC = 'audit-svc'
 CONFIG_SVC = 'config-svc'
 RBAC_VIEW = 'rbac-view'
+KMS_SVC = 'kms-svc'
 
 
 class ServiceRegistry:
@@ -34,6 +36,8 @@ class ServiceRegistry:
         self.context = context
         self.__env_lock = Lock()
         self.__mgr_lock = Lock()
+
+    # Todo Decorate / cleanup caching situation, lots of duplication here.
 
     def init_role(self, role: AssumableRole, mfa: Optional[str] = None):
         log.info(f'Initializing session for role: {role.role_arn} and MFA: {mfa}')
@@ -49,12 +53,14 @@ class ServiceRegistry:
                 log.info("Refreshing audit-svc due to refresh parameter.")
 
             self.CACHE[role][AUDIT_SVC] = AuditService(self.__audit(role, refresh), self.__config(role, refresh),
-                                                       self.__cache_mgr(role))
+                                                       self.kms_svc(role, refresh), self.__cache_mgr(role))
 
         return self.CACHE[role][AUDIT_SVC]
 
     def config_svc(self, role: AssumableRole, refresh: bool = False) -> ConfigService:
-
+        """
+        Returns a hydrated ConfigSvc
+        """
         if not self.CACHE.get(role, {}).get(CONFIG_SVC) or refresh:
             if refresh:
                 log.info("Refreshing config-svc due to refresh parameter.")
@@ -64,6 +70,18 @@ class ServiceRegistry:
                                                          role.run_env)
 
         return self.CACHE[role][CONFIG_SVC]
+
+    def kms_svc(self, role: AssumableRole, refresh: bool = False) -> KmsSvc:
+        """
+        Returns a hydrated KmsSvc
+        """
+        if not self.CACHE.get(role, {}).get(KMS_SVC) or refresh:
+            if refresh:
+                log.info("Refreshing kms-svc due to refresh parameter.")
+
+            self.CACHE[role][KMS_SVC] = KmsSvc(self.__kms(role, refresh), self.__ssm(role, refresh))
+
+        return self.CACHE[role][KMS_SVC]
 
     def rbac_view(self, role: AssumableRole, refresh: bool = False) -> RBACLimitedConfigView:
         """
@@ -111,14 +129,14 @@ class ServiceRegistry:
 
         return self.CACHE[role]['ssm']
 
-    def __kms(self, role: AssumableRole, refresh: bool) -> KmsSvc:
+    def __kms(self, role: AssumableRole, refresh: bool) -> KmsDao:
         """
         Returns a hydrated KMS Service object based on these selected ENV
         """
 
         if not self.CACHE.get(role, {}).get('kms') or refresh:
             self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'kms': KmsSvc(self.__env_session(role, refresh).client('kms'))}
+                'kms': KmsDao(self.__env_session(role, refresh).client('kms'))}
 
         return self.CACHE[role]['kms']
 

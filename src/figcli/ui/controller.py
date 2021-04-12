@@ -13,7 +13,7 @@ from figcli.commands.command_context import CommandContext
 from figcli.models.assumable_role import AssumableRole
 from figcli.svcs.audit import AuditService
 from figcli.svcs.service_registry import ServiceRegistry
-from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException
+from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException, BadRequestParameters
 from figcli.ui.models.figgy_response import FiggyResponse
 from figcli.ui.route import Route
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
@@ -56,11 +56,12 @@ class Controller:
         # return self.context.defaults.assumable_roles[0]
         return AssumableRole(**json.loads(request.headers.get('ActiveRole')))
 
+    # Todo validate all params before throwing exception
     def get_param(self, name: str, required=True, default: any = None):
         param = request.args.get(name)
 
         if (required and not default) and (not param or param == 'null' or param == 'undefined'):
-            raise ValueError(f'Expected query parameter missing: {name}')
+            raise BadRequestParameters(f'Expected query parameter missing: {name}', [name])
 
         # Return parameter if it's set, else default. Passed in strings of 'null' or 'undefined' count as not set.
         return param if (param and param != 'null' and param != 'undefined') else default
@@ -117,7 +118,7 @@ class Controller:
             return Response(result.json(), content_type=Controller.JSON_CONTENT_TYPE)
 
         response = Response(FiggyResponse(data=result).json(), content_type=Controller.JSON_CONTENT_TYPE)
-        log.info(f"RETURNING RESPONSE: {response.data}")
+        # log.info(f"RETURNING RESPONSE: {response.data}")
         return response
 
     @staticmethod
@@ -166,6 +167,9 @@ class Controller:
             except InvalidCredentialsException as e5:
                 log.info(f"INVALID creds provided!")
                 return ResponseBuilder.build(FiggyResponse.force_reauth())
+            except BadRequestParameters as e6:
+                log.info(f"Got request with invalid parameters: {e6.invalid_parameters}")
+                return ResponseBuilder.build(FiggyResponse.invalid_parameters(e6.invalid_parameters))
             except BaseException as e1:
                 log.warning('Caught unexpected exception: {e1}')
                 log.exception(e1)

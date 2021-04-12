@@ -1,24 +1,26 @@
 import logging
-import sys
-import time
 from typing import List
 
 from cachetools import TTLCache, cached
+from figgy.constants.data import SSM_DELETE
 from figgy.data.dao.audit import AuditDao
 from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.kms import KmsDao
 from figgy.models.audit_log import AuditLog
 
+from figcli.models.audit_log_details import AuditLogDetails
 from figcli.svcs.cache_manager import CacheManager
-from figcli.utils.utils import Utils
+from figcli.svcs.kms import KmsSvc
 
 log = logging.getLogger(__name__)
 
 
 class AuditService:
 
-    def __init__(self, audit_dao: AuditDao, cfg_dao: ConfigDao, cache_mgr: CacheManager):
+    def __init__(self, audit_dao: AuditDao, cfg_dao: ConfigDao, kms_svc: KmsSvc, cache_mgr: CacheManager):
         self._audit = audit_dao
         self._cfg = cfg_dao
+        self._kms = kms_svc
         self.cache_mgr = cache_mgr
 
     @cached(TTLCache(maxsize=5, ttl=30))
@@ -36,7 +38,6 @@ class AuditService:
                                 parameter_type: str = None,
                                 before: int = None,
                                 after: int = None) -> List[AuditLog]:
-
         result = self._audit.find_logs_parallel(threads=5, filter=filter, parameter_type=parameter_type, before=before,
                                                 after=after)
 
@@ -45,3 +46,13 @@ class AuditService:
     @cached(TTLCache(maxsize=5, ttl=30))
     def get_parameter_logs(self, name: str) -> List[AuditLog]:
         return self._audit.get_audit_logs(ps_name=name)
+
+    # @cached(TTLCache(maxsize=45, ttl=30))
+    def get_audit_log_details(self, parameter_name: str, time: int) -> AuditLogDetails:
+        audit_log: AuditLog = self._audit.get_log(parameter_name, time)
+
+        if audit_log.action == SSM_DELETE:
+            audit_log.value = self._audit.get_deleted_value(audit_log)
+
+        decrypted_value = self._kms.safe_decrypt_parameter(audit_log.parameter_name, audit_log.value)
+        return AuditLogDetails(**audit_log.dict(), decrypted_value=decrypted_value)
