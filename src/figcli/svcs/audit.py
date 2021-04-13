@@ -5,7 +5,6 @@ from cachetools import TTLCache, cached
 from figgy.constants.data import SSM_DELETE
 from figgy.data.dao.audit import AuditDao
 from figgy.data.dao.config import ConfigDao
-from figgy.data.dao.kms import KmsDao
 from figgy.models.audit_log import AuditLog
 
 from figcli.models.audit_log_details import AuditLogDetails
@@ -38,7 +37,7 @@ class AuditService:
                                 parameter_type: str = None,
                                 before: int = None,
                                 after: int = None) -> List[AuditLog]:
-        result = self._audit.find_logs_parallel(threads=5, filter=filter, parameter_type=parameter_type, before=before,
+        result = self._audit.find_logs_parallel(threads=10, filter=filter, parameter_type=parameter_type, before=before,
                                                 after=after)
 
         return result
@@ -47,7 +46,7 @@ class AuditService:
     def get_parameter_logs(self, name: str) -> List[AuditLog]:
         return self._audit.get_audit_logs(ps_name=name)
 
-    # @cached(TTLCache(maxsize=45, ttl=30))
+    @cached(TTLCache(maxsize=200, ttl=120))
     def get_audit_log_details(self, parameter_name: str, time: int) -> AuditLogDetails:
         audit_log: AuditLog = self._audit.get_log(parameter_name, time)
 

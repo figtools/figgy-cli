@@ -1,7 +1,7 @@
 import logging
 
 from abc import ABC
-from typing import List
+from typing import List, Union
 
 from figgy.models.audit_log import AuditLog
 
@@ -27,7 +27,7 @@ class AuditController(Controller, ABC):
     @Utils.trace
     @Controller.client_cache(seconds=5)
     @Controller.build_response
-    def get_audit_logs(self, refresh: bool = False) -> PaginatedResponse:
+    def get_audit_logs(self, refresh: bool = False) -> Union[PaginatedResponse, List[AuditLog]]:
         page: int = int(self.get_param('page', default=0, required=False))
         size: int = int(self.get_param('size', default=15))
         filter: str = self.get_param('filter', required=False)  # by default filter by date.
@@ -37,6 +37,7 @@ class AuditController(Controller, ABC):
         after: int = self.get_param('after', required=False)
         parameter_type: str = self.get_param('type', required=False)
         parameter_name: str = self.get_param('name', required=False)
+        one_page: bool = self.get_param('one-page', required=False, default='false').lower() == 'true'
 
         if parameter_name:
             matching_logs: List[AuditLog] = self._audit(refresh).get_parameter_logs(parameter_name)
@@ -46,10 +47,14 @@ class AuditController(Controller, ABC):
                                                                                          after=after)
         sorted_logs = sorted(matching_logs, key=lambda x: x.__dict__.get(sort_key),
                              reverse=False if sort_direction == 'asc' else True)
+
         sorted_page = sorted_logs[page * size: page * size + size]
         total = len(matching_logs)
 
-        return PaginatedResponse(data=sorted_page, total=total, page_size=size, page_number=page)
+        if one_page:
+            return sorted_logs
+        else:
+            return PaginatedResponse(data=sorted_page, total=total, page_size=size, page_number=page)
 
     @Controller.build_response
     def get_audit_details(self, refresh: bool = False) -> AuditLogDetails:
