@@ -1,4 +1,6 @@
 import logging
+from functools import wraps
+
 import boto3
 
 from typing import Dict, Optional, List
@@ -22,10 +24,24 @@ from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 log = logging.getLogger(__name__)
 
-AUDIT_SVC = 'audit-svc'
-CONFIG_SVC = 'config-svc'
-RBAC_VIEW = 'rbac-view'
-KMS_SVC = 'kms-svc'
+
+def refreshable_cache(cache_key):
+    """
+    Decorator to support dynamic caching of registered services with a 'refresh' parameter that will purge the cache.
+    """
+
+    def decorate(method):
+        @wraps(method)
+        def impl(self, role: AssumableRole, refresh: bool = False):
+            if not self.CACHE.get(role, {}).get(cache_key) or refresh:
+                log.info(f"Refreshing {cache_key} due to refresh parameter.")
+                self.CACHE[role] = self.CACHE.get(role, {}) | {cache_key: method(self, role, refresh)}
+
+            return self.CACHE[role][cache_key]
+
+        return impl
+
+    return decorate
 
 
 class ServiceRegistry:
@@ -47,125 +63,80 @@ class ServiceRegistry:
         for role in roles:
             self.init_role(role, mfa)
 
+    @refreshable_cache('audit-svc')
     def audit_svc(self, role: AssumableRole, refresh: bool = False) -> AuditService:
-        if not self.CACHE.get(role, {}).get(AUDIT_SVC) or refresh:
-            if refresh:
-                log.info("Refreshing audit-svc due to refresh parameter.")
+        return AuditService(self.__audit(role, refresh), self.__config(role, refresh),
+                            self.kms_svc(role, refresh), self.__cache_mgr(role))
 
-            self.CACHE[role][AUDIT_SVC] = AuditService(self.__audit(role, refresh), self.__config(role, refresh),
-                                                       self.kms_svc(role, refresh), self.__cache_mgr(role))
-
-        return self.CACHE[role][AUDIT_SVC]
-
+    @refreshable_cache('config-svc')
     def config_svc(self, role: AssumableRole, refresh: bool = False) -> ConfigService:
         """
         Returns a hydrated ConfigSvc
         """
-        if not self.CACHE.get(role, {}).get(CONFIG_SVC) or refresh:
-            if refresh:
-                log.info("Refreshing config-svc due to refresh parameter.")
+        return ConfigService(self.__config(role, refresh), self.__ssm(role, refresh), self.__repl(role, refresh),
+                             self.__cache_mgr(role), role.run_env)
 
-            self.CACHE[role][CONFIG_SVC] = ConfigService(self.__config(role, refresh), self.__ssm(role, refresh),
-                                                         self.__repl(role, refresh), self.__cache_mgr(role),
-                                                         role.run_env)
-
-        return self.CACHE[role][CONFIG_SVC]
-
+    @refreshable_cache('kms-svc')
     def kms_svc(self, role: AssumableRole, refresh: bool = False) -> KmsSvc:
         """
         Returns a hydrated KmsSvc
         """
-        if not self.CACHE.get(role, {}).get(KMS_SVC) or refresh:
-            if refresh:
-                log.info("Refreshing kms-svc due to refresh parameter.")
+        return KmsSvc(self.__kms(role, refresh), self.__ssm(role, refresh))
 
-            self.CACHE[role][KMS_SVC] = KmsSvc(self.__kms(role, refresh), self.__ssm(role, refresh))
-
-        return self.CACHE[role][KMS_SVC]
-
+    @refreshable_cache('rbac-view')
     def rbac_view(self, role: AssumableRole, refresh: bool = False) -> RBACLimitedConfigView:
         """
         Returns a hydrated ConfigDao for the selected environment.
         """
-        if not self.CACHE.get(role, {}).get(RBAC_VIEW) or refresh:
-            if refresh:
-                log.info("Refreshing RBAC-VIEW due to refresh parameter.")
+        return RBACLimitedConfigView(role=role.role,
+                                     cache_mgr=self.__cache_mgr(role),
+                                     ssm=self.__ssm(role, refresh),
+                                     config_svc=self.config_svc(role, refresh),
+                                     profile=role.profile)
 
-            self.CACHE[role] = self.CACHE.get(role, {}) | \
-                               {RBAC_VIEW: RBACLimitedConfigView(role=role.role,
-                                                                 cache_mgr=self.__cache_mgr(role),
-                                                                 ssm=self.__ssm(role, refresh),
-                                                                 config_svc=self.config_svc(role, refresh),
-                                                                 profile=role.profile)}
+    @refreshable_cache('cache-mgr')
+    def __cache_mgr(self, role: AssumableRole, refresh: bool = False):
+        return CacheManager(f'{role.role}-{role.run_env}-{role.account_id[-4:]}')
 
-        return self.CACHE[role][RBAC_VIEW]
-
-    def __cache_mgr(self, role: AssumableRole):
-        if not self.CACHE.get(role, {}).get('cache-mgr'):
-            self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'cache-mgr': CacheManager(f'{role.role}-{role.run_env}-{role.account_id[-4:]}')}
-
-        return self.CACHE[role]['cache-mgr']
-
+    @refreshable_cache('env-session')
     def __env_session(self, role: AssumableRole, refresh: bool = False) -> boto3.session.Session:
         """
         Lazy load an ENV session object for the ENV selected in the FiggyContext
         :return: Hydrated session for the selected environment.
         """
-        if not self.CACHE.get(role, {}).get('env-session') or refresh:
-            self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'env-session': self.session_mgr.get_session(role, prompt=False)}
+        return self.session_mgr.get_session(role, prompt=False)
 
-        return self.CACHE[role]['env-session']
-
+    @refreshable_cache('ssm-dao')
     def __ssm(self, role: AssumableRole, refresh: bool) -> SsmDao:
         """
         Returns an SSMDao initialized with a session for the selected ENV based on FiggyContext
         """
+        return SsmDao(self.__env_session(role, refresh).client('ssm'))
 
-        if not self.CACHE.get(role, {}).get('ssm') or refresh:
-            self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'ssm': SsmDao(self.__env_session(role, refresh).client('ssm'))}
-
-        return self.CACHE[role]['ssm']
-
+    @refreshable_cache('kms-dao')
     def __kms(self, role: AssumableRole, refresh: bool) -> KmsDao:
         """
         Returns a hydrated KMS Service object based on these selected ENV
         """
+        return KmsDao(self.__env_session(role, refresh).client('kms'))
 
-        if not self.CACHE.get(role, {}).get('kms') or refresh:
-            self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'kms': KmsDao(self.__env_session(role, refresh).client('kms'))}
-
-        return self.CACHE[role]['kms']
-
+    @refreshable_cache('config-dao')
     def __config(self, role: AssumableRole, refresh: bool) -> ConfigDao:
         """
         Returns a hydrated ConfigDao for the selected environment.
         """
-        if not self.CACHE.get(role, {}).get('cfg') or refresh:
-            self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'cfg': ConfigDao(self.__env_session(role, refresh).resource('dynamodb'))}
+        return ConfigDao(self.__env_session(role, refresh).resource('dynamodb'))
 
-        return self.CACHE[role]['cfg']
-
+    @refreshable_cache('audit-dao')
     def __audit(self, role: AssumableRole, refresh: bool) -> AuditDao:
         """
         Returns a hydrated AuditDao for the selected environment.
         """
-        if not self.CACHE.get(role, {}).get('audit') or refresh:
-            self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'audit': AuditDao(self.__env_session(role, refresh).resource('dynamodb'))}
+        return AuditDao(self.__env_session(role, refresh).resource('dynamodb'))
 
-        return self.CACHE[role]['audit']
-
+    @refreshable_cache('repl-dao')
     def __repl(self, role: AssumableRole, refresh: bool) -> ReplicationDao:
         """
         Returns a hydrated ReplicationDao for the selected environment.
         """
-        if not self.CACHE.get(role, {}).get('repl') or refresh:
-            self.CACHE[role] = self.CACHE.get(role, {}) | {
-                'repl': ReplicationDao(self.__env_session(role, refresh).resource('dynamodb'))}
-
-        return self.CACHE[role]['repl']
+        return ReplicationDao(self.__env_session(role, refresh).resource('dynamodb'))
