@@ -10,7 +10,6 @@ from figcli.commands.config.delete import Delete
 from figcli.commands.config.get import Get
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.io.output import OutUtils

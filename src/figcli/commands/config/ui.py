@@ -1,6 +1,4 @@
 from figcli.commands.command_context import CommandContext
-from figcli.commands.config_context import ConfigContext
-from figcli.commands.types.config import ConfigCommand
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker

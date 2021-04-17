@@ -534,5 +534,16 @@ class Utils:
             else:
                 return default
 
+    @staticmethod
+    def load_file(file_path: str) -> str:
+        try:
+            with open(file_path, 'r') as file:
+                return file.read()
+        except FileNotFoundError:
+            print(
+                f"Provided file path: {file_path} is invalid. No file found.")
+            exit(1)
+
+
 class InvalidSessionError(Exception):
     pass

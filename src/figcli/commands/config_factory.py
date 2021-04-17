@@ -57,20 +57,20 @@ class ConfigFactory(Factory):
 
     def get(self, command: CliCommand):
         if command == sync:
-            return Sync(self._ssm, self._config, self._colors_enabled, self._config_context, self.get(get),
+            return Sync(self._ssm, self._config, self._repl, self._colors_enabled, self._config_context, self.get(get),
                         self.get(put))
         elif command == prune:
-            return Prune(self._ssm, self._config, self._config_context, self._config_completer,
+            return Prune(self._ssm, self._config, self._repl, self._config_context, self._config_completer,
                            self._colors_enabled, self.get(delete), args=self._args)
         elif command == put:
             return Put(self._ssm, self._colors_enabled, self._config_context, self._config_view, self.get(get))
         elif command == delete:
-            return Delete(self._ssm, self._config_view, self._config, self._config_context, self._colors_enabled,
-                          self._config_completer)
+            return Delete(self._ssm, self._config_view, self._config, self._repl, self._config_context,
+                          self._colors_enabled, self._config_completer)
         elif command == get:
             return Get(self._ssm, self._config_completer, self._colors_enabled, self._config_context)
         elif command == share:
-            return Share(self._ssm, self._config, self._config_completer, self._colors_enabled, self._config_context)
+            return Share(self._ssm, self._repl, self._config_completer, self._colors_enabled, self._config_context)
         elif command == list_com:
             return FigList(self._config_view, self._cfg_svc, self._config_completer, self._colors_enabled,
                            self._config_context, self.get(get))
@@ -78,7 +78,7 @@ class ConfigFactory(Factory):
             return Browse(self._ssm, self._cfg_svc, self._colors_enabled, self._config_context, self.get(get),
                           self.get(delete), self._config_view)
         elif command == audit:
-            return Audit(self._ssm, self._config, self._config_completer, self._colors_enabled, self._config_context)
+            return Audit(self._ssm, self._audit, self._config_completer, self._colors_enabled, self._config_context)
         elif command == dump:
             return Dump(self._ssm, self._config_completer, self._colors_enabled, self._config_context)
         elif command == restore:

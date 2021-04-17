@@ -22,7 +22,6 @@ log = logging.getLogger(__name__)
 
 
 class ResponseBuilder:
-
     @staticmethod
     def build(response: FiggyResponse) -> Response:
         log.info(f"Setting status code of: {response.status_code}")

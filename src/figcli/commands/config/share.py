@@ -1,6 +1,8 @@
 import re
 
 from botocore.exceptions import ClientError
+from figgy.data.dao.config import ConfigDao
+from figgy.data.dao.replication import ReplicationDao
 from figgy.models.replication_config import ReplicationType, ReplicationConfig
 from prompt_toolkit import prompt
 
@@ -16,12 +18,12 @@ from figcli.utils.utils import Utils
 
 class Share(ConfigCommand):
 
-    def __init__(self, ssm_init, config_init, config_completer_init, colors_enabled: bool,
-                 config_context: ConfigContext):
+    def __init__(self, ssm_init, repl_init: ReplicationDao,
+                 config_completer_init, colors_enabled: bool, config_context: ConfigContext):
         super().__init__(share, colors_enabled, config_context)
 
         self._ssm = ssm_init
-        self._config = config_init
+        self._repl = repl_init
         self._config_completer = config_completer_init
         self._utils = Utils(colors_enabled)
         self._out = Output(colors_enabled)
@@ -71,7 +73,7 @@ class Share(ConfigCommand):
             print(f'RUN_ENV: {self.run_env}   ')
             repl_config = ReplicationConfig(destination=dest, env_alias=self.run_env.env,
                                             namespace=namespace, source=key, type=ReplicationType.APP.value)
-            self._config.put_config_repl(repl_config)
+            self._repl.put_config_repl(repl_config)
             self._out.success(f"[[{key}]] successfully shared.")
             to_continue = input(f"Share another? (y/N): ")
             to_continue = to_continue if to_continue != '' else 'n'

@@ -1,19 +1,14 @@
-import re
 from typing import List
 
+from botocore.exceptions import ClientError
+from figgy.data.dao.ssm import SsmDao
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import style_from_pygments_cls
-
-from figcli.config import *
-from botocore.exceptions import ClientError
-from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter
 
 from figcli.commands.config.get import Get
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figgy.data.dao.ssm import SsmDao
-
+from figcli.config import *
 from figcli.config.style.pygments.lexer import FigLexer, FiggyPygment
 from figcli.io.input import Input
 from figcli.io.output import Output
@@ -40,15 +35,6 @@ class Put(ConfigCommand):
         ]
 
         self._FILE_PREFIX = "file://"
-
-    def _load_file(self, file_path: str) -> str:
-        try:
-            with open(file_path, 'r') as file:
-                return file.read()
-        except FileNotFoundError:
-            print(
-                f"Provided file path: {file_path} is invalid. No file found.")
-            exit(1)
 
     def put_param(self, key=None, loop=False, display_hints=True) -> None:
         """
@@ -94,7 +80,7 @@ class Put(ConfigCommand):
                 value = Input.input(f"Please input a value for {key}: ", default=orig_value if orig_value else '')
 
                 if value.lower().startswith(self._FILE_PREFIX):
-                    value = self._load_file(value.replace(self._FILE_PREFIX, ""))
+                    value = Utils.load_file(value.replace(self._FILE_PREFIX, ""))
 
                 existing_desc = self._ssm.get_description(key)
                 desc = Input.input(f"Please input an optional description: ", optional=True,
