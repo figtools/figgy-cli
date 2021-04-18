@@ -148,7 +148,7 @@ class ConfigService:
     def is_replication_source(self, name: str) -> bool:
         return bool(self._repl.get_cfgs_by_src(name))
 
-    @cached(TTLCache(maxsize=1024, ttl=10))
+    @cached(TTLCache(maxsize=1024, ttl=300))
     def is_replication_destination(self, name: str) -> bool:
         return bool(self._repl.get_config_repl(name))
 

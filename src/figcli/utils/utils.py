@@ -544,6 +544,9 @@ class Utils:
                 f"Provided file path: {file_path} is invalid. No file found.")
             exit(1)
 
+    @staticmethod
+    def class_props(cls):
+        return [i for i in cls.__dict__.keys() if i[:1] != '_']
 
 class InvalidSessionError(Exception):
     pass

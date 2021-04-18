@@ -10,6 +10,7 @@ from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.kms import KmsDao
 from figgy.data.dao.replication import ReplicationDao
 from figgy.data.dao.ssm import SsmDao
+from figgy.data.dao.usage_tracker import UsageTrackerDao
 
 from figcli.commands.command_context import CommandContext
 from figcli.models.assumable_role import AssumableRole
@@ -20,6 +21,7 @@ from threading import Lock
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config import ConfigService
 from figcli.svcs.kms import KmsSvc
+from figcli.svcs.usage_tracking import UsageTrackingService
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 log = logging.getLogger(__name__)
@@ -27,7 +29,8 @@ log = logging.getLogger(__name__)
 
 def refreshable_cache(cache_key):
     """
-    Decorator to support dynamic caching of registered services with a 'refresh' parameter that will purge the cache.
+    Decorator to support dynamic caching of registered services with a 'refresh'
+    parameter that will purge the cache and force refresh of cached services.
     """
 
     def decorate(method):
@@ -65,7 +68,12 @@ class ServiceRegistry:
 
     @refreshable_cache('audit-svc')
     def audit_svc(self, role: AssumableRole, refresh: bool = False) -> AuditService:
-        return AuditService(self.__audit(role, refresh), self.__config(role, refresh),
+        return AuditService(self.__audit(role, refresh), self.config_svc(role, refresh),
+                            self.kms_svc(role, refresh), self.__cache_mgr(role))
+
+    @refreshable_cache('usage-svc')
+    def usage_svc(self, role: AssumableRole, refresh: bool = False) -> UsageTrackingService:
+        return UsageTrackingService(self.__usage(role, refresh), self.config_svc(role, refresh),
                             self.kms_svc(role, refresh), self.__cache_mgr(role))
 
     @refreshable_cache('config-svc')
@@ -133,6 +141,13 @@ class ServiceRegistry:
         Returns a hydrated AuditDao for the selected environment.
         """
         return AuditDao(self.__env_session(role, refresh).resource('dynamodb'))
+
+    @refreshable_cache('usage-dao')
+    def __usage(self, role: AssumableRole, refresh: bool) -> UsageTrackerDao:
+        """
+        Returns a hydrated UsageTrackerDao for the selected environment.
+        """
+        return UsageTrackerDao(self.__env_session(role, refresh).resource('dynamodb'))
 
     @refreshable_cache('repl-dao')
     def __repl(self, role: AssumableRole, refresh: bool) -> ReplicationDao:

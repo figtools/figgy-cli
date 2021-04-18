@@ -13,6 +13,7 @@ from figcli.commands.command_context import CommandContext
 from figcli.models.assumable_role import AssumableRole
 from figcli.svcs.audit import AuditService
 from figcli.svcs.service_registry import ServiceRegistry
+from figcli.svcs.usage_tracking import UsageTrackingService
 from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException, BadRequestParameters
 from figcli.ui.models.figgy_response import FiggyResponse
 from figcli.ui.route import Route
@@ -47,6 +48,9 @@ class Controller:
 
     def _audit(self, refresh: bool = False) -> AuditService:
         return self._registry.audit_svc(self.get_role(), refresh)
+
+    def _usage(self, refresh: bool = False) -> UsageTrackingService:
+        return self._registry.usage_svc(self.get_role(), refresh)
 
     def routes(self) -> List[Route]:
         return self._routes
