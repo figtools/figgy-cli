@@ -1,5 +1,4 @@
 import logging
-from concurrent.futures._base import as_completed
 from concurrent.futures.thread import ThreadPoolExecutor
 from multiprocessing.pool import ThreadPool
 from typing import List
@@ -7,7 +6,6 @@ from typing import List
 from cachetools import TTLCache, cached
 from figgy.constants.data import SSM_DELETE, SSM_SECURE_STRING
 from figgy.data.dao.audit import AuditDao
-from figgy.data.dao.config import ConfigDao
 from figgy.models.audit_log import AuditLog
 
 from figcli.models.audit_log_details import AuditLogDetails
@@ -71,19 +69,25 @@ class AuditService:
         active_parameters = self._cfg.get_parameter_names()
         active_logs = [l for l in all_logs if l.parameter_name in active_parameters]
 
+
         # Use multiple threads to lookup which parameters are replication destinations and remove them from the
         # log list. Since we are waiting on network, this is many times faster.
+        # We cannot use ThreadPoolExecutor due to compatibility issues when running from within a flask request.
+        # I have  Todo to dive deeper into this and address these compatibility issues
         pool = ThreadPool(processes=self.MAX_THREADS)
-        futures, repl_dest_params = {}, []
-        for l in active_logs:
-            thread = pool.apply_async(self._cfg.is_replication_destination, args=(l.parameter_name,))
-            futures[l.parameter_name] = thread
+        try:
+            futures, repl_dest_params = {}, []
+            for l in active_logs:
+                thread = pool.apply_async(self._cfg.is_replication_destination, args=(l.parameter_name,))
+                futures[l.parameter_name] = thread
 
-        for param_name, future in futures.items():
-            if future.get():
-                repl_dest_params.append(param_name)
+            for param_name, future in futures.items():
+                if future.get():
+                    repl_dest_params.append(param_name)
 
-        # remove destinations:
-        active_logs = [l for l in active_logs if l.parameter_name not in repl_dest_params]
+            # remove destinations:
+            active_logs = [l for l in active_logs if l.parameter_name not in repl_dest_params]
+        finally:
+            pool.close()
 
         return active_logs

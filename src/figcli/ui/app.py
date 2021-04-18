@@ -6,7 +6,6 @@ from flask import Flask
 from flask_cors import CORS
 
 from figcli.commands.command_context import CommandContext
-from figcli.commands.config_context import ConfigContext
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.api.audit import AuditController
