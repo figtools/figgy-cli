@@ -10,7 +10,9 @@ from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.api.audit import AuditController
 from figcli.ui.api.config import ConfigController
+from figcli.ui.api.investigate import InvestigateController
 from figcli.ui.api.maintenance import MaintenanceController
+from figcli.ui.api.usage import UsageController
 from figcli.ui.api.user import UserController
 from figcli.ui.controller import Controller
 
@@ -31,6 +33,8 @@ class App:
         self.controllers.append(ConfigController('/config', self._context, self._svc_registry))
         self.controllers.append(MaintenanceController('/maintenance', self._context, self._svc_registry))
         self.controllers.append(AuditController('/audit', self._context, self._svc_registry))
+        self.controllers.append(UsageController('/usage', self._context, self._svc_registry))
+        self.controllers.append(InvestigateController('/investigate', self._context, self._svc_registry))
 
     def run_app(self):
         self.app.run(host='0.0.0.0', port=5000, debug=False)

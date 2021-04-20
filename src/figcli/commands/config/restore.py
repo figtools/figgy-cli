@@ -22,7 +22,7 @@ from figcli.io.output import Output
 from figgy.models.parameter_store_history import PSHistory
 from figgy.models.replication_config import ReplicationConfig
 from figgy.models.restore_config import RestoreConfig
-from figcli.svcs.kms import KmsSvc
+from figcli.svcs.kms import KmsService
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import Utils
@@ -33,7 +33,7 @@ class Restore(ConfigCommand):
     def __init__(
             self,
             ssm_init: SsmDao,
-            kms_init: KmsSvc,
+            kms_init: KmsService,
             config_init: ConfigDao,
             repl_dao: ReplicationDao,
             audit_dao: AuditDao,

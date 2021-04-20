@@ -64,7 +64,7 @@ class Controller:
         param = request.args.get(name)
 
         if (required and not default) and (not param or param == 'null' or param == 'undefined'):
-            raise BadRequestParameters(f'Expected query parameter missing: {name}', [name])
+            raise BadRequestParameters(f'Expected query parameter missing: {name}, got value: {param}', [name])
 
         # Return parameter if it's set, else default. Passed in strings of 'null' or 'undefined' count as not set.
         return param if (param and param != 'null' and param != 'undefined') else default
@@ -168,9 +168,10 @@ class Controller:
                 log.exception(e4)
                 return ResponseBuilder.build(FiggyResponse.mfa_required())
             except InvalidCredentialsException as e5:
-                log.info(f"INVALID creds provided!")
+                log.info(f"Invalid credentials provided!")
                 return ResponseBuilder.build(FiggyResponse.force_reauth())
             except BadRequestParameters as e6:
+                log.exception(e6)
                 log.info(f"Got request with invalid parameters: {e6.invalid_parameters}")
                 return ResponseBuilder.build(FiggyResponse.invalid_parameters(e6.invalid_parameters))
             except BaseException as e1:

@@ -19,7 +19,7 @@ from figcli.commands.config.validate import Validate
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.factory import Factory
 from figcli.svcs.config import ConfigService
-from figcli.svcs.kms import KmsSvc
+from figcli.svcs.kms import KmsService
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 from figcli.utils.utils import *
@@ -32,7 +32,7 @@ class ConfigFactory(Factory):
     """
 
     def __init__(self, command: CliCommand, context: ConfigContext, ssm: SsmDao, config_svc: ConfigService,
-                 cfg: ConfigDao, kms: KmsSvc, s3_resource: ServiceResource, colors_enabled: bool,
+                 cfg: ConfigDao, kms: KmsService, s3_resource: ServiceResource, colors_enabled: bool,
                  config_view: RBACLimitedConfigView, audit: AuditDao, repl: ReplicationDao,
                  session_manager: SessionManager):
 
@@ -41,7 +41,7 @@ class ConfigFactory(Factory):
         self._ssm: SsmDao = ssm
         self._config: ConfigDao = cfg
         self._cfg_svc: ConfigService = config_svc
-        self._kms: KmsSvc = kms
+        self._kms: KmsService = kms
         self._colors_enabled: bool = colors_enabled
         self._config_view = config_view
         self._repl: ReplicationDao = repl

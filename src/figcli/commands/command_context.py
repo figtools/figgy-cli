@@ -8,7 +8,7 @@ from figcli.models.cli_command import CliCommand
 from figcli.models.defaults.defaults import CLIDefaults
 from figgy.models.run_env import RunEnv
 
-from figcli.svcs.kms import KmsSvc
+from figcli.svcs.kms import KmsService
 
 
 class CommandContext:

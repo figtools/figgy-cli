@@ -18,7 +18,7 @@ from figcli.commands.ui_factory import UIFactory
 from figcli.models.defaults.defaults import CLIDefaults
 from figgy.models.run_env import RunEnv
 from figcli.commands.figgy_context import FiggyContext
-from figcli.svcs.kms import KmsSvc
+from figcli.svcs.kms import KmsService
 from figcli.svcs.config import ConfigService
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
@@ -115,12 +115,12 @@ class CommandFactory(Factory):
 
         return self._ssm
 
-    def __kms(self) -> KmsSvc:
+    def __kms(self) -> KmsService:
         """
         Returns a hydrated KMS Service object based on these selected ENV
         """
         if not self._kms:
-            self._kms: KmsSvc = KmsSvc(self.__env_session().client('kms'))
+            self._kms: KmsService = KmsService(self.__env_session().client('kms'), self.__ssm())
 
         return self._kms
 
@@ -173,7 +173,7 @@ class CommandFactory(Factory):
         """Returns a hydrated ConfigService."""
         if not self._config_svc:
             self._config_svc = ConfigService(self.__config(), self.__ssm(), self.__repl(),
-                                             self.__cache_mgr(), self._context.run_env)
+                                             self.__cache_mgr(), self.__kms(), self._context.run_env)
 
         return self._config_svc
 

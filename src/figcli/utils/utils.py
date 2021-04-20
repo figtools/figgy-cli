@@ -13,7 +13,7 @@ from collections import OrderedDict
 from json.decoder import JSONDecodeError
 from pathlib import Path
 from sys import exit
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union, Optional, Any
 
 from figcli.config import *
 from figcli.config.style.color import Color
@@ -134,7 +134,6 @@ class Utils:
     @staticmethod
     def sanitize_session_name(name: str):
         return re.sub(r'\W+', '', name)[:15]
-
 
     @staticmethod
     def wipe_defaults():
@@ -371,7 +370,6 @@ class Utils:
         if not boolean:
             self.error_exit(error_msg)
 
-
     def is_valid_selection(self, selection: str, notify: bool):
         result = selection is not None and (selection.lower() == "y" or selection.lower() == "n")
         if notify and not result:
@@ -547,6 +545,14 @@ class Utils:
     @staticmethod
     def class_props(cls):
         return [i for i in cls.__dict__.keys() if i[:1] != '_']
+
+    @staticmethod
+    def property_matches(obj: Any, comparator: str) -> bool:
+        props = [p for p in dir(obj) if not p.startswith('__') and not callable(getattr(obj, p))]
+        props = [p for p in props if p != '_abc_impl'] # filter out abstract class stuff
+        matching_attr = [p for p in props if comparator in str(getattr(obj, p))]
+        return bool(matching_attr)
+
 
 class InvalidSessionError(Exception):
     pass

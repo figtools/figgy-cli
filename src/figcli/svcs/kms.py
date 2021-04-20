@@ -6,7 +6,7 @@ from figgy.data.dao.ssm import SsmDao
 from figcli.utils.utils import *
 
 
-class KmsSvc:
+class KmsService:
     """
     Provides access to KMS apis
     """

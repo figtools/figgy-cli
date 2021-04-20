@@ -37,6 +37,7 @@ class ConfigController(Controller, ABC):
         self._routes.append(Route('/replicationDestinations', self.get_replication_destinations, ["GET"]))
         self._routes.append(Route('/replicationConfig', self.get_replication_config, ["GET"]))
         self._routes.append(Route('/kmsKeys', self.get_all_kms_keys, ["GET"]))
+        self._routes.append(Route('/decrypt', self.decrypt, ["POST"]))
 
     @Controller.client_cache(seconds=5)
     @Controller.build_response
@@ -125,3 +126,12 @@ class ConfigController(Controller, ABC):
     @Controller.build_response
     def get_all_kms_keys(self, refresh: bool = False):
         return self._cfg(refresh).get_all_encryption_keys()
+
+    @Controller.build_response
+    def decrypt(self, refresh: bool = False):
+        # Todo add generic payload validation
+        payload: Dict = request.json
+        parameter_name: str = payload.get('parameter_name')
+        encrypted_str = payload.get('encrypted_string')
+
+        return {'decrypted_value': self._cfg(refresh).decrypt(parameter_name, encrypted_str)}

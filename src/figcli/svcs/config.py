@@ -17,6 +17,7 @@ from figgy.svcs.fig_service import FigService
 from figcli.config import PS_FIGGY_REPL_KEY_ID_PATH, PS_FIGGY_ALL_KMS_KEYS_PATH
 from figcli.models.kms_key import KmsKey
 from figcli.svcs.cache_manager import CacheManager
+from figcli.svcs.kms import KmsService
 from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
@@ -39,13 +40,14 @@ class ConfigService:
     MEMORY_CACHE_REFRESH_INTERVAL: int = 5000
     MEMORY_CACHE_LAST_REFRESH_TIME: int = 0
 
-    def __init__(self, config_dao: ConfigDao, ssm: SsmDao,  replication_dao: ReplicationDao,
-                 cache_mgr: CacheManager, run_env: RunEnv):
+    def __init__(self, config_dao: ConfigDao, ssm: SsmDao, replication_dao: ReplicationDao,
+                 cache_mgr: CacheManager, kms_svc: KmsService, run_env: RunEnv):
         self._config_dao = config_dao
         self._cache_mgr = cache_mgr
         self._run_env = run_env
         self._repl = replication_dao
         self._ssm: SsmDao = ssm
+        self._kms = kms_svc
         self._fig_svc: FigService = FigService(ssm)
 
     def get_root_namespaces(self) -> List[str]:
@@ -198,3 +200,6 @@ class ConfigService:
         # Todo: Wipe caches. Here
         self._repl.delete_config(name)
         self._fig_svc.delete(name)
+
+    def decrypt(self, parameter_name: str, encrypted_data) -> str:
+        return self._kms.safe_decrypt_parameter(parameter_name, encrypted_data)

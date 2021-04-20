@@ -11,6 +11,7 @@ from figgy.data.dao.kms import KmsDao
 from figgy.data.dao.replication import ReplicationDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.dao.usage_tracker import UsageTrackerDao
+from figgy.data.dao.user_cache import UserCacheDao
 
 from figcli.commands.command_context import CommandContext
 from figcli.models.assumable_role import AssumableRole
@@ -20,7 +21,7 @@ from threading import Lock
 
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config import ConfigService
-from figcli.svcs.kms import KmsSvc
+from figcli.svcs.kms import KmsService
 from figcli.svcs.usage_tracking import UsageTrackingService
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
@@ -73,8 +74,9 @@ class ServiceRegistry:
 
     @refreshable_cache('usage-svc')
     def usage_svc(self, role: AssumableRole, refresh: bool = False) -> UsageTrackingService:
-        return UsageTrackingService(self.__usage(role, refresh), self.config_svc(role, refresh),
-                            self.kms_svc(role, refresh), self.__cache_mgr(role))
+        return UsageTrackingService(self.__usage(role, refresh), self.audit_svc(role, refresh),
+                                    self.__user(role, refresh), self.config_svc(role, refresh),
+                                    self.kms_svc(role, refresh), self.__cache_mgr(role))
 
     @refreshable_cache('config-svc')
     def config_svc(self, role: AssumableRole, refresh: bool = False) -> ConfigService:
@@ -82,14 +84,14 @@ class ServiceRegistry:
         Returns a hydrated ConfigSvc
         """
         return ConfigService(self.__config(role, refresh), self.__ssm(role, refresh), self.__repl(role, refresh),
-                             self.__cache_mgr(role), role.run_env)
+                             self.__cache_mgr(role), self.kms_svc(role, refresh), role.run_env)
 
     @refreshable_cache('kms-svc')
-    def kms_svc(self, role: AssumableRole, refresh: bool = False) -> KmsSvc:
+    def kms_svc(self, role: AssumableRole, refresh: bool = False) -> KmsService:
         """
-        Returns a hydrated KmsSvc
+        Returns a hydrated KmsService
         """
-        return KmsSvc(self.__kms(role, refresh), self.__ssm(role, refresh))
+        return KmsService(self.__kms(role, refresh), self.__ssm(role, refresh))
 
     @refreshable_cache('rbac-view')
     def rbac_view(self, role: AssumableRole, refresh: bool = False) -> RBACLimitedConfigView:
@@ -155,3 +157,10 @@ class ServiceRegistry:
         Returns a hydrated ReplicationDao for the selected environment.
         """
         return ReplicationDao(self.__env_session(role, refresh).resource('dynamodb'))
+
+    @refreshable_cache('user-dao')
+    def __user(self, role: AssumableRole, refresh: bool) -> UserCacheDao:
+        """
+        Returns a hydrated ReplicationDao for the selected environment.
+        """
+        return UserCacheDao(self.__env_session(role, refresh).resource('dynamodb'))
