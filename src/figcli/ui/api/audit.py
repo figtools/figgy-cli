@@ -17,10 +17,8 @@ log = logging.getLogger(__name__)
 
 
 class AuditController(Controller, ABC):
-
     def __init__(self, prefix: str, context: CommandContext, svc_registry: ServiceRegistry):
         super().__init__(prefix, context, svc_registry)
-        # self._routes.append(Route('/unrotated', self.get_unrotated_secrets, ["GET"]))
         self._routes.append(Route('/logs', self.get_audit_logs, ["GET"]))
         self._routes.append(Route('/logs/details', self.get_audit_details, ["GET"]))
 
@@ -41,6 +39,8 @@ class AuditController(Controller, ABC):
 
         if parameter_name:
             matching_logs: List[AuditLog] = self._audit(refresh).get_parameter_logs(parameter_name)
+            if filter:
+                matching_logs = [l for l in matching_logs if Utils.property_matches(l, filter)]
         else:
             matching_logs: List[AuditLog] = self._audit(refresh).get_audit_logs_matching(parameter_type=parameter_type,
                                                                                          filter=filter, before=before,
@@ -50,11 +50,15 @@ class AuditController(Controller, ABC):
 
         sorted_page = sorted_logs[page * size: page * size + size]
         total = len(matching_logs)
+        log.info(f'Page 1: {sorted_page}')
+        sorted_page = [self._audit().hydrate_audit_log(audit_log) for audit_log in sorted_page]
+        log.info(f'Page 2: {sorted_page}')
 
         if one_page:
             return sorted_logs
         else:
             return PaginatedResponse(data=sorted_page, total=total, page_size=size, page_number=page)
+
 
     @Controller.build_response
     def get_audit_details(self, refresh: bool = False) -> AuditLogDetails:

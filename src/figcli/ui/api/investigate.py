@@ -13,15 +13,16 @@ from figcli.ui.models.paginated_response import PaginatedResponse
 from figcli.ui.models.user_log import UserLog
 from figcli.ui.route import Route
 from figcli.utils.utils import Utils
+from multiprocessing.pool import ThreadPool
 
 log = logging.getLogger(__name__)
 
 
 class InvestigateController(Controller, ABC):
+    MAX_THREADS = 20
 
     def __init__(self, prefix: str, context: CommandContext, svc_registry: ServiceRegistry):
         super().__init__(prefix, context, svc_registry)
-        # self._routes.append(Route('/stale-figs', self.get_stale_figs, ["GET"]))
         self._routes.append(Route('/user-logs', self.get_user_logs, ["GET"]))
 
     @Utils.trace
@@ -42,7 +43,14 @@ class InvestigateController(Controller, ABC):
             matching_logs = [l for l in matching_logs if l.time < before]
 
         if filter:
-            log.info(f'Got filter: {filter}')
+            # If filter is applied, use multiple threads to lookup values to match by.
+            with ThreadPool(processes=self.MAX_THREADS) as pool:
+                futures = []
+                for user_log in matching_logs:
+                    futures.append(pool.apply_async(self._usage().hydrate_user_log, args=(user_log,)))
+
+                matching_logs = [f.get() for f in futures]
+
             matching_logs = [l for l in matching_logs if Utils.property_matches(l, filter)]
 
         sorted_logs = sorted(matching_logs, key=lambda x: x.__dict__.get(sort_key),
@@ -52,6 +60,6 @@ class InvestigateController(Controller, ABC):
         total = len(matching_logs)
 
         # Now that we have the page, hydrate values.
-        sorted_page = [self._usage(refresh).hydrate_user_log(user_log) for user_log in sorted_page]
+        sorted_page = [self._usage().hydrate_user_log(user_log) for user_log in sorted_page]
 
         return PaginatedResponse(data=sorted_page, total=total, page_size=size, page_number=page)

@@ -4,7 +4,6 @@ from prompt_toolkit.completion import WordCompleter
 from figcli.config.commands import audit
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.io.output import Output
@@ -38,7 +37,7 @@ class Audit(ConfigCommand):
             else:
                 self._out.warn(f"\nNo results found for: [[{ps_name}]]")
             for log in audit_logs:
-                print(log)
+                self._out.print(log.pretty_print())
 
             to_continue = input(f"Audit another? (Y/n): ")
             to_continue = to_continue if to_continue != '' else 'y'

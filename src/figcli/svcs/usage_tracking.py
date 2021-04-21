@@ -13,6 +13,7 @@ from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config import ConfigService
 from figcli.svcs.kms import KmsService
 from figcli.ui.models.user_log import UserLog
+from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class UsageTrackingService:
         self.KMS_KEYS = self._cfg.get_all_encryption_keys()
 
     @cached(TTLCache(maxsize=10, ttl=60))
-    def get_stale_figs(self, not_retrieved_since: int, filter: str = None) -> List[UsageLog]:
+    def get_usage_logs(self, not_retrieved_since: int, filter: str = None) -> List[UsageLog]:
 
         old_names: Dict[UsageLog] = {}
         new_names: Dict[UsageLog] = {}
@@ -57,14 +58,24 @@ class UsageTrackingService:
 
         # Remove logs for any Figs that have already been deleted.
         active_parameters = self._cfg.get_parameter_names()
-        stale_fig_logs = [stale_log for stale_log in stale_fig_logs if stale_log.parameter_name in active_parameters]
 
-        return stale_fig_logs
+        # All figs that have been retrieved at least once and are still active.
+        stale_fig_logs = [stale_log for stale_log in stale_fig_logs if stale_log.parameter_name in active_parameters]
+        stale_fig_names: Set[str] = set([stale_log.parameter_name for stale_log in stale_fig_logs])
+
+        # Find figs never retrieved but currently active
+        never_retrieved = active_parameters.difference(stale_fig_names)
+        never_retrieved_logs: List[UsageLog] = [UsageLog.empty(name) for name in never_retrieved]
+
+        if filter:
+            never_retrieved_logs = [l for l in never_retrieved_logs if Utils.property_matches(l, filter)]
+
+        return stale_fig_logs + never_retrieved_logs
 
     @cached(TTLCache(maxsize=10, ttl=60))
     def get_user_activity(self, user: str) -> List[UserLog]:
         # Todo fix naming inconsistencies here
-        audit_logs: List[AuditLog] = self._audit.get_audit_logs_by_user(user, latest=True)
+        audit_logs: List[AuditLog] = self._audit.get_audit_logs_by_user(user, latest=False)
         usage_logs: List[UsageLog] = list(self._usage.find_logs_by_user(user))
 
         user_audit_logs: List[UserLog] = [self.__to_user_log(audit_log) for audit_log in audit_logs]

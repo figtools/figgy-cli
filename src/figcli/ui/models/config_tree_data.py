@@ -25,10 +25,4 @@ class ConfigTreeData(BaseModel):
                 not o.children and not self.children:
             return self.node_name > o.node_name
 
-        if self.children and not o.children:
-            return True
-        elif o.children and not self.children:
-            return False
-        else:
-            # Shouldn't ever get here...
-            return self.node_name > o.node_name
+        return self.children and not o.children

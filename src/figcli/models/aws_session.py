@@ -22,17 +22,6 @@ class FiggyAWSSession(BaseModel):
     def set_expiration(cls, value):
         return value.timestamp()
 
-    # @staticmethod
-    # def from_sts_response(response: Dict) -> "FiggyAWSSession":
-    #     creds = response.get('Credentials', {})
-    #
-    #     return FiggyAWSSession(
-    #         access_key=creds.get('AccessKeyId'),
-    #         secret_key=creds.get('SecretAccessKey'),
-    #         token=creds.get('SessionToken'),
-    #         expiration=creds.get('Expiration').timestamp()
-    #     )
-
     def expires_soon(self):
         # log.info(f"Returning expires soon: {time.time() + EXPIRATION_WINDOW > self.expiration} -- expiration is in {self.expiration - time.time()} seconds.")
         return time.time() + EXPIRATION_WINDOW > self.expiration

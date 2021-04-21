@@ -3,12 +3,10 @@ from abc import ABC
 from typing import Dict, Union, List
 
 from figgy.models.fig import Fig
-from figgy.models.n_replication_config import NReplicationConfig
 from figgy.models.replication_config import ReplicationConfig
-from flask import request, Response
+from flask import request
 
 from figcli.commands.command_context import CommandContext
-from figcli.commands.config_context import ConfigContext
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.controller import Controller
 from figcli.ui.models.config_orchard import ConfigOrchard
@@ -50,13 +48,11 @@ class ConfigController(Controller, ABC):
 
     @Controller.build_response
     def get_browse_tree(self, refresh: bool = False) -> ConfigOrchard:
-        refresh and log.warning("REFRESH SET FOR get_browse_tree call!!!")
         tree = self._cfg_view(refresh).get_config_orchard()
         return tree
 
     @Controller.build_response
     def get_config(self, refresh: bool = False) -> Union[Fig, FiggyResponse]:
-        refresh and log.warning("REFRESH SET FOR get_config call!!!")
         name = self.get_param('name')
         type = self.get_param('type')
         version = int(self.get_param('version', default=0, required=False))

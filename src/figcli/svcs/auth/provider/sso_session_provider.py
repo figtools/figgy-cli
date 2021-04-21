@@ -98,7 +98,7 @@ class SSOSessionProvider(SessionProvider, ABC):
 
                         if creds.expires_soon() or not self._is_valid_session(session):
                             self._utils.validate(attempts < self._MAX_ATTEMPTS,
-                                                 f"Failed to authenticate with AWS after {attempts} attempts. Exiting. ")
+                                                 f"Failed to authenticate with AWS after {attempts} attempts. Exiting.")
 
                             attempts = attempts + 1
                             log.info("Invalid session detected in cache. Raising session error.")

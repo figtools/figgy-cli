@@ -49,7 +49,7 @@ class UsageController(Controller, ABC):
         if user:
             matching_logs: List[UsageLog] = self._usage(refresh).get_user_usage_logs(user, filter)
         else:
-            matching_logs: List[UsageLog] = self._usage(refresh).get_stale_figs(not_retrieved_since=not_retrieved_since,
+            matching_logs: List[UsageLog] = self._usage(refresh).get_usage_logs(not_retrieved_since=not_retrieved_since,
                                                                                 filter=filter)
 
         log.info(f'Got page: {page} and size: {size} sorted by {sort_key} / {sort_direction}')

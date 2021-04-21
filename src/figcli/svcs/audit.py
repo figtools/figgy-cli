@@ -58,6 +58,21 @@ class AuditService:
     def get_parameter_logs(self, name: str) -> List[AuditLog]:
         return self._audit.get_audit_logs(ps_name=name)
 
+    @cached(LRUCache(maxsize=500))
+    def hydrate_audit_log(self, audit_log: AuditLog):
+        if audit_log.action == AuditLog.Action.DELETE:
+            log.info(f'Hydrating: {audit_log}')
+            previous_log = self.get_audit_log_at_time(audit_log.parameter_name, audit_log.time)
+            if previous_log:
+                audit_log.value = self._kms.safe_decrypt_parameter(previous_log.parameter_name, previous_log.value)
+            log.info(f'Hydrated: {audit_log}')
+        elif audit_log.value and audit_log.key_id:
+            log.info(f'Decrypting: {audit_log}')
+            audit_log.value = self._kms.safe_decrypt_parameter(audit_log.parameter_name, audit_log.value)
+            log.info(f'Decrypted: {audit_log}')
+
+        return audit_log
+
     @cached(TTLCache(maxsize=200, ttl=120))
     def get_audit_log_details(self, parameter_name: str, time: int) -> AuditLogDetails:
         audit_log: AuditLog = self._audit.get_log(parameter_name, time)
@@ -81,8 +96,7 @@ class AuditService:
         # log list. Since we are waiting on network, this is many times faster.
         # We cannot use ThreadPoolExecutor due to compatibility issues when running from within a flask request.
         # I have  Todo to dive deeper into this and address these compatibility issues
-        pool = ThreadPool(processes=self.MAX_THREADS)
-        try:
+        with ThreadPool(processes=self.MAX_THREADS) as pool:
             futures, repl_dest_params = {}, []
             for l in active_logs:
                 thread = pool.apply_async(self._cfg.is_replication_destination, args=(l.parameter_name,))
@@ -94,7 +108,5 @@ class AuditService:
 
             # remove destinations:
             active_logs = [l for l in active_logs if l.parameter_name not in repl_dest_params]
-        finally:
-            pool.close()
 
         return active_logs

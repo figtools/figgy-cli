@@ -21,9 +21,10 @@ class SessionManager:
         self.session_provider: SessionProvider = session_provider
 
     @Utils.trace
-    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
+    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True,
+                    mfa: Optional[str] = None) -> boto3.Session:
         """
-        Creates a session in the specified ENV for the target role from a SAML assertion returned by OKTA authentication.
+        Creates a session in the specified ENV for the target role from a SAML assertion returned by SSO authentication.
         Args:
             assumable_role: AssumableRole - The role to be leveraged to authenticate this session
             prompt: If prompt is set, we will not use a cached session and will generate new sessions for okta and mgmt.
