@@ -14,7 +14,7 @@ from figgy.models.replication_config import ReplicationConfig
 from figgy.models.run_env import RunEnv
 from figgy.svcs.fig_service import FigService
 
-from figcli.config import PS_FIGGY_REPL_KEY_ID_PATH, PS_FIGGY_ALL_KMS_KEYS_PATH
+from figcli.config import PS_FIGGY_REPL_KEY_ID_PATH, PS_FIGGY_ALL_KMS_KEYS_PATH, PS_FIGGY_REGIONS
 from figcli.models.kms_key import KmsKey
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.kms import KmsService
@@ -55,7 +55,7 @@ class ConfigService:
         return sorted(list(set([f"/{p.split('/')[1]}" for p in all_params])))
 
     @Utils.trace
-    @cached(TTLCache(maxsize=10, ttl=5))
+    # @cached(TTLCache(maxsize=10))
     def get_parameter_names(self) -> Set[str]:
         """
         Looks up local cached configs, then queries new config names from the remote cache, merges the two, and
@@ -175,6 +175,10 @@ class ConfigService:
         else:
             key_aliases = json.loads(keys)
             return [KmsKey(alias=alias, id=self.get_kms_key_id(alias)) for alias in key_aliases]
+
+    @cached(TTLCache(maxsize=1, ttl=3600))
+    def get_all_regions(self) -> List[str]:
+        return json.loads(self._ssm.get_parameter(PS_FIGGY_REGIONS))
 
     @cached(TTLCache(maxsize=20, ttl=2000))
     def get_kms_key_id(self, alias: str):

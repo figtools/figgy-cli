@@ -20,6 +20,7 @@ from figcli.models.defaults.defaults import CLIDefaults
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.vault import FiggyVault
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import InvalidSessionError, Utils
 
@@ -51,7 +52,7 @@ class SSOSessionProvider(SessionProvider, ABC):
     def get_saml_assertion(self, prompt: bool = False, mfa: Optional[str] = None):
         pass
 
-    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
+    def get_session(self, env: GlobalEnvironment, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
         """
         Creates a session in the specified ENV for the target role from a SAML assertion returned by SSO authentication.
         Args:
@@ -72,10 +73,10 @@ class SSOSessionProvider(SessionProvider, ABC):
         lock = FileLock(f'{SAML_SESSION_CACHE_PATH}-provider.lock')
         with lock:
             log.info(f"Got lock: {SAML_SESSION_CACHE_PATH}-provider.lock")
-            role_arn = f"arn:aws:iam::{assumable_role.account_id}:role/{assumable_role.role.full_name}"
-            principal_arn = f"arn:aws:iam::{assumable_role.account_id}:saml-provider/{assumable_role.provider_name}"
+            role_arn = f"arn:aws:iam::{env.role.account_id}:role/{env.role.role.full_name}"
+            principal_arn = f"arn:aws:iam::{env.role.account_id}:saml-provider/{env.role.provider_name}"
             forced = False
-            log.info(f"Getting session for role: {role_arn} in env: {assumable_role.run_env.env} "
+            log.info(f"Getting session for role: {role_arn} in env: {env.role.run_env.env} "
                      f"with principal: {principal_arn}")
             attempts = 0
             while True:
@@ -84,8 +85,9 @@ class SSOSessionProvider(SessionProvider, ABC):
                         forced = True
                         raise InvalidSessionError("Forcing new session due to prompt.")
 
-                    log.info(f"Trying to get session from cache for name: {assumable_role.role.full_name}")
-                    creds: FiggyAWSSession = self._sts_cache.get_val(assumable_role.role.full_name)
+                    log.info(f"Trying to get session from cache for name: {env.role.role.full_name}")
+                    # One role can create N sessions across N regions.
+                    creds: FiggyAWSSession = self._sts_cache.get_val(env.role.cache_key())
                     log.info(f"Got creds from cache: {creds}")
 
                     if creds:
@@ -93,7 +95,7 @@ class SSOSessionProvider(SessionProvider, ABC):
                             aws_access_key_id=creds.access_key,
                             aws_secret_access_key=creds.secret_key,
                             aws_session_token=creds.token,
-                            region_name=self._defaults.region
+                            region_name=env.region
                         )
 
                         if creds.expires_soon() or not self._is_valid_session(session):
@@ -134,7 +136,7 @@ class SSOSessionProvider(SessionProvider, ABC):
                         session = FiggyAWSSession(**response.get('Credentials', {}))
                         self._saml_cache.write(SAML_ASSERTION_CACHE_KEY, assertion)
                         log.info(f"Got session response: {response}")
-                        self._sts_cache.write(assumable_role.role.full_name, session)
+                        self._sts_cache.write(env.role.cache_key(), session)
                     except (ClientError, ParamValidationError) as e:
                         if isinstance(e, ParamValidationError) or "AccessDenied" == e.response['Error']['Code']:
                             if exit_on_fail:

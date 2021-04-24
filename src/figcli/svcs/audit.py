@@ -39,10 +39,11 @@ class AuditService:
     def get_audit_logs_matching(self, filter: str = None,
                                 parameter_type: str = None,
                                 before: int = None,
-                                after: int = None) -> List[AuditLog]:
+                                after: int = None,
+                                latest: bool = False) -> List[AuditLog]:
         result = self._audit.find_logs_parallel(threads=self.MAX_THREADS, filter=filter,
                                                 parameter_type=parameter_type, before=before,
-                                                after=after)
+                                                after=after, latest=latest)
 
         return result
 
@@ -86,7 +87,8 @@ class AuditService:
     @cached(TTLCache(maxsize=10, ttl=30))
     def get_unrotated_secret_logs(self, filter: str = None,
                                   before: int = None) -> List[AuditLog]:
-        all_logs = self.get_audit_logs_matching(filter=filter, parameter_type=SSM_SECURE_STRING, before=before)
+        all_logs = self.get_audit_logs_matching(filter=filter, parameter_type=SSM_SECURE_STRING, before=before,
+                                                latest=True)
 
         # Filter out logs from parameters that no longer exist
         active_parameters = self._cfg.get_parameter_names()

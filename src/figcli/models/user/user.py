@@ -10,3 +10,4 @@ class User(BaseModel):
     name: str
     role: Role
     assumable_roles: List[AssumableRole]
+    enabled_regions: List[str]

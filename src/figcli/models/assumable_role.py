@@ -23,6 +23,10 @@ class AssumableRole(BaseModel):
     def print(self):
         print(self.dict())
 
+
+    def cache_key(self):
+        return self.role.full_name
+
     @staticmethod
     def default_from_role_env(role: Role, env: RunEnv):
         return AssumableRole(

@@ -37,7 +37,6 @@ class ConfigController(Controller, ABC):
         self._routes.append(Route('/kmsKeys', self.get_all_kms_keys, ["GET"]))
         self._routes.append(Route('/decrypt', self.decrypt, ["POST"]))
 
-    @Controller.client_cache(seconds=5)
     @Controller.build_response
     def get_config_names(self, refresh: bool = False) -> dict[str, list[str]]:
         req_filter = self.get_param('filter', required=False)

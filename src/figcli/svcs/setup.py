@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -166,6 +167,7 @@ class FiggySetup:
         ssm = SsmDao(session.client('ssm'))
         default_service_ns = ssm.get_parameter(PS_FIGGY_DEFAULT_SERVICE_NS_PATH)
         updated_defaults.service_ns = default_service_ns
+        updated_defaults.enabled_regions = json.loads(ssm.get_parameter(PS_FIGGY_REGIONS))
 
         return updated_defaults
 

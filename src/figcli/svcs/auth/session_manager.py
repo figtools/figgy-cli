@@ -3,9 +3,9 @@ from typing import Optional
 
 import boto3
 
-from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.svcs.auth.provider.session_provider import SessionProvider
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class SessionManager:
         self.session_provider: SessionProvider = session_provider
 
     @Utils.trace
-    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True,
+    def get_session(self, env: GlobalEnvironment, prompt: bool, exit_on_fail=True,
                     mfa: Optional[str] = None) -> boto3.Session:
         """
         Creates a session in the specified ENV for the target role from a SAML assertion returned by SSO authentication.
@@ -32,4 +32,4 @@ class SessionManager:
 
         returns: Hydrated session for role + account that match the specified one in the provided AssumableRole
         """
-        return self.session_provider.get_session(assumable_role, prompt, exit_on_fail=exit_on_fail, mfa=mfa)
+        return self.session_provider.get_session(env, prompt, exit_on_fail=exit_on_fail, mfa=mfa)

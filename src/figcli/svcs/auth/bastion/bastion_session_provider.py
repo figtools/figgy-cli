@@ -23,6 +23,7 @@ from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.vault import FiggyVault
 from figcli.ui.exceptions import CannotRetrieveMFAException
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils, InvalidSessionError
 import time
@@ -79,9 +80,9 @@ class BastionSessionProvider(SessionProvider):
         log.info(f'Found MFA devices: {devices}.')
         return devices[0].get('SerialNumber') if devices else None
 
-    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
+    def get_session(self, env: GlobalEnvironment, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
         forced = False
-        log.info(f"Getting session for role: {assumable_role.role_arn} in env: {assumable_role.run_env.env}")
+        log.info(f"Getting session for role: {env.role.role_arn} in env: {env.role.run_env.env}")
         attempts = 0
         while True:
             try:
@@ -89,14 +90,14 @@ class BastionSessionProvider(SessionProvider):
                     forced = True
                     raise InvalidSessionError("Forcing new session due to prompt.")
 
-                creds: FiggyAWSSession = self._sts_cache.get_val(assumable_role.role.full_name)
+                creds: FiggyAWSSession = self._sts_cache.get_val(env.role.cache_key())
 
                 if creds:
                     session = boto3.Session(
                         aws_access_key_id=creds.access_key,
                         aws_secret_access_key=creds.secret_key,
                         aws_session_token=creds.token,
-                        region_name=self._defaults.region
+                        region_name=env.region
                     )
 
                     if creds.expires_soon() or not self._is_valid_session(session):
@@ -124,21 +125,21 @@ class BastionSessionProvider(SessionProvider):
                                 mfa = self._secrets_mgr.get_next_mfa(self._defaults.user) if self._defaults.auto_mfa else \
                                                                     Input.get_mfa(display_hint=True, color=color)
 
-                        response = self.__get_sts().assume_role(RoleArn=assumable_role.role_arn,
+                        response = self.__get_sts().assume_role(RoleArn=env.role.role_arn,
                                                                 RoleSessionName=Utils.sanitize_session_name(
                                                                     self._defaults.user),
                                                                 DurationSeconds=self._defaults.session_duration,
                                                                 SerialNumber=self._defaults.mfa_serial,
                                                                 TokenCode=mfa)
                     else:
-                        response = self.__get_sts().assume_role(RoleArn=assumable_role.role_arn,
+                        response = self.__get_sts().assume_role(RoleArn=env.role.role_arn,
                                                                 RoleSessionName=Utils.sanitize_session_name(
                                                                     self._defaults.user),
                                                                 DurationSeconds=self._defaults.session_duration)
 
                     session = FiggyAWSSession(**response.get('Credentials', {}))
                     log.info(f"Got session response: {response}")
-                    self._sts_cache.write(assumable_role.role.full_name, session)
+                    self._sts_cache.write(env.role.cache_key(), session)
                 except (ClientError, ParamValidationError) as e:
                     if isinstance(e, ParamValidationError) or "AccessDenied" == e.response['Error']['Code']:
                         if exit_on_fail:
@@ -148,7 +149,7 @@ class BastionSessionProvider(SessionProvider):
                         if exit_on_fail:
                             log.error(f"Failed to authenticate due to error: {e}")
                             self._utils.error_exit(
-                                f"Error getting session for role: {assumable_role.role_arn} "
+                                f"Error getting session for role: {env.role.role_arn} "
                                 f"-- Are you sure you have permissions?")
 
                     raise e

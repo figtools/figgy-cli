@@ -12,6 +12,7 @@ from figcli.commands.figgy_context import FiggyContext
 from figcli.io.input import Input
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 from threading import Lock
@@ -70,12 +71,13 @@ class SessionProvider(ABC):
                 return False
 
     @abstractmethod
-    def get_session(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
+    def get_session(self, env: GlobalEnvironment, prompt: bool, exit_on_fail=True, mfa: Optional[str] = None) -> boto3.Session:
         pass
 
     def get_session_and_role(self, assumable_role: AssumableRole, prompt: bool, exit_on_fail=True) \
             -> Tuple[boto3.Session, AssumableRole]:
-        return self.get_session(assumable_role, prompt, exit_on_fail), assumable_role
+        return self.get_session(GlobalEnvironment(role=assumable_role, region=self._defaults.region),
+                                prompt, exit_on_fail), assumable_role
 
     @abstractmethod
     def cleanup_session_cache(self):

@@ -36,6 +36,7 @@ class CLIDefaults(BaseModel):
     valid_envs: Optional[List[RunEnv]] = []
     valid_roles: Optional[List[Role]] = []
     assumable_roles: Optional[List[AssumableRole]] = []
+    enabled_regions: Optional[List[str]] = []
     extras: Optional[Dict] = []
 
     def __str__(self):
@@ -59,7 +60,8 @@ class CLIDefaults(BaseModel):
                            user_id=str(uuid.uuid4()),
                            service_ns="/app",
                            usage_tracking=False,
-                           extras={})
+                           extras={},
+                           enabled_regions=["us-east-1"])
 
     @staticmethod
     def sandbox(user: str, role: str, colors: bool):
@@ -78,7 +80,8 @@ class CLIDefaults(BaseModel):
                            user_id=str(uuid.uuid4()),
                            service_ns="/app",
                            usage_tracking=True,
-                           extras={DISABLE_KEYRING: True})
+                           extras={DISABLE_KEYRING: True},
+                           enabled_regions=["us-east-1"])
 
     @staticmethod
     def from_profile(profile):
@@ -97,4 +100,5 @@ class CLIDefaults(BaseModel):
                            user_id=str(uuid.uuid4()),
                            service_ns=os.environ.get(APP_NS_OVERRIDE) or "/app",
                            usage_tracking=True,
-                           extras={})
+                           extras={},
+                           enabled_regions=["us-east-1"])

@@ -16,6 +16,7 @@ from figcli.svcs.service_registry import ServiceRegistry
 from figcli.svcs.usage_tracking import UsageTrackingService
 from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException, BadRequestParameters
 from figcli.ui.models.figgy_response import FiggyResponse
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.ui.route import Route
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
@@ -40,24 +41,29 @@ class Controller:
         self._registry = svc_registry
         self.context = context
 
-    def _cfg(self, refresh: bool = False):
-        return self._registry.config_svc(self.get_role(), refresh)
+    def _cfg(self, refresh: bool = False, env: GlobalEnvironment = None):
+        if not env:
+            env = self.get_environment()
+
+        return self._registry.config_svc(env, refresh)
 
     def _cfg_view(self, refresh: bool = False) -> RBACLimitedConfigView:
-        return self._registry.rbac_view(self.get_role(), refresh)
+        return self._registry.rbac_view(self.get_environment(), refresh)
 
     def _audit(self, refresh: bool = False) -> AuditService:
-        return self._registry.audit_svc(self.get_role(), refresh)
+        return self._registry.audit_svc(self.get_environment(), refresh)
 
     def _usage(self, refresh: bool = False) -> UsageTrackingService:
-        return self._registry.usage_svc(self.get_role(), refresh)
+        return self._registry.usage_svc(self.get_environment(), refresh)
 
     def routes(self) -> List[Route]:
         return self._routes
 
-    def get_role(self) -> AssumableRole:
+    def get_environment(self) -> GlobalEnvironment:
         # return self.context.defaults.assumable_roles[0]
-        return AssumableRole(**json.loads(request.headers.get('ActiveRole')))
+        return GlobalEnvironment(
+            role=AssumableRole(**json.loads(request.headers.get('ActiveRole'))),
+            region=request.headers.get('ActiveRegion'))
 
     # Todo validate all params before throwing exception
     def get_param(self, name: str, required=True, default: any = None):
