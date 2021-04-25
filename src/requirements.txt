@@ -21,7 +21,7 @@ cachetools==4.2.1
 git+git://github.com/figtools/figgy.lib@master
 
 # Must use git for this install b/c pre-compiled Cython breaks pyinstaller.
-git+https://github.com/samuelcolvin/pydantic.git@1.8.1
+git+https://github.com/samuelcolvin/pydantic.git@v1.8.1
 
 
 ## Figgy UI
