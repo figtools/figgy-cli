@@ -2,6 +2,7 @@ import logging
 from functools import wraps
 
 import boto3
+import time
 
 from typing import Dict, Optional, List
 
@@ -14,10 +15,10 @@ from figgy.data.dao.usage_tracker import UsageTrackerDao
 from figgy.data.dao.user_cache import UserCacheDao
 
 from figcli.commands.command_context import CommandContext
-from figcli.models.assumable_role import AssumableRole
+from figcli.config.tuning import DYNAMO_DB_MAX_POOL_SIZE, MAX_CACHED_BOTO_POOLS
 from figcli.svcs.audit import AuditService
 from figcli.svcs.auth.session_manager import SessionManager
-from threading import Lock
+from botocore.client import Config
 
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config import ConfigService
@@ -36,11 +37,42 @@ def refreshable_cache(cache_key):
     """
 
     def decorate(method):
+        """
+        Stores initialized servicies in an in-memory cache. Services are cached by ENV and REGION. Due to
+        issues with @cachetools that I have still not entirely figured out, methods cached with @cachetools decorators
+        cause boto3 connection pools to evade garbage collection. To address issue we are purging this cache as
+        we get to an estimated MAX_CACHED_BOTO_POOLS number of connection pools. Purging this cache is not enough as
+        GC will not clean up the connection pools unless all methods cached by @cachetools have their clear_cache()
+        method executed. This will forceable purge all method-level caches when this local cache is purged, thereby
+        allow garbage collection to clean up the boto connection pools and prevent figgy from approaching ulimits.
+        """
         @wraps(method)
         def impl(self, env: GlobalEnvironment, refresh: bool = False):
             if not self.CACHE.get(env, {}).get(cache_key) or refresh:
-                log.info(f"Refreshing {cache_key} due to refresh parameter.")
+                while len(self.CACHE) > MAX_CACHED_BOTO_POOLS:
+                    sorted_items = sorted(self.CACHE.items(), key=lambda x: x[1]['last_set'])
+                    oldest_item = sorted_items[0]
+                    log.info(f'Removing from cache: {oldest_item[0]}')
+                    for key, value in self.CACHE[oldest_item[0]].items():
+                        object_methods = [func for func in dir(value) if callable(getattr(value, func))
+                                          and not func.startswith('__')]
+
+                        for func in object_methods:
+                            try:
+                                log.info(f'Clearing cache for method: {func}')
+                                this_func = getattr(value, func)
+                                this_func.cache_clear()
+                            except Exception as e:
+                                log.info(f'Caught exception {e} when attempting cache clear for method {func}')
+
+                    try:
+                        self.CACHE.pop(oldest_item[0])
+                    except KeyError:
+                        log.info(f'Cache key already removed, passing..')
+                        pass
+
                 self.CACHE[env] = self.CACHE.get(env, {}) | {cache_key: method(self, env, refresh)}
+                self.CACHE[env] = self.CACHE.get(env, {}) | {'last_set': time.time()}
 
             return self.CACHE[env][cache_key]
 
@@ -55,8 +87,6 @@ class ServiceRegistry:
     def __init__(self, session_mgr: SessionManager, context: CommandContext):
         self.session_mgr = session_mgr
         self.context = context
-        self.__env_lock = Lock()
-        self.__mgr_lock = Lock()
 
     # Todo Decorate / cleanup caching situation, lots of duplication here.
 
@@ -143,25 +173,29 @@ class ServiceRegistry:
         """
         Returns a hydrated AuditDao for the selected environment.
         """
-        return AuditDao(self.__env_session(env, refresh).resource('dynamodb'))
+        return AuditDao(self.__env_session(env, refresh)
+                        .resource('dynamodb', config=Config(max_pool_connections=DYNAMO_DB_MAX_POOL_SIZE)))
 
     @refreshable_cache('usage-dao')
     def __usage(self, env: GlobalEnvironment, refresh: bool) -> UsageTrackerDao:
         """
         Returns a hydrated UsageTrackerDao for the selected environment.
         """
-        return UsageTrackerDao(self.__env_session(env, refresh).resource('dynamodb'))
+        return UsageTrackerDao(self.__env_session(env, refresh)
+                               .resource('dynamodb', config=Config(max_pool_connections=DYNAMO_DB_MAX_POOL_SIZE)))
 
     @refreshable_cache('repl-dao')
     def __repl(self, env: GlobalEnvironment, refresh: bool) -> ReplicationDao:
         """
         Returns a hydrated ReplicationDao for the selected environment.
         """
-        return ReplicationDao(self.__env_session(env, refresh).resource('dynamodb'))
+        return ReplicationDao(self.__env_session(env, refresh)
+                              .resource('dynamodb', config=Config(max_pool_connections=DYNAMO_DB_MAX_POOL_SIZE)))
 
     @refreshable_cache('user-dao')
     def __user(self, env: GlobalEnvironment, refresh: bool) -> UserCacheDao:
         """
         Returns a hydrated ReplicationDao for the selected environment.
         """
-        return UserCacheDao(self.__env_session(env, refresh).resource('dynamodb'))
+        return UserCacheDao(self.__env_session(env, refresh)
+                            .resource('dynamodb', config=Config(max_pool_connections=DYNAMO_DB_MAX_POOL_SIZE)))

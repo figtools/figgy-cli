@@ -50,9 +50,7 @@ class AuditController(Controller, ABC):
 
         sorted_page = sorted_logs[page * size: page * size + size]
         total = len(matching_logs)
-        log.info(f'Page 1: {sorted_page}')
         sorted_page = [self._audit().hydrate_audit_log(audit_log) for audit_log in sorted_page]
-        log.info(f'Page 2: {sorted_page}')
 
         if one_page:
             return sorted_logs

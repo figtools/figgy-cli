@@ -1,7 +1,8 @@
 import logging
+from functools import lru_cache
 from typing import Set, List, Dict, Union, Optional
 
-from cachetools import cached, TTLCache, LRUCache
+import cachetools.func
 from figgy.data.dao.usage_tracker import UsageTrackerDao
 from figgy.data.dao.user_cache import UserCacheDao
 from figgy.models.audit_log import AuditLog
@@ -34,7 +35,7 @@ class UsageTrackingService:
         self.cache_mgr = cache_mgr
         self.KMS_KEYS = self._cfg.get_all_encryption_keys()
 
-    @cached(TTLCache(maxsize=10, ttl=60))
+    @cachetools.func.ttl_cache(maxsize=10, ttl=20)
     def get_usage_logs(self, not_retrieved_since: int, filter: str = None) -> List[UsageLog]:
 
         old_names: Dict[UsageLog] = {}
@@ -72,7 +73,7 @@ class UsageTrackingService:
 
         return stale_fig_logs + never_retrieved_logs
 
-    @cached(TTLCache(maxsize=10, ttl=60))
+    @cachetools.func.ttl_cache(maxsize=50, ttl=20)
     def get_user_activity(self, user: str) -> List[UserLog]:
         # Todo fix naming inconsistencies here
         audit_logs: List[AuditLog] = self._audit.get_audit_logs_by_user(user, latest=False)
@@ -84,9 +85,8 @@ class UsageTrackingService:
 
         return sorted(all_logs)
 
-    @cached(LRUCache(maxsize=1000))
+    @cachetools.func.ttl_cache(maxsize=400, ttl=500)
     def hydrate_user_log(self, user_log: UserLog):
-        log.info(f'Hydrating: {user_log}')
         # If no value present, lookup and decrypt if necessary
         if not user_log.value:
             audit_log = self._audit.get_audit_log_at_time(user_log.parameter, user_log.time)
@@ -106,11 +106,10 @@ class UsageTrackingService:
 
         return user_log
 
-    @cached(TTLCache(maxsize=10, ttl=60))
+
     def get_user_list(self) -> List[str]:
         return list(self._user.get_all_users())
 
-    @cached(TTLCache(maxsize=10, ttl=150))
     def get_user_usage_logs(self, user: str, filter: str = None) -> List[UsageLog]:
         return list(self._usage.find_logs_by_user(user, filter))
 
@@ -130,7 +129,7 @@ class UsageTrackingService:
                            parameter=log_entry.parameter_name,
                            time=log_entry.last_updated)
 
-    @cached(LRUCache(maxsize=30))
+    @lru_cache(maxsize=10)
     def __get_kms_key(self, key_id: str) -> Optional[KmsKey]:
         found_key = [kms_key for kms_key in self.KMS_KEYS if kms_key.id == key_id]
         return found_key[0] if found_key else None

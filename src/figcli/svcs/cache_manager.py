@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import cachetools.func
 from typing import Dict, Any, Union, Set, Tuple, List, Callable
 
 import jsonpickle
@@ -70,6 +71,7 @@ class CacheManager:
     def __get_lock(self):
         return FileLock(f'{self._cache_file}.lock')
 
+    @cachetools.func.ttl_cache(maxsize=3, ttl=500)
     def __decrypt(self, data: bytes) -> str:
         """
         Decrypt the contents of a file, except when the file has been primed and we don't know if this file is going
@@ -100,6 +102,7 @@ class CacheManager:
         else:
             return bytes(data, 'utf-8')
 
+    @cachetools.func.ttl_cache(maxsize=3, ttl=500)
     def __read(self) -> str:
         with self.__get_lock():
             with open(self._cache_file, 'rb') as cache:
@@ -107,6 +110,9 @@ class CacheManager:
                 return val
 
     def __write(self, data: str):
+        self.__read.cache_clear()
+        self.__decrypt.cache_clear()
+
         with self.__get_lock():
             with open(self._cache_file, 'wb') as cache:
                 cache.write(self.__encrypt(data))

@@ -63,7 +63,7 @@ class SSOSessionProvider(SessionProvider, ABC):
 
         returns: Hydrated session for role + account that match the specified one in the provided AssumableRole
         """
-        log.info(f"Waiting for lock lock: {SAML_SESSION_CACHE_PATH}-provider.lock")
+
         log.info(f"Getting session, was provided MFA: {mfa}")
 
         # Prevent multiple requests from differing threads all generating new sessions / authing at the same time.
@@ -85,10 +85,9 @@ class SSOSessionProvider(SessionProvider, ABC):
                         forced = True
                         raise InvalidSessionError("Forcing new session due to prompt.")
 
-                    log.info(f"Trying to get session from cache for name: {env.role.role.full_name}")
                     # One role can create N sessions across N regions.
                     creds: FiggyAWSSession = self._sts_cache.get_val(env.role.cache_key())
-                    log.info(f"Got creds from cache: {creds}")
+                    log.debug(f"Got creds from cache: {creds} when searching for env: {env}")
 
                     if creds:
                         session = boto3.Session(
@@ -122,7 +121,7 @@ class SSOSessionProvider(SessionProvider, ABC):
                             response = self._sts.assume_role_with_saml(RoleArn=role_arn,
                                                                        PrincipalArn=principal_arn,
                                                                        SAMLAssertion=encoded_assertion,
-                                                                       DurationSeconds=900)
+                                                                       DurationSeconds=3500)
                         except ClientError:
                             log.info("Refreshing SAML assertion, auth failed with cached or refreshed version.")
                             assertion = self.get_saml_assertion(prompt, mfa=mfa)
@@ -130,12 +129,11 @@ class SSOSessionProvider(SessionProvider, ABC):
                             response = self._sts.assume_role_with_saml(RoleArn=role_arn,
                                                                        PrincipalArn=principal_arn,
                                                                        SAMLAssertion=encoded_assertion,
-                                                                       DurationSeconds=900)
+                                                                       DurationSeconds=3500)
 
                         # response['Credentials']['Expiration'] = "cleared"
                         session = FiggyAWSSession(**response.get('Credentials', {}))
                         self._saml_cache.write(SAML_ASSERTION_CACHE_KEY, assertion)
-                        log.info(f"Got session response: {response}")
                         self._sts_cache.write(env.role.cache_key(), session)
                     except (ClientError, ParamValidationError) as e:
                         if isinstance(e, ParamValidationError) or "AccessDenied" == e.response['Error']['Code']:

@@ -27,14 +27,12 @@ class SessionTokenCache(BaseModel):
 
     @validator('time_inserted', pre=True, always=True)
     def init_error(cls, value):
-        log.info(f"Time was: {value}")
         value = time.time()
-        log.info(f"Setting to: {value}")
 
         return value
 
     def is_valid(self):
-        log.info(f"Session as inserted at {self.time_inserted} and is now {time.time() - self.time_inserted} "
+        log.debug(f"Session was inserted at {self.time_inserted} and is now {time.time() - self.time_inserted} "
                  f"seconds old. Is valid: {time.time() - self.time_inserted < self.MAX_LIFE}")
         return time.time() - self.time_inserted < self.MAX_LIFE
 
@@ -50,13 +48,12 @@ class SessionProvider(ABC):
         self._secrets_mgr = SecretsManager()
 
     @Utils.retry
-    @Utils.trace
     def _is_valid_session(self, session: boto3.Session):
         """Tests whether a cached session is valid or not."""
-        log.info(f"Checking session validity for session: {session.get_credentials().get_frozen_credentials().token}")
+        log.debug(f"Checking session validity for session: {session.get_credentials().get_frozen_credentials().token}")
         token = session.get_credentials().get_frozen_credentials().token
         if token in self._valid_tokens:
-            log.info(f"Session with token: {token} has validity: {self._valid_tokens[token].is_valid()}")
+            log.debug(f"Session with token: {token} has validity: {self._valid_tokens[token].is_valid()}")
             return self._valid_tokens[token].is_valid()
         else:
             try:

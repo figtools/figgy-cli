@@ -62,11 +62,11 @@ class Utils:
         """
 
         def wrapper(*args, **kwargs):
-            log.info(f"Entering function: {func.__name__} with args: {args}")
+            log.debug(f"Entering function: {func.__name__} with args: {args}")
             start = time.time()
             result = func(*args, **kwargs)
-            log.info(f"Exiting function: {func.__name__} and returning: {result}")
-            log.info(f"Function complete after {round(time.time() - start, 2)} seconds.")
+            log.debug(f"Exiting function: {func.__name__} and returning: {result}")
+            log.info(f"{func.__name__} complete after {round(time.time() - start, 2)} seconds.")
             return result
 
         return wrapper

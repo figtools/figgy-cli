@@ -1,5 +1,6 @@
 import json
 import logging
+import cachetools.func
 from typing import Set, List, Tuple, Optional
 
 from botocore.exceptions import ClientError
@@ -55,7 +56,6 @@ class ConfigService:
         return sorted(list(set([f"/{p.split('/')[1]}" for p in all_params])))
 
     @Utils.trace
-    # @cached(TTLCache(maxsize=10))
     def get_parameter_names(self) -> Set[str]:
         """
         Looks up local cached configs, then queries new config names from the remote cache, merges the two, and
@@ -137,7 +137,7 @@ class ConfigService:
     def set_fig(self, fig: Fig):
         self._fig_svc.set(fig)
 
-    @cached(TTLCache(maxsize=1024, ttl=30))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
     def is_encrypted(self, name: str) -> bool:
         try:
             return self.get_fig(name).kms_key_id is not None
@@ -146,27 +146,27 @@ class ConfigService:
             if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                 return True
 
-    @cached(TTLCache(maxsize=1024, ttl=10))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
     def is_replication_source(self, name: str) -> bool:
         return bool(self._repl.get_cfgs_by_src(name))
 
-    @cached(TTLCache(maxsize=1024, ttl=300))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
     def is_replication_destination(self, name: str) -> bool:
         return bool(self._repl.get_config_repl(name))
 
-    @cached(TTLCache(maxsize=1024, ttl=3600))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=3600)
     def get_replication_key(self) -> str:
         return self._fig_svc.get_simple(PS_FIGGY_REPL_KEY_ID_PATH).value
 
-    @cached(TTLCache(maxsize=1024, ttl=5))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
     def get_replication_config(self, name: str) -> ReplicationConfig:
         return self._repl.get_config_repl(name)
 
-    @cached(TTLCache(maxsize=1024, ttl=5))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
     def get_replication_configs_by_source(self, name: str) -> List[ReplicationConfig]:
         return self._repl.get_cfgs_by_src(name)
 
-    @cached(TTLCache(maxsize=2, ttl=3600))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
     def get_all_encryption_keys(self) -> List[KmsKey]:
         keys: str = self._ssm.get_parameter(PS_FIGGY_ALL_KMS_KEYS_PATH)
 
@@ -176,11 +176,11 @@ class ConfigService:
             key_aliases = json.loads(keys)
             return [KmsKey(alias=alias, id=self.get_kms_key_id(alias)) for alias in key_aliases]
 
-    @cached(TTLCache(maxsize=1, ttl=3600))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
     def get_all_regions(self) -> List[str]:
         return json.loads(self._ssm.get_parameter(PS_FIGGY_REGIONS))
 
-    @cached(TTLCache(maxsize=20, ttl=2000))
+    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
     def get_kms_key_id(self, alias: str):
         key_path = f'/figgy/kms/{alias}-key-id'
         cache_key = f'kms-{alias}-{self._run_env.env}'

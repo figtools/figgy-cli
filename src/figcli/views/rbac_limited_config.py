@@ -1,5 +1,6 @@
 import json
 import logging
+import cachetools.func
 from typing import List
 
 from cachetools import TTLCache, cached
@@ -35,7 +36,7 @@ class RBACLimitedConfigView:
         self._config_completer = None
         self._profile = profile
 
-    @cached(TTLCache(maxsize=5, ttl=500))
+    @cachetools.func.ttl_cache(maxsize=5, ttl=500)
     def get_authorized_namespaces(self) -> List[str]:
         """
         Looks up the user-defined namespaces that users of this type can access. This enables us to prevent the
@@ -62,7 +63,7 @@ class RBACLimitedConfigView:
 
         return authed_nses
 
-    @cached(TTLCache(maxsize=5, ttl=500))
+    @cachetools.func.ttl_cache(maxsize=5, ttl=500)
     def get_authorized_kms_keys_full(self, run_env: RunEnv) -> List[KmsKey]:
         key_aliases: List[str] = self.get_authorized_kms_keys()
         return [KmsKey(alias=key, id=self.get_authorized_key_id(key, run_env)) for key in key_aliases]
