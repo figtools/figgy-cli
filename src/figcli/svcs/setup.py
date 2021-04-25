@@ -22,6 +22,7 @@ from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
 from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.auth.provider.sso_session_provider import SSOSessionProvider
 from figcli.svcs.auth.session_manager import SessionManager
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 from json import JSONDecodeError
@@ -162,7 +163,8 @@ class FiggySetup:
 
     def configure_figgy_defaults(self, current_defaults: CLIDefaults):
         updated_defaults = current_defaults
-        session = self._get_session_manager(current_defaults).get_session(current_defaults.assumable_roles[0],
+        env = GlobalEnvironment(role=current_defaults.assumable_roles[0], region=current_defaults.region)
+        session = self._get_session_manager(current_defaults).get_session(env,
                                                                           prompt=True)
         ssm = SsmDao(session.client('ssm'))
         default_service_ns = ssm.get_parameter(PS_FIGGY_DEFAULT_SERVICE_NS_PATH)
