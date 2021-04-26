@@ -25,6 +25,8 @@ from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
 from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.auth.session_manager import SessionManager
 from figgy.data.dao.config import ConfigDao
+
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.utils import Utils
 from figcli.config import *
 from figgy.data.dao.ssm import SsmDao
@@ -81,6 +83,9 @@ class CommandFactory(Factory):
 
         return self._session_mgr
 
+    def __build_env(self) -> GlobalEnvironment:
+        return GlobalEnvironment(role=self._context.selected_role, region=self._cli_defaults.region)
+
     def __env_session(self) -> boto3.session.Session:
         """
         Lazy load an ENV session object for the ENV selected in the FiggyContext
@@ -89,7 +94,7 @@ class CommandFactory(Factory):
         with self.__env_lock:
             if not self._env_session:
                 self._env_session = self.__session_manager().get_session(
-                    self._context.selected_role,
+                    self.__build_env(),
                     prompt=False)
 
         return self._env_session
@@ -189,7 +194,7 @@ class CommandFactory(Factory):
         Bootstraps sessions (blocking) before we do threaded lookups that require these sessions.
         """
         self.__session_manager().get_session(
-            self._context.selected_role,
+            self.__build_env(),
             prompt=False)
 
     def instance(self):
