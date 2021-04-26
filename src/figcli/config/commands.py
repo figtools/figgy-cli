@@ -8,13 +8,14 @@ version = CliCommand("version")
 command = CliCommand('command')
 resource = CliCommand('resource')
 configure = CliCommand('configure')
+ui = CliCommand('ui')
 
 # Resource types
 config = CliCommand('config')
 iam = CliCommand('iam')
 login = CliCommand('login')
 
-resources = {config, iam, login}
+resources = {config, iam, login, ui}
 
 # Config Sub Command definitions
 sync = CliCommand('sync')
@@ -52,6 +53,9 @@ profile = CliCommand('profile')
 export = CliCommand('export')
 iam_restore = CliCommand('restore', hash_key='iam_restore')
 
+# UI Sub comands
+run = CliCommand('run')
+
 all_profiles = CliCommand('all-profiles')
 role = CliCommand('role')
 # argparse options
@@ -60,12 +64,22 @@ required = CliCommand('required')
 action = CliCommand('action')
 store_true = 'store_true'
 
+
 # help commands
 sandbox = CliCommand('sandbox')
 upgrade = CliCommand('upgrade')
 
 # Maps CLI `--options` for each argument, and sets flags if necessary
 arg_options = {
+    ui: {
+        run: {
+            info: {action: store_true, required: False},
+            env: {action: None, required: False},
+            skip_upgrade: {action: store_true, required: False},
+            debug: {action: store_true, required: False},
+            profile: {action: None, required: False},
+        }
+    },
     config: {
         prune: {
             config: {action: None, required: False},
@@ -204,7 +218,7 @@ arg_options = {
             skip_upgrade: {action: store_true, required: False},
             debug: {action: store_true, required: False},
             profile: {action: None, required: False},
-        },
+        }
     },
     iam: {
         export: {
@@ -248,14 +262,16 @@ config_commands = [sync, put, edit, delete, prune, get, share, generate,
 iam_commands = [export, iam_restore]
 help_commands = [configure, version, login, sandbox, upgrade, role]
 login_commands = [login, sandbox]
+ui_commands = [ui]
 
-all_commands = iam_commands + help_commands + config_commands + login_commands
+all_commands = iam_commands + help_commands + config_commands + login_commands + ui_commands
 
 # Used to build out parser, map of resource to sub-commands
 resource_map = {
     config: config_commands,
     iam: iam_commands,
-    login: login_commands
+    login: login_commands,
+    ui: [run]
 }
 
 options = {ci_path,  info}

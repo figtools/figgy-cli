@@ -1,10 +1,12 @@
-from dataclasses import dataclass
 from typing import Optional, Tuple, Dict
 import requests
 import logging
 import random
 import os
 import re
+
+from pydantic import BaseModel
+
 from figcli.config.constants import *
 from figcli.config.style.color import Color
 from figcli.config.style.terminal_factory import TerminalFactory
@@ -13,8 +15,7 @@ from figcli.models.defaults.defaults import CLIDefaults
 log = logging.getLogger(__name__)
 
 
-@dataclass
-class FiggyVersionDetails:
+class FiggyVersionDetails(BaseModel):
     version: str
     notify_chance: int
     changelog: str

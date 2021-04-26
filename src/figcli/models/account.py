@@ -1,10 +1,8 @@
-from figcli.config import *
+from pydantic import BaseModel
 
 
-class Account:
-
-    def __init__(self, account: str):
-        self.account = account
+class Account(BaseModel):
+    account: str
 
     def __str__(self):
         return self.account

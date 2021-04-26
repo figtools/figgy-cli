@@ -1,5 +1,8 @@
 import time
 
+from figgy.data.dao.audit import AuditDao
+from figgy.data.dao.replication import ReplicationDao
+
 from figcli.config import *
 from datetime import datetime
 from typing import List
@@ -19,7 +22,7 @@ from figcli.io.output import Output
 from figgy.models.parameter_store_history import PSHistory
 from figgy.models.replication_config import ReplicationConfig
 from figgy.models.restore_config import RestoreConfig
-from figcli.svcs.kms import KmsSvc
+from figcli.svcs.kms import KmsService
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.utils.utils import Utils
@@ -30,8 +33,10 @@ class Restore(ConfigCommand):
     def __init__(
             self,
             ssm_init: SsmDao,
-            kms_init: KmsSvc,
+            kms_init: KmsService,
             config_init: ConfigDao,
+            repl_dao: ReplicationDao,
+            audit_dao: AuditDao,
             cfg_view: RBACLimitedConfigView,
             colors_enabled: bool,
             context: ConfigContext,
@@ -43,6 +48,8 @@ class Restore(ConfigCommand):
         self._ssm = ssm_init
         self._kms = kms_init
         self._config = config_init
+        self._repl = repl_dao
+        self._audit = audit_dao
         self._cfg_view = cfg_view
         self._utils = Utils(colors_enabled)
         self._point_in_time = context.point_in_time
@@ -71,12 +78,12 @@ class Restore(ConfigCommand):
         ps_name = prompt(f"Please input PS key to restore: ", completer=self._config_completer)
 
         if self._is_replication_destination(ps_name):
-            repl_conf = self._config.get_config_repl(ps_name)
+            repl_conf = self._repl.get_config_repl(ps_name)
             self._print_cannot_restore_msg(repl_conf)
             exit(0)
 
         self._out.notify(f"\n\nAttempting to retrieve all restorable values of [[{ps_name}]]")
-        items: List[RestoreConfig] = self._config.get_parameter_restore_details(ps_name)
+        items: List[RestoreConfig] = self._audit.get_parameter_restore_details(ps_name)
 
         if len(items) == 0:
             self._out.warn("No restorable values were found for this parameter.")
@@ -138,7 +145,7 @@ class Restore(ConfigCommand):
             return entry.ps_value
 
     def _is_replication_destination(self, ps_name: str):
-        return self._config.get_config_repl(ps_name)
+        return self._repl.get_config_repl(ps_name)
 
     def _restore_params_to_point_in_time(self):
         """
@@ -184,7 +191,7 @@ class Restore(ConfigCommand):
         if not keep_going:
             self._utils.warn_exit("Aborting restore due to user selection")
 
-        ps_history: PSHistory = self._config.get_parameter_history_before_time(time_converted, ps_prefix)
+        ps_history: PSHistory = self._audit.get_parameter_history_before_time(time_converted, ps_prefix)
         restore_count = len(ps_history.history.values())
 
         if len(ps_history.history.values()) == 0:
@@ -233,7 +240,7 @@ class Restore(ConfigCommand):
                 self._utils.error_exit(f"Caught error when attempting restore. {e}")
 
         for item in repl_destinations:
-            cfg = self._config.get_config_repl(item)
+            cfg = self._repl.get_config_repl(item)
             self._print_cannot_restore_msg(cfg)
 
         print("\n\n")

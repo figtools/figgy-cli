@@ -15,6 +15,7 @@ from figgy.models.run_env import RunEnv
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.svcs.auth.session_manager import SessionManager
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.utils import Utils
 
 
@@ -43,7 +44,8 @@ class Promote(ConfigCommand):
                 parameters: List[Dict] = self._source_ssm.get_all_parameters([namespace])
 
                 if not parameters and self._source_ssm.get_parameter(namespace):
-                    parameters = [self._source_ssm.get_parameter_details(namespace)]
+                    parameters, latest_version = self._source_ssm.get_parameter_details(namespace)
+                    parameters = list(parameters)
 
                 if parameters:
                     repeat = False
@@ -61,8 +63,9 @@ class Promote(ConfigCommand):
         valid_envs.remove(self.run_env.env)  # Remove current env, we can't promote from dev -> dev
         next_env = Input.select(f'Please select the destination environment.', valid_options=list(valid_envs))
 
-        matching_role = [role for role in matching_roles if role.run_env == RunEnv(next_env)][0]
-        dest_ssm = SsmDao(self._session_mgr.get_session(matching_role, prompt=False).client('ssm'))
+        matching_role = [role for role in matching_roles if role.run_env == RunEnv(env=next_env)][0]
+        env: GlobalEnvironment = GlobalEnvironment(role=matching_role, region=self.config_context.defaults.region)
+        dest_ssm = SsmDao(self._session_mgr.get_session(env, prompt=False).client('ssm'))
 
         for param in parameters:
             if 'KeyId' in param:

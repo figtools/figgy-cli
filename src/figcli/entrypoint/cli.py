@@ -22,7 +22,7 @@ from figcli.svcs.setup import FiggySetup
 from figcli.utils.utils import Utils
 
 root_logger = logging.getLogger()
-root_logger.setLevel(logging.CRITICAL)
+root_logger.setLevel(logging.INFO)
 root_logger.handlers = []
 stdout_handler = logging.StreamHandler(sys.stdout)
 
@@ -100,7 +100,7 @@ class FiggyCLI:
 
             if role_override:
                 if role_override in [role.role.role for role in defaults.assumable_roles] or is_setup:
-                    return Role(role_override)
+                    return Role(role=role_override)
                 else:
                     self._utils.error_exit(f"Invalid role override provided of: {role_override}. "
                                            f"You do not have permissions to assume this role. Contact your system "
@@ -157,7 +157,7 @@ class FiggyCLI:
 
     def __setup(self) -> FiggySetup:
         if not self._setup:
-            self._setup = FiggySetup()
+            self._setup = FiggySetup(self._context)
 
         return self._setup
 
@@ -206,7 +206,7 @@ class FiggyCLI:
             else:
                 Utils.stc_validate(args.env in self._defaults.valid_envs,
                                    f'{ENV_HELP_TEXT} {self._defaults.valid_envs}. Provided: {args.env}')
-                self._run_env = RunEnv(args.env)
+                self._run_env = RunEnv(env=args.env)
 
         self._utils.validate(Utils.attr_exists(configure, args) or Utils.attr_exists(command, args),
                              f"No command found. Proper format is `{CLI_NAME} <resource> <command> --option(s)`")
@@ -220,7 +220,7 @@ class FiggyCLI:
         found_command: CliCommand = Utils.find_command(str(command_name))
         found_resource: CliCommand = Utils.find_resource(str(resource_name))
 
-        self._context = FiggyContext(self.get_colors_enabled(), found_resource, found_command,
+        self._context: FiggyContext = FiggyContext(self.get_colors_enabled(), found_resource, found_command,
                                      self._run_env, self._assumable_role, args)
 
 

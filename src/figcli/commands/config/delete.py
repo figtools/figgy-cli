@@ -1,6 +1,7 @@
 from typing import List
 
 from botocore.exceptions import ClientError
+from figgy.data.dao.replication import ReplicationDao
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
@@ -22,16 +23,16 @@ from figcli.views.rbac_limited_config import RBACLimitedConfigView
 class Delete(ConfigCommand):
 
     def __init__(self, ssm_init: SsmDao, cfg_view: RBACLimitedConfigView,
-                 config_init: ConfigDao, context: ConfigContext, colors_enabled: bool,
+                 config_init: ConfigDao, repl_init: ReplicationDao, context: ConfigContext, colors_enabled: bool,
                  config_completer: WordCompleter):
         super().__init__(delete, colors_enabled, context)
         self._ssm = ssm_init
         self._config = config_init
+        self._repl = repl_init
         self._utils = Utils(colors_enabled)
         self._config_completer = config_completer
         self._out = Output(colors_enabled)
         self._cfg_view = cfg_view
-
 
     def delete_param(self, key) -> bool:
         """
@@ -42,13 +43,13 @@ class Delete(ConfigCommand):
 
         Returns: bool - T/F based on whether a parameter was actually deleted.
         """
-        sources = self._config.get_cfgs_by_src(key)  # type: List[ReplicationConfig]
-        repl_conf = self._config.get_config_repl(key)  # type: ReplicationConfig
+        sources = self._repl.get_cfgs_by_src(key)  # type: List[ReplicationConfig]
+        repl_conf = self._repl.get_config_repl(key)  # type: ReplicationConfig
 
         if len(sources) > 0:
             self._out.error(f"You're attempting to delete a key that is the source for at least one "
-                  f"replication config.\n[[{key}]] is actively replicating to these"
-                  f" destinations:\n")
+                            f"replication config.\n[[{key}]] is actively replicating to these"
+                            f" destinations:\n")
             for src in sources:
                 self._out.warn(f"Dest: [[{src.destination}]]. This config was created by [[{src.user}]]. ")
 
@@ -71,7 +72,7 @@ class Delete(ConfigCommand):
                 selection = prompt(repl_msg, completer=WordCompleter(['Y', 'N']), style=FIGGY_STYLE)
                 selection = selection if selection != '' else 'n'
                 if selection.strip().lower() == "y":
-                    self._config.delete_config(key)
+                    self._repl.delete_config(key)
                     self._ssm.delete_parameter(key)
                     self._out.success(f"[[{key}]] and replication config destination deleted successfully.")
                     return True
@@ -125,7 +126,6 @@ class Delete(ConfigCommand):
             to_continue = input(f"Delete another? (Y/n): ")
             to_continue = to_continue if to_continue != '' else 'y'
             delete_another = to_continue.lower() == "y"
-
 
     @VersionTracker.notify_user
     @AnonymousUsageTracker.track_command_usage

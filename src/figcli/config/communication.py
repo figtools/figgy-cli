@@ -80,6 +80,8 @@ MISSING_PS_NAME_MESSAGE = "Your application is missing at least one ParameterSto
 PROFILE_HELP_TEXT = "Overrides all other figgy configurations and instead pulls ALL credentials from your local " \
                     "~/.aws/credentials file and uses that for all types of authorization. Ideal for CICD pipelines."
 IAM_RESTORE_HELP_TEXT = "Restores any credentials in ~/.aws/credentials that were automatically backed up by figgy."
+UI_HELP_TEXT = "Loads the Figgy UI in your default browser."
+RUN_HELP_TEXT = "Runs the Figgy UI -- this command is optional and can be run by default with `figgy ui`. "
 
 # Point in time (--point-in-time)
 POINT_IN_TIME = "Restore all parameters to a point in time."
@@ -128,7 +130,9 @@ HELP_TEXT_MAP = {
     validate: VALIDATE_HELP_TEXT,
     profile: PROFILE_HELP_TEXT,
     upgrade: UPGRADE_HELP_TEXT,
-    iam_restore: IAM_RESTORE_HELP_TEXT
+    iam_restore: IAM_RESTORE_HELP_TEXT,
+    ui: UI_HELP_TEXT,
+    run: RUN_HELP_TEXT
 }
 
 # Other
@@ -141,12 +145,12 @@ is_secret = [
 ]
 
 # Config defaults descriptions:
-MFA_DESC = "Does the user above have multi-factor authentication enabled?"
+MFA_DESC = "Set to true if this user requires Multi-factor authentication."
 
 AUTO_MFA_DESC = "By enabling this option you will never be prompted for MFA. Instead figgy will save your " \
-                "multi-factor secret in your OS keychain andwill generated one-time passcodes on your behalf. " \
-                "You will need your MFA secret handy. **This is your MFA secret, NOT your six-digit code that " \
-                "regularly generated."
+                "multi-factor secret in your OS keychain and generated one-time passcodes on your behalf. " \
+                "You will need your MFA secret handy. **Your MFA secret is a long password-like string, " \
+                "it is NOT the six-digit code that is regularly rotated.**"
 
 OKTA_APP_LINK_DESC = "This is the 'Embed URL' linked to your OKTA SAML integration with AWS. For more details see " \
                      "the Figgy Docs OKTA setup guide."

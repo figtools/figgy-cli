@@ -15,8 +15,8 @@ class FiggyVault:
 
     def __init__(self, keychain_enabled=True, secrets_mgr: SecretsManager = SecretsManager()):
         """
-        keychain_enabled: Stores the encyrption key in the user's keychain. This will be disabled for Sandbox
-        sessions to simlify the user experience.
+        keychain_enabled: Stores the encryption key in the user's keychain. This will be disabled for Sandbox
+        sessions to simplify the user experience.
         """
         self._secrets_mgr = secrets_mgr
         encryption_key = DEFAULT_ENCRYPTION_KEY

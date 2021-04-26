@@ -1,18 +1,14 @@
-import re
+from typing import List
 
+from botocore.exceptions import ClientError
+from figgy.data.dao.ssm import SsmDao
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import style_from_pygments_cls
-
-from figcli.config import *
-from botocore.exceptions import ClientError
-from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter
 
 from figcli.commands.config.get import Get
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figgy.data.dao.ssm import SsmDao
-
+from figcli.config import *
 from figcli.config.style.pygments.lexer import FigLexer, FiggyPygment
 from figcli.io.input import Input
 from figcli.io.output import Output
@@ -40,15 +36,6 @@ class Put(ConfigCommand):
 
         self._FILE_PREFIX = "file://"
 
-    def _load_file(self, file_path: str) -> str:
-        try:
-            with open(file_path, 'r') as file:
-                return file.read()
-        except FileNotFoundError:
-            print(
-                f"Provided file path: {file_path} is invalid. No file found.")
-            exit(1)
-
     def put_param(self, key=None, loop=False, display_hints=True) -> None:
         """
         Allows a user to define a PS name and add a new parameter at that named location. User will be prompted for a
@@ -66,7 +53,7 @@ class Put(ConfigCommand):
 
         if display_hints:
             self._out.print(f"[[Hint:]] To upload a file's contents, pass in `file:///path/to/your/file` "
-                  f"in the value prompt.")
+                            f"in the value prompt.")
 
         while put_another:
             try:
@@ -76,6 +63,11 @@ class Put(ConfigCommand):
                     style = style_from_pygments_cls(FiggyPygment) if self.context.defaults.colors_enabled else None
                     key = Input.input('Please input a PS Name: ', completer=self._config_view.get_config_completer(),
                                       lexer=lexer, style=style)
+                    if self.parameter_is_existing_dir(key):
+                        self._out.warn(f'You attempted to store parameter named: {key},'
+                                       f' but it already exists in ParameterStore as a directory: {key}/')
+                        key = None
+                        continue
 
                 if self._source_key:
                     plain_key = '/'.join(key.strip('/').split('/')[2:])
@@ -88,11 +80,11 @@ class Put(ConfigCommand):
                 value = Input.input(f"Please input a value for {key}: ", default=orig_value if orig_value else '')
 
                 if value.lower().startswith(self._FILE_PREFIX):
-                    value = self._load_file(value.replace(self._FILE_PREFIX, ""))
+                    value = Utils.load_file(value.replace(self._FILE_PREFIX, ""))
 
                 existing_desc = self._ssm.get_description(key)
                 desc = Input.input(f"Please input an optional description: ", optional=True,
-                              default=existing_desc if existing_desc else orig_description if orig_description else '')
+                                   default=existing_desc if existing_desc else orig_description if orig_description else '')
 
                 is_secret = Input.is_secret()
                 parameter_type, kms_id = SSM_SECURE_STRING if is_secret else SSM_STRING, None
@@ -114,7 +106,7 @@ class Put(ConfigCommand):
             except ClientError as e:
                 if "AccessDeniedException" == e.response['Error']['Code']:
                     self._out.error(f"\n\nYou do not have permissions to add config values at the path: [[{key}]]")
-                    self._out.warn(f"Your role of {self.context.role} may delete keys under the following namespaces: "
+                    self._out.warn(f"Your role of {self.context.role} may add keys under the following namespaces: "
                                    f"{self._config_view.get_authorized_namespaces()}")
                     self._out.print(f"Error message: {e.response['Error']['Message']}")
                 else:
@@ -132,3 +124,8 @@ class Put(ConfigCommand):
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
         self.put_param(loop=True)
+
+    def parameter_is_existing_dir(self, name: str):
+        all_names: List[str] = self._config_view.get_config_names()
+        match = list(filter(lambda x: f'{name}/' in x, all_names))
+        return bool(match)

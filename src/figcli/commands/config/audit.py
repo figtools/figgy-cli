@@ -1,9 +1,9 @@
+from figgy.data.dao.audit import AuditDao
 from prompt_toolkit.completion import WordCompleter
 
 from figcli.config.commands import audit
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.io.output import Output
@@ -16,11 +16,11 @@ class Audit(ConfigCommand):
     """
     Returns audit history for a queried PS Name
     """
-    def __init__(self, ssm_init: SsmDao, config_init: ConfigDao, config_completer_init: WordCompleter,
+    def __init__(self, ssm_init: SsmDao, audit_init: AuditDao, config_completer_init: WordCompleter,
                  colors_enabled: bool, config_context: ConfigContext):
         super().__init__(audit, colors_enabled, config_context)
         self._ssm = ssm_init
-        self._config = config_init
+        self._config = audit_init
         self._config_completer = config_completer_init
         self._utils = Utils(colors_enabled)
         self._out = Output(colors_enabled)
@@ -37,7 +37,7 @@ class Audit(ConfigCommand):
             else:
                 self._out.warn(f"\nNo results found for: [[{ps_name}]]")
             for log in audit_logs:
-                print(log)
+                self._out.print(log.pretty_print())
 
             to_continue = input(f"Audit another? (Y/n): ")
             to_continue = to_continue if to_continue != '' else 'y'

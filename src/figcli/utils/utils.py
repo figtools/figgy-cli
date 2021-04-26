@@ -4,6 +4,8 @@ import os
 import platform
 import re
 import time
+import traceback
+
 import botocore
 import urllib3
 
@@ -11,7 +13,7 @@ from collections import OrderedDict
 from json.decoder import JSONDecodeError
 from pathlib import Path
 from sys import exit
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union, Optional, Any
 
 from figcli.config import *
 from figcli.config.style.color import Color
@@ -47,7 +49,7 @@ class Utils:
                     if retries > MAX_RETRIES:
                         raise e
 
-                    Utils.notify("Network connectivity issues detected. Retrying with back off...")
+                    Utils.stc_notify("Network connectivity issues detected. Retrying with back off...")
                     retries += 1
                     time.sleep(retries * BACKOFF)
 
@@ -60,11 +62,11 @@ class Utils:
         """
 
         def wrapper(*args, **kwargs):
-            log.info(f"Entering function: {func.__name__} with args: {args}")
+            log.debug(f"Entering function: {func.__name__} with args: {args}")
             start = time.time()
             result = func(*args, **kwargs)
-            log.info(f"Exiting function: {func.__name__} and returning: {result}")
-            log.info(f"Function complete after {round(time.time() - start, 2)} seconds.")
+            log.debug(f"Exiting function: {func.__name__} and returning: {result}")
+            log.info(f"{func.__name__} complete after {round(time.time() - start, 2)} seconds.")
             return result
 
         return wrapper
@@ -133,7 +135,6 @@ class Utils:
     def sanitize_session_name(name: str):
         return re.sub(r'\W+', '', name)[:15]
 
-
     @staticmethod
     def wipe_defaults():
         try:
@@ -158,6 +159,10 @@ class Utils:
 
     def notify(self, message: str):
         print(f'{self.c.fg_bl}{message}{self.c.rs}')
+
+    @staticmethod
+    def stc_notify(message: str):
+        print(message)
 
     def merge_config_contents(self, a: Dict, b: Dict, a_path: str, b_path: str):
         for key in b:
@@ -365,7 +370,6 @@ class Utils:
         if not boolean:
             self.error_exit(error_msg)
 
-
     def is_valid_selection(self, selection: str, notify: bool):
         result = selection is not None and (selection.lower() == "y" or selection.lower() == "n")
         if notify and not result:
@@ -527,6 +531,27 @@ class Utils:
                 return []
             else:
                 return default
+
+    @staticmethod
+    def load_file(file_path: str) -> str:
+        try:
+            with open(file_path, 'r') as file:
+                return file.read()
+        except FileNotFoundError:
+            print(
+                f"Provided file path: {file_path} is invalid. No file found.")
+            exit(1)
+
+    @staticmethod
+    def class_props(cls):
+        return [i for i in cls.__dict__.keys() if i[:1] != '_']
+
+    @staticmethod
+    def property_matches(obj: Any, comparator: str) -> bool:
+        props = [p for p in dir(obj) if not p.startswith('__') and not callable(getattr(obj, p))]
+        props = [p for p in props if p != '_abc_impl'] # filter out abstract class stuff
+        matching_attr = [p for p in props if comparator in str(getattr(obj, p))]
+        return bool(matching_attr)
 
 
 class InvalidSessionError(Exception):

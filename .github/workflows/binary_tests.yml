@@ -3,8 +3,6 @@ name: Binary Tests
 on:
   repository_dispatch:
     types: [build-complete]
-  watch:
-    types: [started]
 
 jobs:
   test_mac_binary:

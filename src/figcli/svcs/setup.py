@@ -1,9 +1,12 @@
+import json
 import logging
 import os
 
 from typing import Callable, List, Dict, Optional
 
 from tabulate import tabulate
+
+from figcli.commands.figgy_context import FiggyContext
 from figcli.config import *
 from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
@@ -19,6 +22,7 @@ from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
 from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.auth.provider.sso_session_provider import SSOSessionProvider
 from figcli.svcs.auth.session_manager import SessionManager
+from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 from json import JSONDecodeError
@@ -33,12 +37,13 @@ class FiggySetup:
 
     # If we ever need to add params to this constructor we'll need to better handle dependencies and do a bit of
     # refactoring here.
-    def __init__(self):
+    def __init__(self, context: FiggyContext):
         self._cache_mgr = CacheManager(file_override=DEFAULTS_FILE_CACHE_PATH)
         self._config_mgr, self.c = ConfigManager.figgy(), Utils.default_colors()
         self._session_mgr = None
         self._session_provider = None
         self._secrets_mgr = SecretsManager()
+        self._figgy_context = context
 
     def get_assumable_roles(self, defaults: CLIDefaults = None) -> List[AssumableRole]:
         if not defaults:
@@ -54,7 +59,7 @@ class FiggySetup:
 
     def _get_session_provider(self, defaults: CLIDefaults):
         if not self._session_provider:
-            self._session_provider = SessionProviderFactory(defaults).instance()
+            self._session_provider = SessionProviderFactory(defaults, self._figgy_context).instance()
 
         return self._session_provider
 
@@ -100,7 +105,7 @@ class FiggySetup:
 
     def configure_roles(self, current_defaults: CLIDefaults, run_env: RunEnv = None, role: Role = None) -> CLIDefaults:
         updated_defaults = current_defaults
-        provider_factory: SessionProviderFactory = SessionProviderFactory(current_defaults)
+        provider_factory: SessionProviderFactory = SessionProviderFactory(current_defaults, self._figgy_context)
         session_provider: SSOSessionProvider = provider_factory.instance()
         session_provider.cleanup_session_cache()
 
@@ -158,11 +163,13 @@ class FiggySetup:
 
     def configure_figgy_defaults(self, current_defaults: CLIDefaults):
         updated_defaults = current_defaults
-        session = self._get_session_manager(current_defaults).get_session(current_defaults.assumable_roles[0],
+        env = GlobalEnvironment(role=current_defaults.assumable_roles[0], region=current_defaults.region)
+        session = self._get_session_manager(current_defaults).get_session(env,
                                                                           prompt=True)
         ssm = SsmDao(session.client('ssm'))
         default_service_ns = ssm.get_parameter(PS_FIGGY_DEFAULT_SERVICE_NS_PATH)
         updated_defaults.service_ns = default_service_ns
+        updated_defaults.enabled_regions = json.loads(ssm.get_parameter(PS_FIGGY_REGIONS))
 
         return updated_defaults
 
@@ -201,7 +208,6 @@ class FiggySetup:
         cache_mgr = CacheManager(file_override=DEFAULTS_FILE_CACHE_PATH)
         try:
             last_write, defaults = cache_mgr.get(DEFAULTS_KEY)
-
             if not defaults:
                 if skip:
                     return CLIDefaults.unconfigured()
