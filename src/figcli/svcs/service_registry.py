@@ -13,8 +13,10 @@ from figgy.data.dao.replication import ReplicationDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.dao.usage_tracker import UsageTrackerDao
 from figgy.data.dao.user_cache import UserCacheDao
+from filelock import FileLock
 
 from figcli.commands.command_context import CommandContext
+from figcli.config import BOTO3_CLIENT_FILE_LOCK_PATH
 from figcli.config.tuning import DYNAMO_DB_MAX_POOL_SIZE, MAX_CACHED_BOTO_POOLS
 from figcli.svcs.audit import AuditService
 from figcli.svcs.auth.session_manager import SessionManager
@@ -46,6 +48,7 @@ def refreshable_cache(cache_key):
         method executed. This will forceable purge all method-level caches when this local cache is purged, thereby
         allow garbage collection to clean up the boto connection pools and prevent figgy from approaching ulimits.
         """
+
         @wraps(method)
         def impl(self, env: GlobalEnvironment, refresh: bool = False):
             if not self.CACHE.get(env, {}).get(cache_key) or refresh:
@@ -79,6 +82,21 @@ def refreshable_cache(cache_key):
         return impl
 
     return decorate
+
+
+def lock_boto_client_creation(method):
+    """
+    Locks boto client creationa cross threads to prevent occasional error messages due to non-thread safe nature of botoclients
+    creation.
+    """
+    @wraps(method)
+    def impl(self, *args, **kwargs):
+        with FileLock(BOTO3_CLIENT_FILE_LOCK_PATH):
+            log.info(f"Locking: {BOTO3_CLIENT_FILE_LOCK_PATH} for method: {method.__name__}")
+            return method(self, *args, **kwargs)
+
+    return impl
+
 
 
 class ServiceRegistry:
@@ -148,6 +166,7 @@ class ServiceRegistry:
         return self.session_mgr.get_session(env, prompt=False)
 
     @refreshable_cache('ssm-dao')
+    @lock_boto_client_creation
     def __ssm(self, env: GlobalEnvironment, refresh: bool) -> SsmDao:
         """
         Returns an SSMDao initialized with a session for the selected ENV based on FiggyContext
@@ -155,6 +174,7 @@ class ServiceRegistry:
         return SsmDao(self.__env_session(env, refresh).client('ssm'))
 
     @refreshable_cache('kms-dao')
+    @lock_boto_client_creation
     def __kms(self, env: GlobalEnvironment, refresh: bool) -> KmsDao:
         """
         Returns a hydrated KMS Service object based on these selected ENV
@@ -162,6 +182,7 @@ class ServiceRegistry:
         return KmsDao(self.__env_session(env, refresh).client('kms'))
 
     @refreshable_cache('config-dao')
+    @lock_boto_client_creation
     def __config(self, env: GlobalEnvironment, refresh: bool) -> ConfigDao:
         """
         Returns a hydrated ConfigDao for the selected environment.
@@ -169,6 +190,7 @@ class ServiceRegistry:
         return ConfigDao(self.__env_session(env, refresh).resource('dynamodb'))
 
     @refreshable_cache('audit-dao')
+    @lock_boto_client_creation
     def __audit(self, env: GlobalEnvironment, refresh: bool) -> AuditDao:
         """
         Returns a hydrated AuditDao for the selected environment.
@@ -177,6 +199,7 @@ class ServiceRegistry:
                         .resource('dynamodb', config=Config(max_pool_connections=DYNAMO_DB_MAX_POOL_SIZE)))
 
     @refreshable_cache('usage-dao')
+    @lock_boto_client_creation
     def __usage(self, env: GlobalEnvironment, refresh: bool) -> UsageTrackerDao:
         """
         Returns a hydrated UsageTrackerDao for the selected environment.
@@ -185,6 +208,7 @@ class ServiceRegistry:
                                .resource('dynamodb', config=Config(max_pool_connections=DYNAMO_DB_MAX_POOL_SIZE)))
 
     @refreshable_cache('repl-dao')
+    @lock_boto_client_creation
     def __repl(self, env: GlobalEnvironment, refresh: bool) -> ReplicationDao:
         """
         Returns a hydrated ReplicationDao for the selected environment.
@@ -193,6 +217,7 @@ class ServiceRegistry:
                               .resource('dynamodb', config=Config(max_pool_connections=DYNAMO_DB_MAX_POOL_SIZE)))
 
     @refreshable_cache('user-dao')
+    @lock_boto_client_creation
     def __user(self, env: GlobalEnvironment, refresh: bool) -> UserCacheDao:
         """
         Returns a hydrated ReplicationDao for the selected environment.

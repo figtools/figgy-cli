@@ -103,6 +103,7 @@ STS_SESSION_CACHE_PATH = f"{HOME}/.figgy/lockbox/sts/sessions"
 SAML_SESSION_CACHE_PATH = f"{HOME}/.figgy/lockbox/sso/saml"
 OKTA_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/okta/session"
 GOOGLE_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/google/session"
+BOTO3_CLIENT_FILE_LOCK_PATH = f"{HOME}/.figgy/cache/boto3/client.lock"
 FIGGY_LOCK_FILE_PATH = f"{HOME}/.figgy/lock"
 
 # Defaults file keys

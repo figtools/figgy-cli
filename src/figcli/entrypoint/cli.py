@@ -235,6 +235,8 @@ def main():
     Utils.stc_validate(user != ROOT_USER, f"Hey! Stop trying to run {CLI_NAME} as {ROOT_USER}. That's bad!")
     original_command = ' '.join(arguments)
     sys.argv = arguments
+    os.makedirs(os.path.dirname(BOTO3_CLIENT_FILE_LOCK_PATH), exist_ok=True)
+
     try:
         # Parse / Validate Args
         args = FiggyCLI.parse_args()
