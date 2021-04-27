@@ -3,18 +3,34 @@ name: Build & Deploy
 on:
   repository_dispatch:
     types: [e2e-tests-complete]
-
+  push:
+    branches: [test-ui-embed]
 jobs:
+  # Todo create action for the install of figgy-ui into CLI
   build_mac:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          name: figtools/figgy-ui
+          ref: master
+          path: figgy-ui
+      - uses: actions/setup-node@v2
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
       - name: Build
         run: |
+          echo "Installing Figgy UI"
+          pwd
+          ls -l $GITHUB_WORKSPACE/
+          ls -l $GITHUB_WORKSPACE/figgy-ui
+          cd $GITHUB_WORKSPACE/figgy-ui/scripts/
+          ls -l
+          ./cicd-install.sh
+
           echo "MacOs build is happening!!!"
           cd src
           pip3 install pyinstaller==4.0
@@ -70,139 +86,139 @@ jobs:
 
           echo "Deploying darwin figgy to s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz"
           aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz
-
-  build_linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update \
-          && sudo apt-get install libusb-1.0-0-dev libxmu-dev libxmu-headers \
-          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev
-
-      - name: Build
-        run: |
-          echo "Linux build is happening!!!"
-          # install requirements
-
-          cd src
-          pip3 install pyinstaller==4.0
-          pip3 install -r requirements.txt
-          pip3 install -r requirements-linux.txt
-
-          pyinstaller figgy.spec
-
-          ../scripts/zip_it.sh
-          ../scripts/tar_it.sh $(../scripts/get_version.sh)
-
-
-      - name: Test Artifact
-        env:
-          FIGGY_DISABLE_KEYRING: "true"
-          OVERRIDE_KEYRING: "true"
-        run: |
-          export TERM=linux
-          export TERMINFO=/etc/terminfo
-
-          echo "Adding figgy binary to path"
-          cd src/dist/figgy/
-          export "PATH=$PATH:$(pwd)"
-          cd ../../
-          figgy --version
-
-          #echo "Testing Linux binary as bastion user"
-          #python run_tests.py bastion
-
-      - name: Get Version
-        id: version
-        run: |
-          cd src
-          # Parse version
-          VERSION=$(../scripts/get_version.sh)
-          echo "Setting release version to $VERSION"
-          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          VERSION: ${{ env.RELEASE_VERSION }}
-        run: |
-
-          echo "Deploying linux figgy to $dest"
-          aws s3 cp src/figgy.zip s3://figgy-website/releases/cli/unstable/linux/figgy.zip
-
-          echo "Deploying linux figgy to s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz"
-          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz
-
-  build_windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.7
-      - name: Build
-        shell: bash
-        run: |
-          echo "Windows build is happening!!!"
-          # install requirements
-
-          cd src
-          pip3 install pyinstaller==4.0
-          pip3 install -r requirements.txt
-          pip3 install -r requirements-windows.txt
-
-          pyinstaller figgy.spec
-
-          ../scripts/tar_it.sh $(../scripts/get_version.sh)
-
-      - name: Zip
-        run: |
-          echo "Zipping!"
-          cd src/dist/
-          Compress-Archive figgy figgy.zip
-          mv figgy.zip ../
-
-      - name: Test Artifact
-        run: |
-          echo "Adding figgy binary to path"
-          cd src/dist/figgy/
-          $env:path += ";."
-
-          echo "NORMAL VERSION NOW"
-          figgy --version
-
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-        shell: bash
-        run: |
-          VERSION=$(./scripts/get_version.sh)
-          echo "Setting release version to $VERSION"
-          cd src/
-
-          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
-          aws s3 cp figgy.zip "s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
-
-          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
-          aws s3 cp figgy.tar.gz "s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
+#
+#  build_linux:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Set up Python 3.7
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.7
+#
+#      - name: Install dependencies
+#        run: |
+#          sudo apt-get update \
+#          && sudo apt-get install libusb-1.0-0-dev libxmu-dev libxmu-headers \
+#          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev
+#
+#      - name: Build
+#        run: |
+#          echo "Linux build is happening!!!"
+#          # install requirements
+#
+#          cd src
+#          pip3 install pyinstaller==4.0
+#          pip3 install -r requirements.txt
+#          pip3 install -r requirements-linux.txt
+#
+#          pyinstaller figgy.spec
+#
+#          ../scripts/zip_it.sh
+#          ../scripts/tar_it.sh $(../scripts/get_version.sh)
+#
+#
+#      - name: Test Artifact
+#        env:
+#          FIGGY_DISABLE_KEYRING: "true"
+#          OVERRIDE_KEYRING: "true"
+#        run: |
+#          export TERM=linux
+#          export TERMINFO=/etc/terminfo
+#
+#          echo "Adding figgy binary to path"
+#          cd src/dist/figgy/
+#          export "PATH=$PATH:$(pwd)"
+#          cd ../../
+#          figgy --version
+#
+#          #echo "Testing Linux binary as bastion user"
+#          #python run_tests.py bastion
+#
+#      - name: Get Version
+#        id: version
+#        run: |
+#          cd src
+#          # Parse version
+#          VERSION=$(../scripts/get_version.sh)
+#          echo "Setting release version to $VERSION"
+#          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+#
+#      - name: Deploy
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: us-east-1
+#          VERSION: ${{ env.RELEASE_VERSION }}
+#        run: |
+#
+#          echo "Deploying linux figgy to $dest"
+#          aws s3 cp src/figgy.zip s3://figgy-website/releases/cli/unstable/linux/figgy.zip
+#
+#          echo "Deploying linux figgy to s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz"
+#          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz
+#
+#  build_windows:
+#    runs-on: windows-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Set up Python 3.7
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.7
+#      - name: Build
+#        shell: bash
+#        run: |
+#          echo "Windows build is happening!!!"
+#          # install requirements
+#
+#          cd src
+#          pip3 install pyinstaller==4.0
+#          pip3 install -r requirements.txt
+#          pip3 install -r requirements-windows.txt
+#
+#          pyinstaller figgy.spec
+#
+#          ../scripts/tar_it.sh $(../scripts/get_version.sh)
+#
+#      - name: Zip
+#        run: |
+#          echo "Zipping!"
+#          cd src/dist/
+#          Compress-Archive figgy figgy.zip
+#          mv figgy.zip ../
+#
+#      - name: Test Artifact
+#        run: |
+#          echo "Adding figgy binary to path"
+#          cd src/dist/figgy/
+#          $env:path += ";."
+#
+#          echo "NORMAL VERSION NOW"
+#          figgy --version
+#
+#      - name: Deploy
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: us-east-1
+#        shell: bash
+#        run: |
+#          VERSION=$(./scripts/get_version.sh)
+#          echo "Setting release version to $VERSION"
+#          cd src/
+#
+#          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
+#          aws s3 cp figgy.zip "s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
+#
+#          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
+#          aws s3 cp figgy.tar.gz "s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
 
   emit_build_complete:
     runs-on: ubuntu-latest
     needs:
-      - build_windows
-      - build_linux
+#      - build_windows
+#      - build_linux
       - build_mac
     steps:
       - name: Repository Dispatch
