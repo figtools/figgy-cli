@@ -31,12 +31,14 @@ jobs:
           pwd
           ls -l $GITHUB_WORKSPACE/
           ls -l $GITHUB_WORKSPACE/figgy-ui
-          cd $GITHUB_WORKSPACE/figgy-ui/scripts/
-          ls -l
-
+          cd $GITHUB_WORKSPACE/figgy-ui/app
+          
+          # Install dependencies
           npm install
           npm install -g @angular/cli
 
+          # Install app
+          cd $GITHUB_WORKSPACE/figgy-ui/scripts/
           ./cicd-install.sh
 
           echo "MacOs build is happening!!!"
