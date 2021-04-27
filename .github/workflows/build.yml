@@ -16,6 +16,7 @@ jobs:
           repository: figtools/figgy-ui
           ref: master
           path: figgy-ui
+          token: ${{ secrets.FIGGY_UI_DEPLOY_KEY }}
       - uses: actions/setup-node@v2
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
