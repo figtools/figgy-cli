@@ -273,6 +273,7 @@ jobs:
           cd $GITHUB_WORKSPACE/figgy-ui/app
 
           # Install dependencies
+          npm install --global windows-build-tools
           npm install
           npm install -g @angular/cli
 
@@ -329,7 +330,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
 #      - build_windows
-#      - build_linux
+      - build_linux
       - build_mac
     steps:
       - name: Repository Dispatch
