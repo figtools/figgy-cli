@@ -59,6 +59,9 @@ jobs:
 
           echo "MacOs build is happening!!!"
           cd $GITHUB_WORKSPACE/src
+          pwd
+          ls -l figcli/ui/templates
+          ls -l figcli/ui/assets
           pip3 install pyinstaller==4.0
           pip3 install -r requirements.txt
           pip3 install -r requirements-darwin.txt
@@ -171,9 +174,11 @@ jobs:
 
           echo "Linux build is happening!!!"
           cd $GITHUB_WORKSPACE/src
+          pwd
+          ls -l figcli/ui/templates
+          ls -l figcli/ui/assets
 
           # install requirements
-          cd src
           pip3 install pyinstaller==4.0
           pip3 install -r requirements.txt
           pip3 install -r requirements-linux.txt
@@ -279,9 +284,6 @@ jobs:
           cd $GITHUB_WORKSPACE/src
 
           # install requirements
-          cd src
-          ls -l figcli/ui/templates
-          ls -l figcli/ui/assets
           pip3 install pyinstaller==4.0
           pip3 install -r requirements.txt
           pip3 install -r requirements-windows.txt
