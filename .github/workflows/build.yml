@@ -10,14 +10,32 @@ jobs:
   build_mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
+      - name: Checkout Project
+        uses: actions/checkout@v2
+
+      - name: Checkout Figgy UI
+        uses: actions/checkout@v2
         with:
           repository: figtools/figgy-ui
           ref: main
           path: figgy-ui
           ssh-key: ${{ secrets.FIGGY_UI_DEPLOY_KEY }}
-      - uses: actions/setup-node@v2
+
+    - name: Cache node modules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node-modules
+      with:
+        # npm cache files are stored in `~/.npm` on Linux/macOS
+        path: ~/.npm
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('figgy-ui/app/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
         with:
           node-version: '15.12'
       - name: Set up Python 3.7
@@ -32,7 +50,7 @@ jobs:
           ls -l $GITHUB_WORKSPACE/
           ls -l $GITHUB_WORKSPACE/figgy-ui
           cd $GITHUB_WORKSPACE/figgy-ui/app
-          
+
           # Install dependencies
           npm install
           npm install -g @angular/cli
