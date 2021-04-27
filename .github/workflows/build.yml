@@ -45,11 +45,8 @@ jobs:
 
       - name: Build
         run: |
+          # Print working directory
           echo "Installing Figgy UI"
-          echo "$GITHUB_WORKSPACE"
-          pwd
-          ls -l $GITHUB_WORKSPACE/
-          ls -l $GITHUB_WORKSPACE/figgy-ui
           cd $GITHUB_WORKSPACE/figgy-ui/app
 
           # Install dependencies
@@ -61,7 +58,7 @@ jobs:
           ./cicd-install.sh
 
           echo "MacOs build is happening!!!"
-          cd src
+          cd $GITHUB_WORKSPACE/src
           pip3 install pyinstaller==4.0
           pip3 install -r requirements.txt
           pip3 install -r requirements-darwin.txt
