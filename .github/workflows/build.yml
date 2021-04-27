@@ -18,6 +18,8 @@ jobs:
           path: figgy-ui
           ssh-key: ${{ secrets.FIGGY_UI_DEPLOY_KEY }}
       - uses: actions/setup-node@v2
+        with:
+          node-version: '15.12'
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
@@ -25,7 +27,7 @@ jobs:
       - name: Build
         run: |
           echo "Installing Figgy UI"
-          echo $GITHUB_WORKSPACE"
+          echo "$GITHUB_WORKSPACE"
           pwd
           ls -l $GITHUB_WORKSPACE/
           ls -l $GITHUB_WORKSPACE/figgy-ui
