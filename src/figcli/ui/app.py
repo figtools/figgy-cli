@@ -2,7 +2,7 @@ import logging
 from threading import Thread
 from typing import List
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 
 from figcli.commands.command_context import CommandContext
@@ -24,7 +24,8 @@ class App:
         self._context = context
         self._session_mgr = session_mgr
         self._svc_registry = ServiceRegistry(self._session_mgr, self._context)
-        self.app: Flask = Flask(__name__, static_folder='assets', static_url_path='')
+        self._static_files_root_folder_path = 'assets'
+        self.app: Flask = Flask(__name__, static_folder='assets', static_url_path='', template_folder='templates')
         self.controllers: List[Controller] = []
         self.init_controllers()
 
@@ -37,7 +38,14 @@ class App:
         self.controllers.append(InvestigateController('/investigate', self._context, self._svc_registry))
 
     def run_app(self):
-        self.app.run(host='0.0.0.0', port=5000, debug=False)
+        self.app.add_url_rule('/', 'index', self._goto_index, methods=['GET'])
+        self.app.run(host='127.0.0.1', port=5000, debug=False)
+
+    def _goto_index(self):
+        return self._serve_page("index.html")
+
+    def _serve_page(self, file_relative_path_to_root):
+        return send_from_directory(self._static_files_root_folder_path, file_relative_path_to_root)
 
     def run(self):
         CORS(self.app)

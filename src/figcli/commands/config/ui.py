@@ -1,3 +1,5 @@
+import webbrowser
+
 from figcli.commands.command_context import CommandContext
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
@@ -25,4 +27,4 @@ class UI(CliCommand):
         app = App(self.context, self._session_mgr)
         app.run()
         self._out.success_h2("Loading Figgy UI")
-        # webbrowser.open("http://localhost:5000/")
+        webbrowser.open("http://localhost:5000/")

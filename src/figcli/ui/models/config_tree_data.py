@@ -26,3 +26,6 @@ class ConfigTreeData(BaseModel):
             return self.node_name > o.node_name
 
         return self.children and not o.children
+
+
+ConfigTreeData.update_forward_refs()

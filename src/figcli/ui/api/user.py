@@ -38,7 +38,7 @@ class UserController(Controller, ABC):
         return self.user
 
     @Controller.return_json
-    def get_authed_role(self) -> AuthedRole:
+    def get_authed_role(self):
         role = AuthedRole(assumable_role=self.get_environment().role,
                           authed_kms_keys=self._cfg_view().get_authorized_kms_keys_full(
                               self.get_environment().role.run_env),
