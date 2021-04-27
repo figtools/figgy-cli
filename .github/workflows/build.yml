@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/checkout@v2
         with:
-          name: figtools/figgy-ui
+          repository: figtools/figgy-ui
           ref: master
           path: figgy-ui
       - uses: actions/setup-node@v2
@@ -24,6 +24,7 @@ jobs:
       - name: Build
         run: |
           echo "Installing Figgy UI"
+          echo $GITHUB_WORKSPACE"
           pwd
           ls -l $GITHUB_WORKSPACE/
           ls -l $GITHUB_WORKSPACE/figgy-ui
