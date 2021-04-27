@@ -132,7 +132,7 @@ OVERRIDE_KEYRING_ENV_VAR = "OVERRIDE_KEYRING"
 ONE_WEEK_SECONDS = 60 * 60 * 24 * 7
 
 # Figgy Sandbox
-SANDBOX_ROLES = ['dev', 'devops', 'sre', 'data', 'dba']
+SANDBOX_ROLES = ['dev', 'devops', 'sre', 'data', 'dba', 'admin']
 GET_SANDBOX_CREDS_URL = "https://q39v8f3u13.execute-api.us-east-1.amazonaws.com/sandbox-bastion/v1/get-credentials"
 FIGGY_SANDBOX_REGION = 'us-east-1'
 FIGGY_SANDBOX_PROFILE = 'figgy-sandbox'

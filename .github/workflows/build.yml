@@ -227,11 +227,39 @@ jobs:
   build_windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout project
+        uses: actions/checkout@v2
+
+      - name: Checkout Figgy UI
+        uses: actions/checkout@v2
+        with:
+          repository: figtools/figgy-ui
+          ref: main
+          path: figgy-ui
+          ssh-key: ${{ secrets.FIGGY_UI_DEPLOY_KEY }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('figgy-ui/app/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '15.12'
+
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+
       - name: Build
         shell: bash
         run: |
