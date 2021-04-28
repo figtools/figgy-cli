@@ -117,7 +117,7 @@ jobs:
           aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz
 
   build_linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
@@ -159,8 +159,6 @@ jobs:
           freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev
 
       - name: Build
-        env:
-          LD_RUN_PATH: "/usr/local/lib"
         run: |
           export LD_RUN_PATH=/usr/local/lib
 
