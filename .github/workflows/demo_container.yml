@@ -2,9 +2,7 @@ name: Build & Deploy
 
 on:
   repository_dispatch:
-    types: [e2e-tests-complete]
-  push:
-    branches: [test-ui-embed]
+    types: [build-complete]
 
 jobs:
   build_container:
@@ -24,11 +22,9 @@ jobs:
           DEMO_USER_MFA_SECRET: ${{ secrets.DEMO_USER_MFA_SECRET }}
           DEMO_USER_PASSWORD_OVERRIDE: ${{ secrets.DEMO_USER_PASSWORD_OVERRIDE }}
         run: |
-          pwd
-          cd .github/build/demo
-
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/y9w7q0o6
-          docker build -t figgy-demo:latest
+          docker build -t figgy-demo:latest -f build/demo/Dockerfile . --build-arg FIGGY_MFA_SECRET_OVERRIDE=${DEMO_USER_MFA_SECRET} --build-arg FIGGY_PASSWORD_OVERRIDE=${DEMO_USER_PASSWORD_OVERRIDE}
+
           docker tag figgy-demo:latest public.ecr.aws/y9w7q0o6/figgy-demo:latest
           docker push public.ecr.aws/y9w7q0o6/figgy-demo:latest
 

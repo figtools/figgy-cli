@@ -67,6 +67,12 @@ class SecretsManager:
 
         return current
 
+    def get_encryption_key(self):
+        return keyring.get_password(FIGGY_KEYRING_NAMESPACE, KEYCHAIN_ENCRYPTION_KEY)
+
+    def set_encryption_key(self, encryption_key: str):
+        self.set_password(KEYCHAIN_ENCRYPTION_KEY, encryption_key)
+
     def get_password(self, user: str) -> str:
         pw_override = os.environ.get(FIGGY_PASSWORD_OVERRIDE)
         if pw_override:
