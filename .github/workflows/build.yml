@@ -156,7 +156,7 @@ jobs:
         run: |
           sudo apt-get update \
           && sudo apt-get install libusb-1.0-0-dev libxmu-dev libxmu-headers \
-          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev glibc libc-bin binutils
+          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev libc-bin binutils
 
       - name: Build
         run: |
