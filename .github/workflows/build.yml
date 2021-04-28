@@ -189,8 +189,6 @@ jobs:
 
           pyinstaller figgy.spec
 
-          cp /usr/local/lib/libpython3.*.so dist/figgy/
-
           ../scripts/zip_it.sh
           ../scripts/tar_it.sh $(../scripts/get_version.sh)
 
