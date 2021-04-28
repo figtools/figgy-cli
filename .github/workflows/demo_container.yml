@@ -1,5 +1,4 @@
 name: Build Containers
-
 on:
   repository_dispatch:
     types: [trigger-build-containers]
