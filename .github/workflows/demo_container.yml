@@ -3,8 +3,8 @@ name: Build & Deploy
 on:
   repository_dispatch:
     types: [e2e-tests-complete]
-  push:
-    branches: [test-ui-embed]
+#  push:
+#    branches: [test-ui-embed]
 jobs:
   build_container:
     runs-on: ubuntu-latest

@@ -159,10 +159,10 @@ jobs:
           freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev
 
       - name: Build
+        env:
+          LD_RUN_PATH: "/usr/local/lib"
         run: |
-          echo "PYTHON VERSION"
-          python3 --version
-
+          export LD_RUN_PATH=/usr/local/lib
 
           # Print working directory
           echo "Installing Figgy UI"
