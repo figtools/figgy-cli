@@ -156,12 +156,10 @@ jobs:
         run: |
           sudo apt-get update \
           && sudo apt-get install libusb-1.0-0-dev libxmu-dev libxmu-headers \
-          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev
+          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev glibc libc-bin binutils
 
       - name: Build
         run: |
-          export LD_RUN_PATH=/usr/local/lib
-
           # Print working directory
           echo "Installing Figgy UI"
           cd $GITHUB_WORKSPACE/figgy-ui/app
