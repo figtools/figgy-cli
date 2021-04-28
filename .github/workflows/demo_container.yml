@@ -6,7 +6,7 @@ on:
   push:
     branches: [test-ui-embed]
 jobs:
-  build_linux:
+  build_container:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout project

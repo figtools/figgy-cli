@@ -160,6 +160,10 @@ jobs:
 
       - name: Build
         run: |
+          echo "PYTHON VERSION"
+          python3 --version
+
+
           # Print working directory
           echo "Installing Figgy UI"
           cd $GITHUB_WORKSPACE/figgy-ui/app
