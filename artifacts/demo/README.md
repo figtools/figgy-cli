@@ -1,0 +1,1 @@
+Enables one-command demos of figgy & the figgy UI.

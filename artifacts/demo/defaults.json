@@ -1,0 +1,1249 @@
+{
+	"defaults": {
+		"cache": {
+			"py/object": "figcli.models.defaults.defaults.CLIDefaults",
+			"py/state": {
+				"__dict__": {
+					"user_id": "8f6eb1e1-0642-4019-bdd8-7fdb7618e142",
+					"role": {
+						"py/object": "figcli.models.role.Role",
+						"py/state": {
+							"__dict__": {
+								"role": "admin",
+								"full_name": null
+							},
+							"__fields_set__": {
+								"py/set": ["role"]
+							},
+							"__private_attribute_values__": {}
+						}
+					},
+					"colors_enabled": "true",
+					"run_env": {
+						"py/object": "figgy.models.run_env.RunEnv",
+						"py/state": {
+							"__dict__": {
+								"env": "dev",
+								"account_id": null
+							},
+							"__fields_set__": {
+								"py/set": ["env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					},
+					"region": "us-east-1",
+					"mfa_enabled": true,
+					"service_ns": "/app",
+					"provider": {
+						"py/reduce": [{
+							"py/type": "figcli.models.defaults.provider.Provider"
+						}, {
+							"py/tuple": ["okta"]
+						}]
+					},
+					"session_duration": 43200,
+					"usage_tracking": "true",
+					"report_errors": true,
+					"auto_mfa": true,
+					"provider_config": {
+						"py/object": "figcli.models.defaults.provider_config.OktaProviderConfig",
+						"py/state": {
+							"__dict__": {
+								"app_link": "https://dev-216899.okta.com/home/amazon_aws/0oaf8u0id7zgGXI494x6/272",
+								"factor_type": "GOOGLE"
+							},
+							"__fields_set__": {
+								"py/set": ["factor_type", "app_link"]
+							},
+							"__private_attribute_values__": {}
+						}
+					},
+					"mfa_serial": null,
+					"user": "netflix-figgy-demo@mailinator.com",
+					"valid_envs": ["mgmt", "prod", "stage", "dev", "qa"],
+					"valid_roles": ["admin", "data", "devops", "dba", "sre", "dev"],
+					"assumable_roles": [{
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "106481321259",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "dev",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "admin",
+											"full_name": "figgy-dev-admin"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "106481321259",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "dev",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "data",
+											"full_name": "figgy-dev-data"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "106481321259",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "dev",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dba",
+											"full_name": "figgy-dev-dba"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "106481321259",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "dev",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dev",
+											"full_name": "figgy-dev-dev"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "106481321259",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "dev",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "devops",
+											"full_name": "figgy-dev-devops"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "106481321259",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "dev",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "sre",
+											"full_name": "figgy-dev-sre"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "713117490776",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "qa",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "admin",
+											"full_name": "figgy-qa-admin"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "713117490776",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "qa",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "data",
+											"full_name": "figgy-qa-data"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "713117490776",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "qa",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dba",
+											"full_name": "figgy-qa-dba"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "713117490776",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "qa",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dev",
+											"full_name": "figgy-qa-dev"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "713117490776",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "qa",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "devops",
+											"full_name": "figgy-qa-devops"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "713117490776",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "qa",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "sre",
+											"full_name": "figgy-qa-sre"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "750075891372",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "stage",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "admin",
+											"full_name": "figgy-stage-admin"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "750075891372",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "stage",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "data",
+											"full_name": "figgy-stage-data"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "750075891372",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "stage",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dba",
+											"full_name": "figgy-stage-dba"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "750075891372",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "stage",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dev",
+											"full_name": "figgy-stage-dev"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "750075891372",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "stage",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "devops",
+											"full_name": "figgy-stage-devops"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "750075891372",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "stage",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "sre",
+											"full_name": "figgy-stage-sre"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816219277933",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "mgmt",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "admin",
+											"full_name": "figgy-mgmt-admin"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816219277933",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "mgmt",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "data",
+											"full_name": "figgy-mgmt-data"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816219277933",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "mgmt",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dba",
+											"full_name": "figgy-mgmt-dba"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816219277933",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "mgmt",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dev",
+											"full_name": "figgy-mgmt-dev"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816219277933",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "mgmt",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "devops",
+											"full_name": "figgy-mgmt-devops"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816219277933",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "mgmt",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "sre",
+											"full_name": "figgy-mgmt-sre"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816636370623",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "prod",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "admin",
+											"full_name": "figgy-prod-admin"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816636370623",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "prod",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "data",
+											"full_name": "figgy-prod-data"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816636370623",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "prod",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dba",
+											"full_name": "figgy-prod-dba"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816636370623",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "prod",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "dev",
+											"full_name": "figgy-prod-dev"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816636370623",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "prod",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "devops",
+											"full_name": "figgy-prod-devops"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}, {
+						"py/object": "figcli.models.assumable_role.AssumableRole",
+						"py/state": {
+							"__dict__": {
+								"account_id": "816636370623",
+								"run_env": {
+									"py/object": "figgy.models.run_env.RunEnv",
+									"py/state": {
+										"__dict__": {
+											"env": "prod",
+											"account_id": null
+										},
+										"__fields_set__": {
+											"py/set": ["env"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"role": {
+									"py/object": "figcli.models.role.Role",
+									"py/state": {
+										"__dict__": {
+											"role": "sre",
+											"full_name": "figgy-prod-sre"
+										},
+										"__fields_set__": {
+											"py/set": ["role", "full_name"]
+										},
+										"__private_attribute_values__": {}
+									}
+								},
+								"provider_name": "okta",
+								"profile": null
+							},
+							"__fields_set__": {
+								"py/set": ["account_id", "profile", "provider_name", "role", "run_env"]
+							},
+							"__private_attribute_values__": {}
+						}
+					}],
+					"enabled_regions": ["us-east-1", "us-west-1", "eu-west-1"],
+					"extras": {}
+				},
+				"__fields_set__": {
+					"py/set": ["session_duration", "provider", "auto_mfa", "colors_enabled", "user_id", "run_env", "extras", "enabled_regions", "provider_config", "region", "service_ns", "usage_tracking", "mfa_enabled", "valid_envs", "assumable_roles", "valid_roles", "mfa_serial", "role", "user", "report_errors"]
+				},
+				"__private_attribute_values__": {}
+			}
+		},
+		"last_write": 1619612920939,
+		"last_refresh": 1619612920939
+	}
+}

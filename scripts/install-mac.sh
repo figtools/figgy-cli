@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 install_dir="${HOME}/.figgy/installations/first"
 

@@ -1,8 +1,7 @@
 from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 from cryptography.fernet import Fernet
-from figcli.config.constants import KEYCHAIN_ENCRYPTION_KEY, DEFAULT_ENCRYPTION_KEY
-
+from figcli.config.constants import DEFAULT_ENCRYPTION_KEY
 """
 Largely taken from simple-crypt, but removing pycrypto requirement, instead using pycryptodome.
 Slight tuning to account for faster encrypt/decrypt speeds. Remember, Figgy _only_ deals with temporary
@@ -21,11 +20,11 @@ class FiggyVault:
         self._secrets_mgr = secrets_mgr
         encryption_key = DEFAULT_ENCRYPTION_KEY
         if keychain_enabled:
-            encryption_key = secrets_mgr.get_password(KEYCHAIN_ENCRYPTION_KEY)
+            encryption_key = secrets_mgr.get_encryption_key()
             if not encryption_key:
                 Utils.wipe_vaults()
                 encryption_key: str = Fernet.generate_key().decode()
-                secrets_mgr.set_password(KEYCHAIN_ENCRYPTION_KEY, encryption_key)
+                secrets_mgr.set_encryption_key(encryption_key)
 
         self.fernet = Fernet(encryption_key)
 
