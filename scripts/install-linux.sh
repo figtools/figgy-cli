@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-#!/bin/bash
+set -e
 
 install_dir="${HOME}/.figgy/installations/first"
 
@@ -25,3 +25,5 @@ sudo ln -snf ${install_dir}/figgy/figgy /usr/local/bin/figgy
 echo "Testing install with:  'figgy --version'"
 figgy --version
 
+
+Reading state information... Done

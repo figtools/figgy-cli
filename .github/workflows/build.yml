@@ -185,6 +185,8 @@ jobs:
 
           pyinstaller figgy.spec
 
+          cp build/figgy/* dist/figgy/
+
           ../scripts/zip_it.sh
           ../scripts/tar_it.sh $(../scripts/get_version.sh)
 
