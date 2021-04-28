@@ -6,6 +6,7 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS
 
 from figcli.commands.command_context import CommandContext
+from figcli.models.user.user import User
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.api.audit import AuditController
@@ -15,6 +16,7 @@ from figcli.ui.api.maintenance import MaintenanceController
 from figcli.ui.api.usage import UsageController
 from figcli.ui.api.user import UserController
 from figcli.ui.controller import Controller
+from figcli.ui.models.global_environment import GlobalEnvironment
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +30,21 @@ class App:
         self.app: Flask = Flask(__name__, static_folder='assets', static_url_path='', template_folder='templates')
         self.controllers: List[Controller] = []
         self.init_controllers()
+        # self.build_sessions()
+
+    def build_sessions(self):
+        envs: List[GlobalEnvironment] = []
+        self.user = User(name=self._context.defaults.user,
+                         role=self._context.defaults.role,
+                         assumable_roles=self._context.defaults.assumable_roles,
+                         enabled_regions=self._context.defaults.enabled_regions
+                                         or [self._context.defaults.region])
+
+        for role in self.user.assumable_roles:
+            for region in self.user.enabled_regions:
+                envs.append(GlobalEnvironment(role=role, region=region))
+
+        self._svc_registry.auth_roles(envs)
 
     def init_controllers(self):
         self.controllers.append(UserController('/user', self._context, self._svc_registry))

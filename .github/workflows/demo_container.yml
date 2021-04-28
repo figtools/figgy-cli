@@ -2,9 +2,9 @@ name: Build Containers
 
 on:
   repository_dispatch:
-    types: [build-complete]
-  push:
-    branches: [ test-ui-embed ]
+    types: [trigger-build-containers]
+#  push:
+#    branches: [ test-ui-embed ]
 
 jobs:
   build_container:

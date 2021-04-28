@@ -89,6 +89,7 @@ def lock_boto_client_creation(method):
     Locks boto client creationa cross threads to prevent occasional error messages due to non-thread safe nature of botoclients
     creation.
     """
+
     @wraps(method)
     def impl(self, *args, **kwargs):
         with FileLock(BOTO3_CLIENT_FILE_LOCK_PATH):
@@ -96,7 +97,6 @@ def lock_boto_client_creation(method):
             return method(self, *args, **kwargs)
 
     return impl
-
 
 
 class ServiceRegistry:

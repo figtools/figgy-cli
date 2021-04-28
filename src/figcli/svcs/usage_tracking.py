@@ -85,6 +85,16 @@ class UsageTrackingService:
 
         return sorted(all_logs)
 
+    @cachetools.func.ttl_cache(maxsize=10, ttl=120)
+    def get_parameter_activity(self, parameter_name: str) -> List[UserLog]:
+        user_usage_log = [self.__to_user_log(usage_log) for usage_log in
+                          list(self._usage.find_by_parameter(parameter_name))]
+
+        user_audit_log = [self.__to_user_log(audit_log) for audit_log in
+                          list(self._audit.get_parameter_logs(parameter_name))]
+        all_logs = user_usage_log + user_audit_log
+        return sorted(all_logs)
+
     @cachetools.func.ttl_cache(maxsize=400, ttl=500)
     def hydrate_user_log(self, user_log: UserLog):
         # If no value present, lookup and decrypt if necessary
@@ -105,7 +115,6 @@ class UsageTrackingService:
                 user_log.value = self._cfg.decrypt(user_log.parameter, user_log.value)
 
         return user_log
-
 
     def get_user_list(self) -> List[str]:
         return list(self._user.get_all_users())
