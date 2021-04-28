@@ -40,8 +40,16 @@ class SecretsManager:
         self._last_token = token
         return token
 
+    def get_mfa_password(self, user: str):
+        mfa_override = os.environ.get(FIGGY_MFA_SECRET_OVERRIDE)
+
+        if mfa_override:
+            return mfa_override
+        else:
+            return keyring.get_password(FIGGY_KEYRING_NAMESPACE, f'{user}-mfa')
+
     def generate_mfa(self, user: str) -> str:
-        mfa_secret = keyring.get_password(FIGGY_KEYRING_NAMESPACE, f'{user}-mfa')
+        mfa_secret = self.get_mfa_password(user)
         token = pyotp.TOTP(mfa_secret).now()
         print(f"Authenticating with one-time token: {token}")
         return token
@@ -60,4 +68,8 @@ class SecretsManager:
         return current
 
     def get_password(self, user: str) -> str:
-        return keyring.get_password(FIGGY_KEYRING_NAMESPACE, user)
+        pw_override = os.environ.get(FIGGY_PASSWORD_OVERRIDE)
+        if pw_override:
+            return pw_override
+        else:
+            return keyring.get_password(FIGGY_KEYRING_NAMESPACE, user)

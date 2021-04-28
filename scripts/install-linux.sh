@@ -10,7 +10,7 @@ mkdir -p ${install_dir}
 
 # Download Figgy
 echo "Downloading..."
-cd ${install_dir} && curl -s https://www.figgy.dev/releases/cli/unstable/linux/figgy.zip > figgy.zip
+cd ${install_dir} && curl -s https://www.figgy.dev/releases/cli/latest/linux/figgy.zip > figgy.zip
 
 # Unzip Figgy
 echo "Unzipping (silently to prevent spam)..."
