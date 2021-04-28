@@ -117,7 +117,7 @@ jobs:
           aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz
 
   build_linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
