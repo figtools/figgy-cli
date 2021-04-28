@@ -4,7 +4,7 @@ on:
   repository_dispatch:
     types: [e2e-tests-complete]
   push:
-    branches: [test-ui-embed]
+    branches: [master]
 jobs:
   # Todo create action for the install of figgy-ui into CLI
   build_mac:
