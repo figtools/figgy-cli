@@ -39,7 +39,8 @@ class App:
 
     def run_app(self):
         self.app.add_url_rule('/', 'index', self._goto_index, methods=['GET'])
-        self.app.run(host='127.0.0.1', port=5000, debug=False)
+        # Todo set back to 127.0.0.1 after docker demos.
+        self.app.run(host='0.0.0.0', port=5000, debug=False)
 
     def _goto_index(self):
         return self._serve_page("index.html")

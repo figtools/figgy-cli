@@ -1,0 +1,18 @@
+[FIGGY]
+mfa_enabled = true
+auto_mfa = true
+colors_enabled = true
+report_errors = true
+anonymous_metrics_enabled = true
+aws_region = us-east-1
+
+[OKTA]
+app_link = ${OKTA_EMBED_URL}
+factor_type = GOOGLE
+
+[GOOGLE]
+identity_provider_id = ${GOOGLE_IDP_ID}
+service_provider_id = ${GOOGLE_SP_ID}
+
+[BASTION]
+profile = figgy-sandbox
