@@ -1,8 +1,10 @@
-name: Build & Deploy
+name: Build Containers
 
 on:
   repository_dispatch:
     types: [build-complete]
+  push:
+    branches: [ test-ui-embed ]
 
 jobs:
   build_container:
