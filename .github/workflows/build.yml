@@ -62,7 +62,7 @@ jobs:
           pwd
           ls -l figcli/ui/templates
           ls -l figcli/ui/assets
-          pip3 install pyinstaller==4.0
+          pip3 install pyinstaller==4.3
           pip3 install -r requirements.txt
           pip3 install -r requirements-darwin.txt
 
@@ -183,7 +183,7 @@ jobs:
           ls -l figcli/ui/assets
 
           # install requirements
-          pip3 install pyinstaller==4.0
+          pip3 install pyinstaller==4.3
           pip3 install -r requirements.txt
           pip3 install -r requirements-linux.txt
 
@@ -291,7 +291,7 @@ jobs:
 #          cd $GITHUB_WORKSPACE/src
 #
 #          # install requirements
-#          pip3 install pyinstaller==4.0
+#          pip3 install pyinstaller==4.3
 #          pip3 install -r requirements.txt
 #          pip3 install -r requirements-windows.txt
 #
