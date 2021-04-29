@@ -1,5 +1,9 @@
 Figgy CLI Changelog:
 
+## 1.0.0
+- Figgy 1.0 is out! 
+- New `figgy ui` command that will open a local browser window and provide Figgy CLIs functionality in a new beautiful UI!
+
 ## 0.1.7
 - Updating cryptography package to address another vulnerability
 
