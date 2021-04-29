@@ -1,13 +1,15 @@
-import logging
 import json
+import logging
 import os
+import cachetools.func
+from typing import Dict, Any, Union, Set, Tuple, List, Callable
+
 import jsonpickle
 from filelock import FileLock
-from typing import Dict, Any, Union, Set, Tuple, List, Callable, FrozenSet
+
 from figcli.config import *
 from figcli.svcs.vault import FiggyVault
 from figcli.utils.utils import Utils
-from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -55,9 +57,9 @@ class CacheManager:
     _LAST_REFRESH_KEY = 'last_refresh'
     DEFAULT_REFRESH_INTERVAL = 60 * 60 * 24 * 7 * 1000  # 1 week in MS
 
-    def __init__(self, cache_name: Union[str, FrozenSet, None] = "default", file_override: Union[str, None] = None,
+    def __init__(self, cache_name: Union[str, CliCommand, None] = "default", file_override: Union[str, None] = None,
                  vault: FiggyVault = None):
-        cache_name = Utils.get_first(cache_name) if isinstance(cache_name, frozenset) else cache_name
+        cache_name = cache_name.name if isinstance(cache_name, CliCommand) else cache_name
         self._cache_file: str = f'{CACHE_OTHER_DIR}/{cache_name}-cache.json' if not file_override else file_override
         os.makedirs(CACHE_OTHER_DIR, exist_ok=True)
 
@@ -65,8 +67,11 @@ class CacheManager:
             os.makedirs("/".join(file_override.split('/')[:-1]), exist_ok=True)
 
         self.vault = vault
-        self._lock = FileLock(f'{self._cache_file}.lock')
 
+    def __get_lock(self):
+        return FileLock(f'{self._cache_file}.lock')
+
+    @cachetools.func.ttl_cache(maxsize=3, ttl=500)
     def __decrypt(self, data: bytes) -> str:
         """
         Decrypt the contents of a file, except when the file has been primed and we don't know if this file is going
@@ -76,7 +81,6 @@ class CacheManager:
         :param data: data read from the file to decrypt
         :return: decrypted data if it was decrypted, or just the data if there is no need to decrypt
         """
-
         if data == bytes(EMPTY_CACHE_STR, 'utf-8'):
             return jsonpickle.encode({})
 
@@ -98,18 +102,24 @@ class CacheManager:
         else:
             return bytes(data, 'utf-8')
 
+    @cachetools.func.ttl_cache(maxsize=3, ttl=500)
     def __read(self) -> str:
-        with self._lock:
+        with self.__get_lock():
             with open(self._cache_file, 'rb') as cache:
-                return self.__decrypt(cache.read())
+                val = self.__decrypt(cache.read())
+                return val
 
     def __write(self, data: str):
-        with self._lock:
+        self.__read.cache_clear()
+        self.__decrypt.cache_clear()
+
+        with self.__get_lock():
             with open(self._cache_file, 'wb') as cache:
                 cache.write(self.__encrypt(data))
 
-    def get_val_or_refresh(self, cache_key: str, refresher: Callable, *args, max_age: int = DEFAULT_REFRESH_INTERVAL) \
-            -> Any:
+    def get_val_or_refresh(self, cache_key: str, refresher: Callable, args=[],
+                           max_age: int = DEFAULT_REFRESH_INTERVAL) -> Any:
+
         last_write, val = self.get_or_refresh(cache_key, refresher, *args, max_age=max_age)
         return val
 
@@ -178,7 +188,7 @@ class CacheManager:
         contents: Dict = jsonpickle.decode(cache_contents)
         cache = contents.get(cache_key, {})
         result = cache.get(self._LAST_WRITE_KEY, 0), cache.get(self._STORE_KEY, default)
-        log.info(f'Returning items from cache for cache key: {cache_key}')
+        log.debug(f'Returning items from cache for cache key: {cache_key}')
         return result
 
     def get_val(self, cache_key: str, default=None) -> Any:
@@ -201,7 +211,7 @@ class CacheManager:
             objects = list(objects)
 
         if len(objects) > 0:
-            log.info(f'Appending {len(objects)} items to local cache: {objects}')
+            log.debug(f'Appending {len(objects)} items to local cache: {objects}')
 
             contents: Dict = jsonpickle.decode(self.__read())
             cache = contents.get(cache_key, {})

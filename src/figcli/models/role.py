@@ -1,8 +1,11 @@
-class Role:
+from typing import Optional
 
-    def __init__(self, role: str, full_name: str = None):
-        self.role: str = role
-        self.full_name = full_name
+from pydantic import BaseModel
+
+
+class Role(BaseModel):
+    role: str
+    full_name: Optional[str]
 
     def __str__(self):
         return self.role
@@ -12,3 +15,4 @@ class Role:
 
     def __hash__(self):
         return hash(self.role)
+

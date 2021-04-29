@@ -7,7 +7,7 @@ from figcli.utils.utils import *
 
 class GetAction(FiggyAction):
     def __init__(self, extra_args=""):
-        super().__init__(f'{CLI_NAME} config {Utils.get_first(get)} --env {DEFAULT_ENV} '
+        super().__init__(f'{CLI_NAME} config {get.name} --env {DEFAULT_ENV} '
                          f'--skip-upgrade {extra_args}', extra_args=extra_args)
 
     def get(self, key, value, get_more=False, expect_missing=False, no_decrypt=False):

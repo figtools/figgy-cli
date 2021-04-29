@@ -1,7 +1,8 @@
-from dataclasses import dataclass
+from typing import Optional
+
+from pydantic import BaseModel
 
 
-@dataclass
-class OktaSession:
-    session_id: str
-    session_token: str
+class OktaSession(BaseModel):
+    session_id: Optional[str]
+    session_token: Optional[str]

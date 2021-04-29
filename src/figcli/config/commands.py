@@ -1,70 +1,85 @@
 from pathlib import Path
 from figcli.config.aws import *
 from figcli.config.constants import *
+from figcli.models.cli_command import CliCommand
 
 # Root subcommand types
-version = frozenset({'version'})
-command = frozenset({'command'})
-resource = frozenset({'resource'})
-configure = frozenset({'configure'})
+version = CliCommand("version")
+command = CliCommand('command')
+resource = CliCommand('resource')
+configure = CliCommand('configure')
+ui = CliCommand('ui')
 
 # Resource types
-config = frozenset({'config'})
-iam = frozenset({'iam'})
-login = frozenset({'login'})
+config = CliCommand('config')
+iam = CliCommand('iam')
+login = CliCommand('login')
 
-resources = config | iam
+resources = {config, iam, login, ui}
 
 # Config Sub Command definitions
-sync = frozenset({'sync'})
-put = frozenset({'put'})
-restore = frozenset({'restore'})
-point_in_time = frozenset({'point-in-time'})
-delete = frozenset({'delete'})
-prune = frozenset({'prune'})
-get = frozenset({'get'})
-edit = frozenset({'edit'})
-list_com = frozenset({'list'})
-share = frozenset({'share'})
-promote = frozenset({'promote'})
-ci_path = frozenset({'config'})
-info = frozenset({'info'})
-browse = frozenset({'browse'})
-prompt_com = frozenset({'prompt'})
-audit = frozenset({'audit'})
-dump = frozenset({'dump'})
-replication_only = frozenset({'replication-only'})
-manual = frozenset({'manual'})
-env = frozenset({'env'})
-prefix = frozenset({'prefix'})
-out = frozenset({'out'})
-skip_upgrade = frozenset({'skip-upgrade'})
-service = frozenset({'service'})
-debug = frozenset({'debug'})
-copy_from = frozenset({'copy-from'})
-generate = frozenset({'generate'})
-from_path = frozenset({'from'})
-validate = frozenset({'validate'})
-profile = frozenset({'profile'})
+sync = CliCommand('sync')
+put = CliCommand('put')
+restore = CliCommand('restore')
+point_in_time = CliCommand('point-in-time')
+delete = CliCommand('delete')
+prune = CliCommand('prune')
+get = CliCommand('get')
+edit = CliCommand('edit')
+list_com = CliCommand('list')
+share = CliCommand('share')
+promote = CliCommand('promote')
+ci_path = CliCommand('config')
+info = CliCommand('info')
+browse = CliCommand('browse')
+prompt_com = CliCommand('prompt')
+audit = CliCommand('audit')
+dump = CliCommand('dump')
+replication_only = CliCommand('replication-only')
+manual = CliCommand('manual')
+env = CliCommand('env')
+prefix = CliCommand('prefix')
+out = CliCommand('out')
+skip_upgrade = CliCommand('skip-upgrade')
+service = CliCommand('service')
+debug = CliCommand('debug')
+copy_from = CliCommand('copy-from')
+generate = CliCommand('generate')
+from_path = CliCommand('from')
+validate = CliCommand('validate')
+profile = CliCommand('profile')
 
 # IAM sub commands
-export = frozenset({'export'})
-iam_restore = frozenset({'restore'})
+export = CliCommand('export')
+iam_restore = CliCommand('restore', hash_key='iam_restore')
 
-all_profiles = frozenset({'all-profiles'})
-role = frozenset({'role'})
+# UI Sub comands
+run = CliCommand('run')
+
+all_profiles = CliCommand('all-profiles')
+role = CliCommand('role')
 # argparse options
-help = frozenset({'help'})
-required = frozenset({'required'})
-action = frozenset({'action'})
+help = CliCommand('help')
+required = CliCommand('required')
+action = CliCommand('action')
 store_true = 'store_true'
 
+
 # help commands
-sandbox = frozenset({'sandbox'})
-upgrade = frozenset({'upgrade'})
+sandbox = CliCommand('sandbox')
+upgrade = CliCommand('upgrade')
 
 # Maps CLI `--options` for each argument, and sets flags if necessary
 arg_options = {
+    ui: {
+        run: {
+            info: {action: store_true, required: False},
+            env: {action: None, required: False},
+            skip_upgrade: {action: store_true, required: False},
+            debug: {action: store_true, required: False},
+            profile: {action: None, required: False},
+        }
+    },
     config: {
         prune: {
             config: {action: None, required: False},
@@ -203,7 +218,7 @@ arg_options = {
             skip_upgrade: {action: store_true, required: False},
             debug: {action: store_true, required: False},
             profile: {action: None, required: False},
-        },
+        }
     },
     iam: {
         export: {
@@ -246,15 +261,20 @@ config_commands = [sync, put, edit, delete, prune, get, share, generate,
                    list_com, browse, audit, dump, restore, promote, validate]
 iam_commands = [export, iam_restore]
 help_commands = [configure, version, login, sandbox, upgrade, role]
+login_commands = [login, sandbox]
+ui_commands = [ui]
+
+all_commands = iam_commands + help_commands + config_commands + login_commands + ui_commands
 
 # Used to build out parser, map of resource to sub-commands
 resource_map = {
     config: config_commands,
     iam: iam_commands,
-    login: [login, sandbox]
+    login: login_commands,
+    ui: [run]
 }
 
-options = ci_path | info
+options = {ci_path,  info}
 
 
 # KMS Key Types / Mapping

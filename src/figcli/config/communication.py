@@ -24,14 +24,14 @@ CI_CONFIG_HELP_TEXT = f"Path to your project's figgy.json file."
 VERSION_HELP_TEXT = f'Prints current version, which is, in this case: {VERSION}'
 UPGRADE_HELP_TEXT = f'If available for your operating system, walks the user through an automatic upgrade process.'
 SKIP_UPGRADE_HELP_TEXT = f'Prevents the figgy for checking for a new version. Useful when running E2E tests locally.'
-COMMAND_HELP_TEXT = f'Valid values are: {CollectionUtils.printable_set(config_commands)}'
-RESOURCE_HELP_TEXT = f'Valid values are: {CollectionUtils.printable_set(resources)}'
-CONFIG_HELP_TEXT = f"Managed configuration resources. Commands: [{CollectionUtils.printable_set(config_commands)}]"
+COMMAND_HELP_TEXT = f'Valid values are: {config_commands}'
+RESOURCE_HELP_TEXT = f'Valid values are: {resources}'
+CONFIG_HELP_TEXT = f"Managed configuration resources. Commands: {config_commands}"
 PROMPT_HELP_TEXT = f"With --prompt set you will always be prompted for your AWS CLI Profile name and user type."
 REPLICATION_ONLY_HELP_TEXT = f"Sync a declarative replication-config json file that _only_ contains the {REPLICATION_KEY} block."
 MANUAL_HELP_TEXT = f"Migrate any K/V Hierarchy, or a single KV Pair from Consul into anywhere in ParameterStore " \
                    f"(that you have permissions)."
-IAM_HELP_TEXT = f"Manage your temporary credentials. [{CollectionUtils.printable_set(iam_commands)}]"
+IAM_HELP_TEXT = f"Manage your temporary credentials. {iam_commands}"
 ENV_HELP_TEXT = f"Valid values are:"
 INFO_HELP_TEXT = f"Prints out more detailed information about the selected subcommand."
 CONFIGURE_HELP_TEXT = f"Configure your local FiggyCLI with your remote FiggyCloud installation."
@@ -80,6 +80,8 @@ MISSING_PS_NAME_MESSAGE = "Your application is missing at least one ParameterSto
 PROFILE_HELP_TEXT = "Overrides all other figgy configurations and instead pulls ALL credentials from your local " \
                     "~/.aws/credentials file and uses that for all types of authorization. Ideal for CICD pipelines."
 IAM_RESTORE_HELP_TEXT = "Restores any credentials in ~/.aws/credentials that were automatically backed up by figgy."
+UI_HELP_TEXT = "Loads the Figgy UI in your default browser."
+RUN_HELP_TEXT = "Runs the Figgy UI -- this command is optional and can be run by default with `figgy ui`. "
 
 # Point in time (--point-in-time)
 POINT_IN_TIME = "Restore all parameters to a point in time."
@@ -128,7 +130,9 @@ HELP_TEXT_MAP = {
     validate: VALIDATE_HELP_TEXT,
     profile: PROFILE_HELP_TEXT,
     upgrade: UPGRADE_HELP_TEXT,
-    iam_restore: IAM_RESTORE_HELP_TEXT
+    iam_restore: IAM_RESTORE_HELP_TEXT,
+    ui: UI_HELP_TEXT,
+    run: RUN_HELP_TEXT
 }
 
 # Other
@@ -141,12 +145,12 @@ is_secret = [
 ]
 
 # Config defaults descriptions:
-MFA_DESC = "Does the user above have multi-factor authentication enabled?"
+MFA_DESC = "Set to true if this user requires Multi-factor authentication."
 
 AUTO_MFA_DESC = "By enabling this option you will never be prompted for MFA. Instead figgy will save your " \
-                "multi-factor secret in your OS keychain andwill generated one-time passcodes on your behalf. " \
-                "You will need your MFA secret handy. **This is your MFA secret, NOT your six-digit code that " \
-                "regularly generated."
+                "multi-factor secret in your OS keychain and generated one-time passcodes on your behalf. " \
+                "You will need your MFA secret handy. **Your MFA secret is a long password-like string, " \
+                "it is NOT the six-digit code that is regularly rotated.**"
 
 OKTA_APP_LINK_DESC = "This is the 'Embed URL' linked to your OKTA SAML integration with AWS. For more details see " \
                      "the Figgy Docs OKTA setup guide."

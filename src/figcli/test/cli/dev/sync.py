@@ -43,9 +43,9 @@ class DevSync(FiggyTest):
         delete.delete(self.missing_key)
 
     def sync_success(self):
-        print(f"Testing: {CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} "
+        print(f"Testing: {CLI_NAME} config {sync.name} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/success/figgy.json")
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {sync.name} --env {DEFAULT_ENV} '
                                 f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}',
                                 timeout=45)
         missing_key = '/app/ci-test/v1/config12'
@@ -70,9 +70,9 @@ class DevSync(FiggyTest):
         put.add('/shared/jordan/testrepl3', DELETE_ME_VALUE, desc='desc', add_more=True, delete_first=False)
         put.add('/shared/jordan/testrepl4', DELETE_ME_VALUE, desc='desc', add_more=False, delete_first=False)
 
-        print(f"Testing: {CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} "
+        print(f"Testing: {CLI_NAME} config {sync.name} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/success/multi-level-ns.json")
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {sync.name} --env {DEFAULT_ENV} '
                                 f'--config figcli/test/assets/success/multi-level-ns.json --skip-upgrade'
                                 f' {self.extra_args}', timeout=45)
 
@@ -89,9 +89,9 @@ class DevSync(FiggyTest):
         delete.delete(self.missing_key)
         print("Successful sync + prune passed!")
 
-        print(f"Testing: {CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} "
+        print(f"Testing: {CLI_NAME} config {sync.name} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/error/figgy.json")
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(sync)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {sync.name} --env {DEFAULT_ENV} '
                                 f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}',
                                 timeout=45)
         child.expect('.*Unused Parameter:.*/app/ci-test/v1/config11.*')

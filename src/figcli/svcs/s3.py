@@ -1,10 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
 from threading import Lock
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Any
 
 import boto3
 from botocore.response import StreamingBody
+from pydantic import BaseModel
 from tqdm import tqdm
 
 from figcli.utils.utils import *
@@ -12,12 +12,10 @@ from figcli.utils.utils import *
 log = logging.getLogger(__name__)
 
 
-@dataclass(repr=True)
-class S3MatchResult:
-    def __init__(self, s3_key: str,
-                 matched_text: Union[str, None],
-                 matched_context: Union[str, None],
-                 skipped: bool = False):
+class S3MatchResult(BaseModel):
+    def __init__(self, s3_key: str, matched_text: Union[str, None], matched_context: Union[str, None],
+                 skipped: bool = False, **data: Any):
+        super().__init__(**data)
         self.s3_key = s3_key
         self.matched_text = matched_text
         self._matched_context = matched_context

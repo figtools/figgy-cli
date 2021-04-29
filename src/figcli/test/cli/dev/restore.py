@@ -46,7 +46,7 @@ class DevRestore(FiggyTest):
 
         restore_prefix = f'{param_test_prefix}{self._guuid}/'
         self.step(f"Attempting restore to time: {restore_breakpoint_1} with prefix: {restore_prefix}")
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(restore)} --env {DEFAULT_ENV} --skip-upgrade'
+        child = TestUtils.spawn(f'{CLI_NAME} config {restore.name} --env {DEFAULT_ENV} --skip-upgrade'
                               f' --point-in-time {self.extra_args}')
         child.expect('.*Which.*recursively restore.*')
         child.sendline(restore_prefix)
@@ -72,7 +72,7 @@ class DevRestore(FiggyTest):
 
         restore_prefix = f'{param_test_prefix}{self._guuid}/'
         self.step(f"Attempting restore to time: {restore_breakpoint_2} with prefix: {restore_prefix}")
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(restore)} --env {DEFAULT_ENV} --skip-upgrade'
+        child = TestUtils.spawn(f'{CLI_NAME} config {restore.name} --env {DEFAULT_ENV} --skip-upgrade'
                                 f' --point-in-time {self.extra_args}')
         child.expect('.*Which.*recursively restore.*')
         child.sendline(restore_prefix)

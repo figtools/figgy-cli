@@ -1,5 +1,7 @@
 from typing import Dict, Set
 
+from figgy.data.dao.replication import ReplicationDao
+
 from figcli.config.commands import *
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
@@ -26,11 +28,12 @@ class Prune(ConfigCommand):
     the user that there are stray configurations.
     """
 
-    def __init__(self, ssm: SsmDao, ddb: ConfigDao, context: ConfigContext,
+    def __init__(self, ssm: SsmDao, ddb: ConfigDao, repl_dao: ReplicationDao, context: ConfigContext,
                  config_completer_init: WordCompleter, colors_enabled: bool, delete: Delete, args=None):
         super().__init__(prune, colors_enabled, context)
         self._ssm = ssm  # type: SsmDao
         self._config_dao = ddb  # type: ConfigDao
+        self._repl = repl_dao
         self._config_completer = config_completer_init  # type: WordCompleter
         self._utils = Utils(colors_enabled)
         self.example = f"{self.c.fg_bl}{CLI_NAME} config {self.command_printable} --env dev " \
@@ -39,7 +42,7 @@ class Prune(ConfigCommand):
         self._out = Output(colors_enabled)
 
         # If user passes in --info flag, we don't need all of this to be initialized.
-        if not hasattr(args, Utils.get_first(info)) or args.info is False:
+        if not hasattr(args, info.name) or args.info is False:
             # Validate & parse figgy.json
             self._config = self._utils.get_ci_config(self._config_path)  # type: Dict
             self._shared_names = set(self._utils.get_config_key_safe(SHARED_KEY, self._config, default=[]))  # type: Set
@@ -93,7 +96,7 @@ class Prune(ConfigCommand):
         """
 
         self._out.notify(f"Checking for stray replication configs.")
-        remote_cfgs = self._config_dao.get_all_configs(self._namespace)
+        remote_cfgs = self._repl.get_all_configs(self._namespace)
         notify = True
         if remote_cfgs:
             for cfg in remote_cfgs:
@@ -113,7 +116,7 @@ class Prune(ConfigCommand):
                             f"exist in your figgy.json. Should this be removed? (y/N): ").lower()
                         selection = selection if selection != '' else 'n'
                         if selection == "y":
-                            self._config_dao.delete_config(cfg.destination)
+                            self._repl.delete_config(cfg.destination)
         if notify:
             self._out.success("No remote replication configs found available for prune under namespace: "
                               f"[[{self._namespace}]]")

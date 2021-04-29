@@ -4,6 +4,8 @@ import os
 import platform
 import re
 import time
+import traceback
+
 import botocore
 import urllib3
 
@@ -11,11 +13,12 @@ from collections import OrderedDict
 from json.decoder import JSONDecodeError
 from pathlib import Path
 from sys import exit
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional, Any
 
 from figcli.config import *
 from figcli.config.style.color import Color
 from figcli.config.style.terminal_factory import TerminalFactory
+from figcli.models.cli_command import CliCommand
 from figcli.io.output import Output
 
 log = logging.getLogger(__name__)
@@ -46,7 +49,7 @@ class Utils:
                     if retries > MAX_RETRIES:
                         raise e
 
-                    Utils.notify("Network connectivity issues detected. Retrying with back off...")
+                    Utils.stc_notify("Network connectivity issues detected. Retrying with back off...")
                     retries += 1
                     time.sleep(retries * BACKOFF)
 
@@ -59,11 +62,11 @@ class Utils:
         """
 
         def wrapper(*args, **kwargs):
-            log.info(f"Entering function: {func.__name__} with args: {args}")
+            log.debug(f"Entering function: {func.__name__} with args: {args}")
             start = time.time()
             result = func(*args, **kwargs)
-            log.info(f"Exiting function: {func.__name__} and returning: {result}")
-            log.info(f"Function complete after {round(time.time() - start, 2)} seconds.")
+            log.debug(f"Exiting function: {func.__name__} and returning: {result}")
+            log.info(f"{func.__name__} complete after {round(time.time() - start, 2)} seconds.")
             return result
 
         return wrapper
@@ -109,38 +112,28 @@ class Utils:
         return os.path.islink(path)
 
     @staticmethod
-    def is_set_true(attr: frozenset, args) -> bool:
-        attr_name = Utils.clean_attr_name(attr)
-
-        if hasattr(args, attr_name):
-            return args.__dict__.get(attr_name, False)
-        else:
-            return False
+    def is_set_true(command: CliCommand, args) -> bool:
+        attr_name = command.standardized_name
+        return args.__dict__.get(attr_name, False)
 
     @staticmethod
-    def command_set(check_command: frozenset, args):
-        command_name = args.command if hasattr(args, Utils.get_first(command)) else None
-
-        return command_name == Utils.get_first(check_command)
+    def command_set(check_command: CliCommand, args):
+        command_name = args.command if hasattr(args, 'command') else None
+        return command_name == check_command.name
 
     @staticmethod
-    def attr_if_exists(attr: frozenset, args, default=None) -> Union[object, None]:
-        attr_name = Utils.clean_attr_name(attr)
+    def attr_if_exists(command: CliCommand, args, default=None) -> Union[object, None]:
+        attr_name = command.standardized_name
         return args.__dict__.get(attr_name, default)
 
     @staticmethod
-    def attr_exists(attr: frozenset, args) -> bool:
-        attr_name = Utils.clean_attr_name(attr)
+    def attr_exists(command: CliCommand, args) -> bool:
+        attr_name = command.standardized_name
         return args.__dict__.get(attr_name, None) is not None
-
-    @staticmethod
-    def clean_attr_name(attr: frozenset) -> str:
-        return Utils.get_first(attr).replace('-', '_')
 
     @staticmethod
     def sanitize_session_name(name: str):
         return re.sub(r'\W+', '', name)[:15]
-
 
     @staticmethod
     def wipe_defaults():
@@ -166,6 +159,10 @@ class Utils:
 
     def notify(self, message: str):
         print(f'{self.c.fg_bl}{message}{self.c.rs}')
+
+    @staticmethod
+    def stc_notify(message: str):
+        print(message)
 
     def merge_config_contents(self, a: Dict, b: Dict, a_path: str, b_path: str):
         for key in b:
@@ -218,7 +215,7 @@ class Utils:
                 contents = file.read()
                 self.validate(contents != '',
                               f"File provided at: {self.c.fg_rd}{ci_config_path}{self.c.rs} cannot be empty.")
-                ci_config = json.loads(contents, encoding='utf-8')
+                ci_config = json.loads(contents)
 
                 if IMPORTS_KEY in ci_config:
                     for import_val in ci_config[IMPORTS_KEY]:
@@ -297,6 +294,22 @@ class Utils:
         return namespace.split('/')[2]
 
     @staticmethod
+    def find_command(command_name: str) -> Optional[CliCommand]:
+        cmd = [cmd for cmd in all_commands if cmd.command == command_name]
+        if cmd:
+            return cmd.pop()
+        else:
+            return None
+
+    @staticmethod
+    def find_resource(resource_name: str) -> Optional[CliCommand]:
+        cmd = [cmd for cmd in resources if cmd.command == resource_name]
+        if cmd:
+            return cmd.pop()
+        else:
+            return None
+
+    @staticmethod
     def get_parameter_only(parameter_name: str):
         base_name = parameter_name
         """
@@ -356,7 +369,6 @@ class Utils:
     def validate(self, boolean: bool, error_msg: str):
         if not boolean:
             self.error_exit(error_msg)
-
 
     def is_valid_selection(self, selection: str, notify: bool):
         result = selection is not None and (selection.lower() == "y" or selection.lower() == "n")
@@ -519,6 +531,27 @@ class Utils:
                 return []
             else:
                 return default
+
+    @staticmethod
+    def load_file(file_path: str) -> str:
+        try:
+            with open(file_path, 'r') as file:
+                return file.read()
+        except FileNotFoundError:
+            print(
+                f"Provided file path: {file_path} is invalid. No file found.")
+            exit(1)
+
+    @staticmethod
+    def class_props(cls):
+        return [i for i in cls.__dict__.keys() if i[:1] != '_']
+
+    @staticmethod
+    def property_matches(obj: Any, comparator: str) -> bool:
+        props = [p for p in dir(obj) if not p.startswith('__') and not callable(getattr(obj, p))]
+        props = [p for p in props if p != '_abc_impl'] # filter out abstract class stuff
+        matching_attr = [p for p in props if comparator in str(getattr(obj, p))]
+        return bool(matching_attr)
 
 
 class InvalidSessionError(Exception):

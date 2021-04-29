@@ -10,7 +10,6 @@ from figcli.commands.config.delete import Delete
 from figcli.commands.config.get import Get
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.types.config import ConfigCommand
-from figgy.data.dao.config import ConfigDao
 from figgy.data.dao.ssm import SsmDao
 from figcli.io.input import Input
 from figcli.io.output import OutUtils
@@ -232,7 +231,7 @@ class BrowseApp(NPSApp):
             prefix_child = td.newChild(content=self._browse.prefix, selectable=False, expanded=False)
             children = [prefix_child]
         else:
-            log.info(f"--{Utils.get_first(prefix)} missing, defaulting to normal browse tree.")
+            log.info(f"--{prefix.name} missing, defaulting to normal browse tree.")
 
             for namespace in self._config_view.get_authorized_namespaces():
                 child = td.newChild(content=namespace, selectable=False, expanded=False)

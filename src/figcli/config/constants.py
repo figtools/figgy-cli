@@ -81,6 +81,9 @@ PLUGIN_KEY = 'plugins'
 # Config paths
 PS_FIGGY_ACCOUNTS_PREFIX = '/figgy/accounts/'
 PS_FIGGY_DEFAULT_SERVICE_NS_PATH = '/figgy/defaults/service-namespace'
+PS_FIGGY_REPL_KEY_ID_PATH = '/figgy/kms/replication-key-id'
+PS_FIGGY_ALL_KMS_KEYS_PATH = '/figgy/kms/all-keys'
+PS_FIGGY_REGIONS = '/figgy/regions'
 
 # Replication Types:
 repl_types = [REPL_TYPE_APP, REPL_TYPE_MERGE]
@@ -100,6 +103,7 @@ STS_SESSION_CACHE_PATH = f"{HOME}/.figgy/lockbox/sts/sessions"
 SAML_SESSION_CACHE_PATH = f"{HOME}/.figgy/lockbox/sso/saml"
 OKTA_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/okta/session"
 GOOGLE_SESSION_CACHE_PATH = f"{HOME}/.figgy/cache/google/session"
+BOTO3_CLIENT_FILE_LOCK_PATH = f"{HOME}/.figgy/cache/boto3/client.lock"
 FIGGY_LOCK_FILE_PATH = f"{HOME}/.figgy/lock"
 
 # Defaults file keys
@@ -112,6 +116,10 @@ DEFAULTS_PROFILE_KEY = 'profile'
 DEFAULTS_REGION_KEY = 'region'
 MFA_SERIAL_KEY = 'mfa_serial'
 DEFAULTS_KEY = 'defaults'
+
+# Env Overrides
+FIGGY_PASSWORD_OVERRIDE = 'FIGGY_PASSWORD_OVERRIDE'
+FIGGY_MFA_SECRET_OVERRIDE = 'FIGGY_MFA_SECRET_OVERRIDE'
 
 # Cache File keys
 OKTA_SESSION_TOKEN_CACHE_KEY = 'session_token'
@@ -128,7 +136,7 @@ OVERRIDE_KEYRING_ENV_VAR = "OVERRIDE_KEYRING"
 ONE_WEEK_SECONDS = 60 * 60 * 24 * 7
 
 # Figgy Sandbox
-SANDBOX_ROLES = ['dev', 'devops', 'sre', 'data', 'dba']
+SANDBOX_ROLES = ['dev', 'devops', 'sre', 'data', 'dba', 'admin']
 GET_SANDBOX_CREDS_URL = "https://q39v8f3u13.execute-api.us-east-1.amazonaws.com/sandbox-bastion/v1/get-credentials"
 FIGGY_SANDBOX_REGION = 'us-east-1'
 FIGGY_SANDBOX_PROFILE = 'figgy-sandbox'

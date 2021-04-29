@@ -3,6 +3,7 @@ import os
 from typing import *
 
 from botocore.exceptions import ClientError
+from figgy.data.dao.replication import ReplicationDao
 
 from figcli.commands.config.get import Get
 from figcli.commands.config.put import Put
@@ -21,12 +22,18 @@ from figcli.utils.utils import Utils
 
 
 class Sync(ConfigCommand):
+    """
+    Synchronizes local application configuration state as defined in the figgy.json file and the existing remote state
+    in the targeted environment. Also configures replication for designated shared parameters in the
+    figgy.json file.
+    """
 
-    def __init__(self, ssm_init: SsmDao, config_init: ConfigDao, colors_enabled: bool,
+    def __init__(self, ssm_init: SsmDao, config_init: ConfigDao, repl_dao: ReplicationDao, colors_enabled: bool,
                  context: ConfigContext, get: Get, put: Put):
         super().__init__(sync, colors_enabled, context)
         self._config = config_init
         self._ssm = ssm_init
+        self._repl = repl_dao
         self._config_path = context.ci_config_path if context.ci_config_path else Utils.find_figgy_json()
         self._utils = Utils(colors_enabled)
         self._replication_only = context.replication_only
@@ -37,13 +44,6 @@ class Sync(ConfigCommand):
         self._put: Put = put
         self._FILE_PREFIX = "file://"
         self._out = Output(colors_enabled)
-
-    def _load_file(self, file_path: str) -> str:
-        try:
-            with open(file_path, 'r') as file:
-                return file.read()
-        except FileNotFoundError:
-            self._utils.error_exit(f"Provided file path: {file_path} is invalid. No file found.")
 
     def _input_config_values(self, config_keys: Set[str]) -> None:
         """
@@ -108,7 +108,8 @@ class Sync(ConfigCommand):
         """
         local_configs: List[ReplicationConfig] = ReplicationConfig.from_dict(conf=config_repl,
                                                                              type=ReplicationType(REPL_TYPE_APP),
-                                                                             run_env=self.run_env, namespace=namespace)
+                                                                             run_env=self.run_env,
+                                                                             namespace=namespace)
         for l_cfg in local_configs:
             # Namespace will be missing for --replication-only syncs. Otherwise, with standard syncs, namespace is passed
             # as a parameter here.
@@ -121,7 +122,7 @@ class Sync(ConfigCommand):
                 self.errors_detected = True
                 continue
 
-            remote_cfg = self._config.get_config_repl(l_cfg.destination)
+            remote_cfg = self._repl.get_config_repl(l_cfg.destination)
 
             # Should never happen, except when someone manually deletes source / destination without going through CLI
             missing_from_ps = self.__get_param_encrypted(l_cfg.source) is None
@@ -129,10 +130,10 @@ class Sync(ConfigCommand):
             if not remote_cfg or remote_cfg != l_cfg or missing_from_ps:
                 try:
                     if self._can_replicate_from(l_cfg.source) and not remote_cfg or missing_from_ps:
-                        self._config.put_config_repl(l_cfg)
+                        self._repl.put_config_repl(l_cfg)
                         self._out.print(f"[[Replication added:]] {l_cfg.source} -> {l_cfg.destination}")
                     elif self._can_replicate_from(l_cfg.source) and remote_cfg:
-                        self._config.put_config_repl(l_cfg)
+                        self._repl.put_config_repl(l_cfg)
                         self._out.notify(f"Replication updated.")
                         self._out.warn(f"Removed: {remote_cfg.source} -> {remote_cfg.destination}")
                         self._out.success(f"Added: {l_cfg.source} -> {l_cfg.destination}")
@@ -156,7 +157,7 @@ class Sync(ConfigCommand):
         notify = False
         for repl in config_repl:
             namespace = self._utils.parse_namespace(config_repl[repl])
-            remote_cfgs = self._config.get_all_configs(namespace)
+            remote_cfgs = self._repl.get_all_configs(namespace)
 
             if remote_cfgs:
                 for cfg in remote_cfgs:
@@ -189,7 +190,7 @@ class Sync(ConfigCommand):
 
         self._sync_repl_configs(config_repl, namespace=namespace)
         self._out.notify(f"\nChecking for stray replication configurations.")
-        remote_cfgs = self._config.get_all_configs(namespace)
+        remote_cfgs = self._repl.get_all_configs(namespace)
         notify = True
         if remote_cfgs:
             for cfg in remote_cfgs:
@@ -248,12 +249,12 @@ class Sync(ConfigCommand):
         for key in config_merge:
             self._validate_merge_keys(key, config_merge[key], namespace)
 
-            config = self._config.get_config_repl(key)
+            config = self._repl.get_config_repl(key)
             if not config or (config.source != config_merge[key]):
                 try:
-                    repl_config = ReplicationConfig(key, self.run_env, namespace,
-                                                    config_merge[key], ReplicationType(REPL_TYPE_MERGE))
-                    self._config.put_config_repl(repl_config)
+                    repl_config = ReplicationConfig(destination=key, run_env=self.run_env, namespace=namespace,
+                                                    source=config_merge[key], type=ReplicationType(REPL_TYPE_MERGE))
+                    self._repl.put_config_repl(repl_config)
                 except ClientError:
                     self._utils.validate(False, f"Error detected when attempting to store replication config for {key}")
                     self._errors_detected = True
@@ -345,7 +346,7 @@ class Sync(ConfigCommand):
             Notifies the user if there is a parameter that has been shared into their namespace by an outside party
             but they have not added it to the `shared_figs` block of their figgy.json
         """
-        all_repl_cfgs = self._config.get_all_configs(namespace)
+        all_repl_cfgs = self._repl.get_all_configs(namespace)
         for cfg in all_repl_cfgs:
             in_merge_conf = self._in_merge_value(cfg.destination, merge_conf)
 

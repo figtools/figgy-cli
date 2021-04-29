@@ -29,9 +29,9 @@ class DevValidate(FiggyTest):
         print("Sleeping to give time for replication")
         time.sleep(50)
 
-        print(f"Testing: {CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} "
+        print(f"Testing: {CLI_NAME} config {validate.name} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/success/figgy.json {self.extra_args}")
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {validate.name} --env {DEFAULT_ENV} '
                               f'--config figcli/test/assets/success/figgy.json --skip-upgrade {self.extra_args}')
         child.expect(".*Success.*")
         print("VALIDATE SUCCESS VERIFIED")
@@ -39,9 +39,9 @@ class DevValidate(FiggyTest):
     def validate_error(self):
         delete = DeleteAction(extra_args=self.extra_args)
         delete.delete(self.missing_key)
-        print(f"Testing: {CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} "
+        print(f"Testing: {CLI_NAME} config {validate.name} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/error/figgy.json {self.extra_args}")
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(validate)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {validate.name} --env {DEFAULT_ENV} '
                               f'--config figcli/test/assets/error/figgy.json --skip-upgrade {self.extra_args}')
         child.expect('.*missing at least one.*')
         print("VALIDATE ERROR VERIFIED")

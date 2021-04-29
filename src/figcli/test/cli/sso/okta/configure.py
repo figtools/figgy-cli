@@ -8,12 +8,12 @@ import os
 class ConfigureOkta(FiggyTest):
     def __init__(self, role_type: str):
         self._role_type = role_type
-        super().__init__(pexpect.spawn(f'{CLI_NAME} --{Utils.get_first(configure)} --skip-upgrade',
-                                       encoding='utf-8', timeout=20))
+        super().__init__(pexpect.spawn(f'{CLI_NAME} --{configure.name} --skip-upgrade',
+                                       encoding='utf-8', timeout=60))
         # self._child = pexpect.spawn()
 
     def run(self):
-        self.step(f"Testing `{CLI_NAME} --{Utils.get_first(configure)}`")
+        self.step(f"Testing `{CLI_NAME} --{configure.name}`")
         user_name = os.environ.get(OKTA_SSO_USER)
         password = os.environ.get(OKTA_SSO_PASSWORD)
         embed_url = os.environ.get(OKTA_EMBED_URL)

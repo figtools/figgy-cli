@@ -4,6 +4,7 @@ from figcli.config import *
 from figcli.models.assumable_role import AssumableRole
 from figgy.models.run_env import RunEnv
 from figcli.models.role import Role
+from figcli.models.cli_command import CliCommand
 from figcli.utils.utils import Utils
 from typing import Optional, Dict, Union, List, Set
 
@@ -15,11 +16,11 @@ class FiggyContext:
     Contains contextual data required for building commands based on CLI input.
     """
 
-    def __init__(self, colors_enabled: bool, resource: frozenset, command: frozenset,
+    def __init__(self, colors_enabled: bool, resource: CliCommand, command: CliCommand,
                  run_env: RunEnv, role: AssumableRole, args: argparse.Namespace):
         self.colors_enabled = colors_enabled
-        self.command: frozenset = command
-        self.resource: frozenset = resource
+        self.command: CliCommand = command
+        self.resource: CliCommand = resource
 
         # This enables us to have "commands" without resources. Like `figgy login` instead of `figgy login login`.
         # Makes things a bit more flexible.
@@ -47,10 +48,10 @@ class FiggyContext:
 
         logger.info(self.__dict__)
 
-    def has_optional_arguments(self, argument: frozenset):
+    def has_optional_arguments(self, argument: CliCommand):
         return Utils.is_set_true(argument, self.args)
 
-    def find_matching_optional_arguments(self, arguments: List[frozenset]) -> Set[frozenset]:
+    def find_matching_optional_arguments(self, arguments: List[CliCommand]) -> Set[CliCommand]:
         optional_args = set()
         for arg in arguments:
             if Utils.is_set_true(arg, self.args):

@@ -8,8 +8,8 @@ from figcli.utils.utils import *
 
 class DeleteAction(FiggyAction):
     def __init__(self, extra_args=""):
-        print(f"Testing `figgy config {Utils.get_first(delete)} --env {DEFAULT_ENV}`")
-        super().__init__(f'{CLI_NAME} config {Utils.get_first(delete)} --env {DEFAULT_ENV} '
+        print(f"Testing `figgy config {delete.name} --env {DEFAULT_ENV}`")
+        super().__init__(f'{CLI_NAME} config {delete.name} --env {DEFAULT_ENV} '
                          f'{extra_args} --skip-upgrade', extra_args=extra_args)
 
     def delete(self, name, check_delete=False, delete_another=False):

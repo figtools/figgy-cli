@@ -9,9 +9,9 @@ from figcli.utils.utils import *
 
 class DataShare(FiggyTest):
     def __init__(self, extra_args=""):
-        print(f"Testing `{CLI_NAME} config {Utils.get_first(share)} --env {DEFAULT_ENV}`")
+        print(f"Testing `{CLI_NAME} config {share.name} --env {DEFAULT_ENV}`")
         super().__init__(None, extra_args=extra_args)
-        self._child = pexpect.spawn(f'{CLI_NAME} config {Utils.get_first(share)} --env '
+        self._child = pexpect.spawn(f'{CLI_NAME} config {share.name} --env '
                                     f'{DEFAULT_ENV} --skip-upgrade {extra_args}',
                                     timeout=20, encoding='utf-8')
 

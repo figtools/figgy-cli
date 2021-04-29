@@ -27,9 +27,9 @@ class DevPromote(FiggyTest):
         put.add_encrypt_app('/app/test-promote/v1/config13', DELETE_ME_VALUE, desc='desc', add_more=False)
 
     def promote(self):
-        print(f"Testing: {CLI_NAME} config {Utils.get_first(promote)} --env {DEFAULT_ENV} "
+        print(f"Testing: {CLI_NAME} config {promote.name} --env {DEFAULT_ENV} "
               f"--config figcli/test/assets/success/figgy.json")
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(promote)} --env {DEFAULT_ENV} '
+        child = TestUtils.spawn(f'{CLI_NAME} config {promote.name} --env {DEFAULT_ENV} '
                                 f'--skip-upgrade {self.extra_args}')
         child.expect(f'.*prefix to promote.*')
         child.sendline('/app/test-promote/')

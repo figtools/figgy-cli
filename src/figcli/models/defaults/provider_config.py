@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from typing import Optional
 
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
+from pydantic import BaseModel
 
 from figcli.config import Config, CONFIG_OVERRIDE_FILE_PATH, SUPPORTED_OKTA_FACTOR_TYPES, FAKE_GOOGLE_IDP_ID, FAKE_GOOGLE_SP_ID, FAKE_OKTA_APP_LINK
 from figcli.io.input import Input, List
@@ -33,8 +34,7 @@ class ProviderConfigFactory:
             return BastionProviderConfig.configure(mfa_enabled)
 
 
-@dataclass
-class BastionProviderConfig(ProviderConfig):
+class BastionProviderConfig(BaseModel, ProviderConfig):
     profile_name: str
 
     @staticmethod
@@ -54,8 +54,7 @@ class BastionProviderConfig(ProviderConfig):
         return self.profile_name
 
 
-@dataclass
-class GoogleProviderConfig(ProviderConfig):
+class GoogleProviderConfig(BaseModel, ProviderConfig):
     """
         idp_id: str -> Google's assigned IDP Identifier for your google authentication.
                        This can be found in your IDP metadata.xml file (or elsewhere, probably)
@@ -97,14 +96,13 @@ class GoogleProviderConfig(ProviderConfig):
         return GoogleProviderConfig(idp_id=idp_id, sp_id=sp_id)
 
 
-@dataclass
-class OktaProviderConfig(ProviderConfig):
+class OktaProviderConfig(BaseModel, ProviderConfig):
     """
         app_link: str Application embed link for the company's AWS application in OKTA
                   Looks something like this: https://your-company.okta.com/home/amazon_aws/ASDF12351fg1/234'
     """
     app_link: str
-    factor_type: str
+    factor_type: Optional[str]
 
     @property
     def base_url(self) -> str:

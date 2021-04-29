@@ -27,7 +27,10 @@ elif platform.system() == WINDOWS:
 a = Analysis(['figcli/__main__.py'],
              pathex=[cwd],
              binaries=[],
-             datas=[(os.path.dirname(wcwidth.__file__), 'wcwidth')],
+             datas=[(os.path.dirname(wcwidth.__file__), 'wcwidth'),
+                    ('figcli/ui/assets', 'figcli/ui/assets'),
+                    ('figcli/ui/templates', 'figcli/ui/templates')
+                ],
              hiddenimports=hidden_imports,
              hookspath=[],
              runtime_hooks=[],

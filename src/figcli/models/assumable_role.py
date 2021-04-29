@@ -1,15 +1,14 @@
-from dataclasses import dataclass
 from typing import List, Optional
 
 from figcli.models.defaults.provider import Provider
 from figcli.models.role import Role
 from figgy.models.run_env import RunEnv
 from tabulate import tabulate
+from pydantic import BaseModel
 
 
-@dataclass
-class AssumableRole:
-    account_id: int
+class AssumableRole(BaseModel):
+    account_id: str
     run_env: RunEnv
     role: Optional[Role]
     provider_name: Optional[str]
@@ -22,7 +21,11 @@ class AssumableRole:
         return ["Account #", "Environment", "Role"]
 
     def print(self):
-        print(self.__dict__)
+        print(self.dict())
+
+
+    def cache_key(self):
+        return self.role.full_name
 
     @staticmethod
     def default_from_role_env(role: Role, env: RunEnv):
@@ -39,7 +42,7 @@ class AssumableRole:
             account_id=1234567899,
             run_env=RunEnv(env=profile),
             profile=profile,
-            role=Role(profile),
+            role=Role(role=profile),
             provider_name=Provider.PROFILE.value)
 
     @property

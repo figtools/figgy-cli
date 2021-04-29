@@ -26,10 +26,10 @@ class DevDump(FiggyTest):
             more = i < maximum - 1
             put.add_another(f'{param_1}-{i}', param_1_val, f'{param_1_desc}-{i}', add_more=more)
 
-        child = TestUtils.spawn(f'{CLI_NAME} config {Utils.get_first(dump)} --env {DEFAULT_ENV} {self.extra_args}'
+        child = TestUtils.spawn(f'{CLI_NAME} config {dump.name} --env {DEFAULT_ENV} {self.extra_args}'
                               f' --skip-upgrade')
 
-        self.step(f"Testing `{CLI_NAME} config {Utils.get_first(dump)} --env {DEFAULT_ENV}`")
+        self.step(f"Testing `{CLI_NAME} config {dump.name} --env {DEFAULT_ENV}`")
         child.expect('.*to dump from.*')
         child.sendline(dump_prefix)
         child.expect(f'.*{param_1}-{minimum}.*{param_1}-{maximum-1}.*')
