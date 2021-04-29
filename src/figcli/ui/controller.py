@@ -6,10 +6,7 @@ from typing import List, Any
 
 import botocore
 from botocore.exceptions import ClientError
-<<<<<<< HEAD
-=======
 from figgy.utils.exceptions import FiggyValidationError
->>>>>>> master
 from flask import Response, request
 from pydantic import BaseModel
 

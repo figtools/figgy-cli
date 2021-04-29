@@ -1,9 +1,5 @@
 import webbrowser
-<<<<<<< HEAD
-
-=======
 import time
->>>>>>> master
 from figcli.commands.command_context import CommandContext
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
@@ -27,13 +23,6 @@ class UI(CliCommand):
     @AnonymousUsageTracker.track_command_usage
     def execute(self):
         from figcli.ui.app import App
-
-<<<<<<< HEAD
-        app = App(self.context, self._session_mgr)
-        app.run()
-        self._out.success_h2("Loading Figgy UI")
-        webbrowser.open("http://localhost:5000/")
-=======
         try:
             app = App(self.context, self._session_mgr)
             app.run()
@@ -45,4 +34,3 @@ class UI(CliCommand):
         except KeyboardInterrupt:
             self._out.success_h2("Exiting Figgy UI. Have a great day!")
             pass
->>>>>>> master
