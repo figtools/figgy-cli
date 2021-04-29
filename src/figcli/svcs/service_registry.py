@@ -66,7 +66,7 @@ def refreshable_cache(cache_key):
                                 this_func = getattr(value, func)
                                 this_func.cache_clear()
                             except Exception as e:
-                                log.info(f'Caught exception {e} when attempting cache clear for method {func}')
+                                log.info(f'Caught expected exception: {e} when attempting cache clear for method {func}')
 
                     try:
                         self.CACHE.pop(oldest_item[0])
