@@ -6,6 +6,7 @@ from typing import List, Any
 
 import botocore
 from botocore.exceptions import ClientError
+from figgy.utils.exceptions import FiggyValidationError
 from flask import Response, request
 from pydantic import BaseModel
 
@@ -180,6 +181,12 @@ class Controller:
                 log.exception(e6)
                 log.info(f"Got request with invalid parameters: {e6.invalid_parameters}")
                 return ResponseBuilder.build(FiggyResponse.invalid_parameters(e6.invalid_parameters))
+            except ValueError as e7:
+                log.exception(f"Validation error caught: {e7}")
+                return ResponseBuilder.build(FiggyResponse.validation_error(f'{e7}'))
+            except FiggyValidationError as e8:
+                log.exception(f"Validation error caught: {e8.message}")
+                return ResponseBuilder.build(FiggyResponse.validation_error(f'{e8.message}'))
             except BaseException as e1:
                 log.warning('Caught unexpected exception: {e1}')
                 log.exception(e1)

@@ -53,3 +53,9 @@ class FiggyResponse(BaseModel):
         error.message = error.message + f" The following request parameter(s) were expected but missing or invalid: " \
                                         f"{missing_parameters}"
         return FiggyResponse(error=error)
+
+    @staticmethod
+    def validation_error(error_msg: str):
+        error = FiggyError(**Error.BAD_REQUEST)
+        error.message = error.message + f' {error_msg}'
+        return FiggyResponse(error=error)
