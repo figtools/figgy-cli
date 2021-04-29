@@ -3,8 +3,7 @@ name: Build & Deploy
 on:
   repository_dispatch:
     types: [e2e-tests-complete]
-  push:
-    branches: [master]
+
 jobs:
   # Todo create action for the install of figgy-ui into CLI
   build_mac:
