@@ -1,5 +1,9 @@
 Figgy CLI Changelog:
 
+## 1.1.0
+- Adding new `build-cache` command that will force build out figgy's caches ahead of time for a more excellent user
+experience (it's also better for demos :smiley:)
+
 ## 1.0.1
 - Keyboard interrupts for `figgy ui` commands will now provide a friendly error message. Have a great day!
 

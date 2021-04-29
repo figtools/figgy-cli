@@ -2,6 +2,7 @@ from boto3.resources.base import ServiceResource
 from figgy.data.dao.audit import AuditDao
 from figgy.data.dao.replication import ReplicationDao
 
+from figcli.commands.config.build_cache import BuildCache
 from figcli.commands.config.list import List as FigList
 from figcli.commands.config.audit import Audit
 from figcli.commands.config.browse import Browse
@@ -14,7 +15,6 @@ from figcli.commands.config.promote import Promote
 from figcli.commands.config.restore import Restore
 from figcli.commands.config.share import *
 from figcli.commands.config.sync import *
-from figcli.commands.config.ui import UI
 from figcli.commands.config.validate import Validate
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.factory import Factory
@@ -94,6 +94,8 @@ class ConfigFactory(Factory):
             return Generate(self._colors_enabled, self._config_context)
         elif command == validate:
             return Validate(self._ssm, self._colors_enabled, self._config_context)
+        elif command == build_cache:
+            return BuildCache(self._session_manager, self._colors_enabled, self._config_context)
         else:
             self._utils.error_exit(f"{command} is not a valid command. You must select from: "
                                    f"[{CollectionUtils.printable_set(config_commands)}]. Try using --help for more info.")
