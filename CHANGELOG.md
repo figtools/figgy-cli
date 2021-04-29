@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.0.1
+- Keyboard interrupts for `figgy ui` commands will now provide a friendly error message. Have a great day!
+
 ## 1.0.0
 - Figgy 1.0 is out! 
 - New `figgy ui` command that will open a local browser window and provide Figgy CLIs functionality in a new beautiful UI!

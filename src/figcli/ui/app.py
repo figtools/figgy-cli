@@ -76,4 +76,5 @@ class App:
             log.info(rule)
 
         app_thread = Thread(target=self.run_app, args=())
+        app_thread.daemon = True
         app_thread.start()
