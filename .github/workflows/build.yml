@@ -3,8 +3,6 @@ name: Build & Deploy
 on:
   repository_dispatch:
     types: [e2e-tests-complete]
-  push:
-    branches: [windows-build-fix]
   watch:
     types: [started]
 jobs:
