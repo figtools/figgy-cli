@@ -19,6 +19,7 @@ from figcli.models.role import Role
 from figgy.models.run_env import RunEnv
 from figcli.svcs.observability.error_reporter import FiggyErrorReporter
 from figcli.svcs.setup import FiggySetup
+from figcli.utils.environment_validator import EnvironmentValidator
 from figcli.utils.utils import Utils
 
 root_logger = logging.getLogger()
@@ -177,12 +178,15 @@ class FiggyCLI:
         use case (like sandbox logins).
         """
 
-
         return Utils.is_set_true(configure, args) \
                or Utils.command_set(sandbox, args) \
                or Utils.is_set_true(version, args) \
                or Utils.attr_exists(profile, args) \
                or Utils.is_set_true(upgrade, args)
+
+    @staticmethod
+    def validate_environment(defaults: CLIDefaults):
+        EnvironmentValidator(defaults).validate_all()
 
     def __init__(self, args):
         """
@@ -199,6 +203,8 @@ class FiggyCLI:
         self._run_env = self._defaults.run_env
         role_override = Utils.attr_if_exists(role, args)
         self._role: Role = self.get_role(args.prompt, role_override=role_override, is_setup=self._is_setup_command)
+
+        FiggyCLI.validate_environment(self._defaults)
 
         if not self._is_setup_command:
             if not hasattr(args, 'env') or args.env is None:
@@ -221,7 +227,7 @@ class FiggyCLI:
         found_resource: CliCommand = Utils.find_resource(str(resource_name))
 
         self._context: FiggyContext = FiggyContext(self.get_colors_enabled(), found_resource, found_command,
-                                     self._run_env, self._assumable_role, args)
+                                                   self._run_env, self._assumable_role, args)
 
 
 def main():

@@ -18,13 +18,13 @@ from figcli.models.role import Role
 from figgy.models.run_env import RunEnv
 import figcli.config.commands as commands
 from figcli.svcs.aws_cfg import AWSConfig
-from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config_manager import ConfigManager
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.svcs.setup import FiggySetup
 from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
 from figcli.models.sandbox.login_response import SandboxLoginResponse
+from figcli.utils.environment_validator import EnvironmentValidator
 from figcli.utils.utils import Utils
 
 
@@ -64,10 +64,7 @@ class Login(HelpCommand, ABC):
         """
         If user provides --role flag, skip role & env selection for a smoother user experience.
         """
-        for env_var in RESTRICTED_ENV_VARS:
-            if os.environ.get(env_var):
-                self._out.error_h2('AWS Environment overrides detected')
-                self._out.error(f'Figgy ')
+        EnvironmentValidator(self._defaults).validate_environment_variables()
 
         Utils.wipe_vaults() or Utils.wipe_defaults() or Utils.wipe_config_cache()
 
