@@ -2,8 +2,6 @@ name: Build Containers
 on:
   repository_dispatch:
     types: [trigger-build-containers]
-#  push:
-#    branches: [ test-ui-embed ]
 
 jobs:
   build_container:

@@ -1,3 +1,5 @@
+import os
+
 import requests
 from abc import ABC
 import re
@@ -8,6 +10,7 @@ from figcli.commands.help_context import HelpContext
 from figcli.commands.types.help import HelpCommand
 from figcli.config import *
 from figcli.io.input import Input
+from figcli.io.output import Output
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider
@@ -15,13 +18,13 @@ from figcli.models.role import Role
 from figgy.models.run_env import RunEnv
 import figcli.config.commands as commands
 from figcli.svcs.aws_cfg import AWSConfig
-from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config_manager import ConfigManager
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
 from figcli.svcs.setup import FiggySetup
 from figcli.svcs.auth.provider.provider_factory import SessionProviderFactory
 from figcli.models.sandbox.login_response import SandboxLoginResponse
+from figcli.utils.environment_validator import EnvironmentValidator
 from figcli.utils.utils import Utils
 
 
@@ -38,6 +41,7 @@ class Login(HelpCommand, ABC):
         self._figgy_context = figgy_context
         self._utils = Utils(self._defaults.colors_enabled)
         self._aws_cfg = AWSConfig(color=self.c)
+        self._out = Output(self._defaults.colors_enabled)
 
         self.example = f"\n\n{self.c.fg_bl}{CLI_NAME} {login.name} \n" \
                        f"{self.c.rs}{self.c.fg_yl}  --or--{self.c.rs}\n" \
@@ -60,6 +64,8 @@ class Login(HelpCommand, ABC):
         """
         If user provides --role flag, skip role & env selection for a smoother user experience.
         """
+        EnvironmentValidator(self._defaults).validate_environment_variables()
+
         Utils.wipe_vaults() or Utils.wipe_defaults() or Utils.wipe_config_cache()
 
         print(f"{self.c.fg_bl}Logging you into the Figgy Sandbox environment.{self.c.rs}")

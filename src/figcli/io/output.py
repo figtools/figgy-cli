@@ -109,6 +109,9 @@ class Notification:
     def print(self):
         self.p('', self.color.fg_bl)
 
+    def print_h2(self):
+        self.h2('', '', '')
+
 class Output:
     """
     Contains utilities around IO
@@ -143,3 +146,6 @@ class Output:
 
     def print(self, message: str):
         Notification(message=message, color=self.c).print()
+
+    def print_h2(self, message: str):
+        Notification(message=message, color=self.c).print_h2()

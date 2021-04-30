@@ -63,7 +63,7 @@ class App:
         return self._serve_page("index.html")
 
     def _serve_page(self, file_relative_path_to_root):
-        return send_from_directory(self._static_files_root_folder_path, file_relative_path_to_root)
+        return send_from_directory(self._static_files_root_folder_path, file_relative_path_to_root, cache_timeout=-1)
 
     def run(self):
         CORS(self.app)
