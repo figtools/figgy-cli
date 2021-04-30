@@ -68,7 +68,7 @@ jobs:
           ls -l $GITHUB_WORKSPACE/figgy-ui/dist || true
 
           cd $GITHUB_WORKSPACE/figgy-ui/dist
-          aws s3 cp dist/figgy-ui-build.zip s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip
+          aws s3 cp figgy-ui-build.zip s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip
 
   build_mac:
     runs-on: macos-latest
