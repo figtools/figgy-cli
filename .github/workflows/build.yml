@@ -9,71 +9,71 @@ on:
     types: [started]
 jobs:
   # Todo create action for the install of figgy-ui into CLI
-  build_ui:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout Figgy UI
-        uses: actions/checkout@v2
-        with:
-          repository: figtools/figgy-ui
-          ref: main
-          path: figgy-ui
-          ssh-key: ${{ secrets.FIGGY_UI_DEPLOY_KEY }}
-
-      - name: Cache node modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('figgy-ui/app/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '15.12'
-
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-
-      - name: Build & Upload UI Artifacts
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          VERSION: ${{ env.RELEASE_VERSION }}
-        run: |
-          # Print working directory
-          echo "Installing Figgy UI"
-          cd $GITHUB_WORKSPACE/figgy-ui/app
-
-          # Install dependencies
-          npm install
-          npm install -g @angular/cli
-
-          # Install app
-          cd $GITHUB_WORKSPACE/figgy-ui/scripts/
-          ./build-and-zip-ui.sh
-
-          pwd
-          ls -l figgy-ui || true
-          ls -l $GITHUB_WORKSPACE || true
-          ls -l $GITHUB_WORKSPACE/figgy-ui/ || true
-          ls -l $GITHUB_WORKSPACE/figgy-ui/dist || true
-
-          cd $GITHUB_WORKSPACE/figgy-ui/dist
-          aws s3 cp figgy-ui-build.zip s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip
+#  build_ui:
+#    runs-on: ubuntu-18.04
+#    steps:
+#      - name: Checkout Figgy UI
+#        uses: actions/checkout@v2
+#        with:
+#          repository: figtools/figgy-ui
+#          ref: main
+#          path: figgy-ui
+#          ssh-key: ${{ secrets.FIGGY_UI_DEPLOY_KEY }}
+#
+#      - name: Cache node modules
+#        uses: actions/cache@v2
+#        env:
+#          cache-name: cache-node-modules
+#        with:
+#          path: ~/.npm
+#          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('figgy-ui/app/package-lock.json') }}
+#          restore-keys: |
+#            ${{ runner.os }}-build-${{ env.cache-name }}-
+#            ${{ runner.os }}-build-
+#            ${{ runner.os }}-
+#
+#      - name: Setup Node
+#        uses: actions/setup-node@v2
+#        with:
+#          node-version: '15.12'
+#
+#      - name: Set up Python 3.9
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.9
+#
+#      - name: Build & Upload UI Artifacts
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: us-east-1
+#          VERSION: ${{ env.RELEASE_VERSION }}
+#        run: |
+#          # Print working directory
+#          echo "Installing Figgy UI"
+#          cd $GITHUB_WORKSPACE/figgy-ui/app
+#
+#          # Install dependencies
+#          npm install
+#          npm install -g @angular/cli
+#
+#          # Install app
+#          cd $GITHUB_WORKSPACE/figgy-ui/scripts/
+#          ./build-and-zip-ui.sh
+#
+#          pwd
+#          ls -l figgy-ui || true
+#          ls -l $GITHUB_WORKSPACE || true
+#          ls -l $GITHUB_WORKSPACE/figgy-ui/ || true
+#          ls -l $GITHUB_WORKSPACE/figgy-ui/dist || true
+#
+#          cd $GITHUB_WORKSPACE/figgy-ui/distd
+#          aws s3 cp figgy-ui-build.zip s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip
 
   build_mac:
     runs-on: macos-latest
-    needs:
-      - build_ui
+#    needs:
+#      - build_ui
     steps:
       - name: Checkout Project
         uses: actions/checkout@v2
@@ -94,6 +94,9 @@ jobs:
           aws s3 cp s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip .
 
           unzip figgy-ui-build.zip
+          mkdir -p src/figcli/ui/templates/
+          mkdir -p src/figcli/ui/assets/
+          pwd
           cp figgy-ui-build/templates/* src/figcli/ui/templates/
           cp -R figgy-ui-build/assets/* src/figcli/ui/assets/
 
@@ -154,189 +157,189 @@ jobs:
 
           echo "Deploying darwin figgy to s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz"
           aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/darwin/figgy.tar.gz
-
-  build_linux:
-    runs-on: ubuntu-18.04
-    needs:
-      - build_ui
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v2
-
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update \
-          && sudo apt-get install libusb-1.0-0-dev libxmu-dev libxmu-headers \
-          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev libc-bin binutils
-
-      - name: Build
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          VERSION: ${{ env.RELEASE_VERSION }}
-        run: |
-          echo "Embedding Figgy UI"
-          aws s3 cp s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip .
-
-          unzip figgy-ui-build.zip
-          cp figgy-ui-build/templates/* src/figcli/ui/templates/
-          cp -R figgy-ui-build/assets/* src/figcli/ui/assets/
-
-          echo "Linux build is happening!!!"
-          cd $GITHUB_WORKSPACE/src
-          pwd
-          ls -l figcli/ui/templates
-          ls -l figcli/ui/assets
-
-          # install requirements
-          pip3 install pyinstaller==4.3
-          pip3 install -r requirements.txt
-          pip3 install -r requirements-linux.txt
-
-          pyinstaller figgy.spec
-
-          ../scripts/zip_it.sh
-          ../scripts/tar_it.sh $(../scripts/get_version.sh)
-
-
-      - name: Test Artifact
-        env:
-          FIGGY_DISABLE_KEYRING: "true"
-          OVERRIDE_KEYRING: "true"
-        run: |
-          export TERM=linux
-          export TERMINFO=/etc/terminfo
-
-          echo "Adding figgy binary to path"
-          cd src/dist/figgy/
-          export "PATH=$PATH:$(pwd)"
-          cd ../../
-          figgy --version
-
-          #echo "Testing Linux binary as bastion user"
-          #python run_tests.py bastion
-
-      - name: Get Version
-        id: version
-        run: |
-          cd src
-          # Parse version
-          VERSION=$(../scripts/get_version.sh)
-          echo "Setting release version to $VERSION"
-          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          VERSION: ${{ env.RELEASE_VERSION }}
-        run: |
-
-          echo "Deploying linux figgy to $dest"
-          aws s3 cp src/figgy.zip s3://figgy-website/releases/cli/unstable/linux/figgy.zip
-
-          echo "Deploying linux figgy to s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz"
-          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz
-
-  build_windows:
-    runs-on: windows-latest
-    needs:
-      - build_ui
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v2
-
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-
-      - name: Build
-        shell: bash
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-          VERSION: ${{ env.RELEASE_VERSION }}
-        run: |
-          echo "Embedding Figgy UI"
-          aws s3 cp s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip .
-
-          unzip figgy-ui-build.zip
-          cp figgy-ui-build/templates/* src/figcli/ui/templates/
-          cp -R figgy-ui-build/assets/* src/figcli/ui/assets/
-
-          echo "Windows build is happening!!!"
-          cd $GITHUB_WORKSPACE/src
-
-          # install requirements
-          pip3 install pyinstaller==4.3
-          pip3 install -r requirements.txt
-          pip3 install -r requirements-windows.txt
-
-          pyinstaller figgy.spec
-
-          ../scripts/tar_it.sh $(../scripts/get_version.sh)
-
-      - name: Zip
-        run: |
-          echo "Zipping!"
-          cd src/dist/
-          Compress-Archive figgy figgy.zip
-          mv figgy.zip ../
-
-      - name: Test Artifact
-        run: |
-          echo "Adding figgy binary to path"
-          cd src/dist/figgy/
-          $env:path += ";."
-
-          echo "NORMAL VERSION NOW"
-          figgy --version
-
-      - name: Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-        shell: bash
-        run: |
-          VERSION=$(./scripts/get_version.sh)
-          echo "Setting release version to $VERSION"
-          cd src/
-
-          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
-          aws s3 cp figgy.zip "s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
-
-          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
-          aws s3 cp figgy.tar.gz "s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
-
-  emit_build_complete:
-    runs-on: ubuntu-latest
-    needs:
-      - build_ui
-      - build_windows
-      - build_linux
-      - build_mac
-    steps:
-      - name: Trigger Build Complete
-        uses: peter-evans/repository-dispatch@v1.1.3
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: figtools/figgy-cli
-          event-type: build-complete
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
-      - name: Trigger Build Containers
-        uses: peter-evans/repository-dispatch@v1.1.3
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: figtools/figgy-cli
-          event-type: trigger-build-containers
-          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+#
+#  build_linux:
+#    runs-on: ubuntu-18.04
+#    needs:
+#      - build_ui
+#    steps:
+#      - name: Checkout project
+#        uses: actions/checkout@v2
+#
+#      - name: Set up Python 3.9
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.9
+#
+#      - name: Install dependencies
+#        run: |
+#          sudo apt-get update \
+#          && sudo apt-get install libusb-1.0-0-dev libxmu-dev libxmu-headers \
+#          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev libc-bin binutils
+#
+#      - name: Build
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: us-east-1
+#          VERSION: ${{ env.RELEASE_VERSION }}
+#        run: |
+#          echo "Embedding Figgy UI"
+#          aws s3 cp s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip .
+#
+#          unzip figgy-ui-build.zip
+#          cp figgy-ui-build/templates/* src/figcli/ui/templates/
+#          cp -R figgy-ui-build/assets/* src/figcli/ui/assets/
+#
+#          echo "Linux build is happening!!!"
+#          cd $GITHUB_WORKSPACE/src
+#          pwd
+#          ls -l figcli/ui/templates
+#          ls -l figcli/ui/assets
+#
+#          # install requirements
+#          pip3 install pyinstaller==4.3
+#          pip3 install -r requirements.txt
+#          pip3 install -r requirements-linux.txt
+#
+#          pyinstaller figgy.spec
+#
+#          ../scripts/zip_it.sh
+#          ../scripts/tar_it.sh $(../scripts/get_version.sh)
+#
+#
+#      - name: Test Artifact
+#        env:
+#          FIGGY_DISABLE_KEYRING: "true"
+#          OVERRIDE_KEYRING: "true"
+#        run: |
+#          export TERM=linux
+#          export TERMINFO=/etc/terminfo
+#
+#          echo "Adding figgy binary to path"
+#          cd src/dist/figgy/
+#          export "PATH=$PATH:$(pwd)"
+#          cd ../../
+#          figgy --version
+#
+#          #echo "Testing Linux binary as bastion user"
+#          #python run_tests.py bastion
+#
+#      - name: Get Version
+#        id: version
+#        run: |
+#          cd src
+#          # Parse version
+#          VERSION=$(../scripts/get_version.sh)
+#          echo "Setting release version to $VERSION"
+#          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+#
+#      - name: Deploy
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: us-east-1
+#          VERSION: ${{ env.RELEASE_VERSION }}
+#        run: |
+#
+#          echo "Deploying linux figgy to $dest"
+#          aws s3 cp src/figgy.zip s3://figgy-website/releases/cli/unstable/linux/figgy.zip
+#
+#          echo "Deploying linux figgy to s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz"
+#          aws s3 cp src/figgy.tar.gz s3://figgy-website/releases/cli/unstable/linux/figgy.tar.gz
+#
+#  build_windows:
+#    runs-on: windows-latest
+#    needs:
+#      - build_ui
+#    steps:
+#      - name: Checkout project
+#        uses: actions/checkout@v2
+#
+#      - name: Set up Python 3.9
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.9
+#
+#      - name: Build
+#        shell: bash
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: us-east-1
+#          VERSION: ${{ env.RELEASE_VERSION }}
+#        run: |
+#          echo "Embedding Figgy UI"
+#          aws s3 cp s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip .
+#
+#          unzip figgy-ui-build.zip
+#          cp figgy-ui-build/templates/* src/figcli/ui/templates/
+#          cp -R figgy-ui-build/assets/* src/figcli/ui/assets/
+#
+#          echo "Windows build is happening!!!"
+#          cd $GITHUB_WORKSPACE/src
+#
+#          # install requirements
+#          pip3 install pyinstaller==4.3
+#          pip3 install -r requirements.txt
+#          pip3 install -r requirements-windows.txt
+#
+#          pyinstaller figgy.spec
+#
+#          ../scripts/tar_it.sh $(../scripts/get_version.sh)
+#
+#      - name: Zip
+#        run: |
+#          echo "Zipping!"
+#          cd src/dist/
+#          Compress-Archive figgy figgy.zip
+#          mv figgy.zip ../
+#
+#      - name: Test Artifact
+#        run: |
+#          echo "Adding figgy binary to path"
+#          cd src/dist/figgy/
+#          $env:path += ";."
+#
+#          echo "NORMAL VERSION NOW"
+#          figgy --version
+#
+#      - name: Deploy
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: us-east-1
+#        shell: bash
+#        run: |
+#          VERSION=$(./scripts/get_version.sh)
+#          echo "Setting release version to $VERSION"
+#          cd src/
+#
+#          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
+#          aws s3 cp figgy.zip "s3://figgy-website/releases/cli/unstable/windows/figgy.zip"
+#
+#          echo "Deploying windows figgy to s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
+#          aws s3 cp figgy.tar.gz "s3://figgy-website/releases/cli/unstable/windows/figgy.tar.gz"
+#
+#  emit_build_complete:
+#    runs-on: ubuntu-latest
+#    needs:
+#      - build_ui
+#      - build_windows
+#      - build_linux
+#      - build_mac
+#    steps:
+#      - name: Trigger Build Complete
+#        uses: peter-evans/repository-dispatch@v1.1.3
+#        with:
+#          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+#          repository: figtools/figgy-cli
+#          event-type: build-complete
+#          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+#      - name: Trigger Build Containers
+#        uses: peter-evans/repository-dispatch@v1.1.3
+#        with:
+#          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+#          repository: figtools/figgy-cli
+#          event-type: trigger-build-containers
+#          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
