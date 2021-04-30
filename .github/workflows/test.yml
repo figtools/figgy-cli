@@ -2,7 +2,7 @@ name: E2E Integration Test Suite
 
 on:
   push:
-    branches: [master, develop]
+    branches: [master]
   pull_request:
     branches: [master, develop]
 
