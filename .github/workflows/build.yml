@@ -97,6 +97,7 @@ jobs:
           mkdir -p src/figcli/ui/templates/
           mkdir -p src/figcli/ui/assets/
           pwd
+          ls -l
           cp figgy-ui-build/templates/* src/figcli/ui/templates/
           cp -R figgy-ui-build/assets/* src/figcli/ui/assets/
 
