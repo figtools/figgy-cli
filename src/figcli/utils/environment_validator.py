@@ -13,7 +13,6 @@ class EnvironmentValidator:
     configurations, such as Bastion / OKTA / GOOGLE / ETC.
     """
 
-
     def __init__(self, defaults: CLIDefaults):
         self._defaults = defaults
         self._out = Output(self._defaults.colors_enabled)
@@ -34,7 +33,7 @@ class EnvironmentValidator:
 
         for env_var in RESTRICTED_ENV_VARS:
             if os.environ.get(env_var):
-               invalid_vars.append(env_var)
+                invalid_vars.append(env_var)
 
         if invalid_vars:
             self._out.error_h2(f'AWS Environment overrides detected.\n\n {invalid_vars} is currently set in your '

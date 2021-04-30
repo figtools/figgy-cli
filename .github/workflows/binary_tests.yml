@@ -3,9 +3,7 @@ name: Binary Tests
 on:
   repository_dispatch:
     types: [build-complete]
-  push:
-    branches: [master]
-  
+
 jobs:
   test_mac_binary:
     runs-on: macos-latest
@@ -30,6 +28,7 @@ jobs:
           OKTA_MFA_SECRET: ${{ secrets.OKTA_MFA_SECRET }}
           FIGGY_DISABLE_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
+          FIGGY_TESTS_ENABLED: true
           TERM: xterm-256color
           TERMINFO: /etc/terminfo
         run: |
@@ -106,6 +105,7 @@ jobs:
           FIGGY_DISABLE_KEYRING: true
           OVERRIDE_KEYRING: true
           FIGGY_DISABLE_METRICS: true
+          FIGGY_TESTS_ENABLED: true
           FIGGY_DISABLE_VERSION_CHECK: true
         shell: bash
         run: |
