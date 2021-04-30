@@ -5,7 +5,8 @@ on:
     types: [e2e-tests-complete]
   push:
     branches: [windows-build-fix]
-
+  watch:
+    types: [started]
 jobs:
   # Todo create action for the install of figgy-ui into CLI
   build_ui:
