@@ -3,7 +3,9 @@ name: Binary Tests
 on:
   repository_dispatch:
     types: [build-complete]
-
+  push:
+    branches: [master]
+  
 jobs:
   test_mac_binary:
     runs-on: macos-latest
@@ -83,7 +85,7 @@ jobs:
           pip install -r requirements.txt
           pip3 install -r requirements-test.txt
 
-          echo "Testing MAC binary as okta user"
+          echo "Testing linux binary as a bastion user"
           python run_tests.py bastion
 
   test_windows_binary:
