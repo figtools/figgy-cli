@@ -62,7 +62,7 @@ jobs:
           ./build-and-zip-ui.sh
 
           pwd
-          ls -l figgy-ui || tru
+          ls -l figgy-ui || true
           ls -l $GITHUB_WORKSPACE || true
           ls -l $GITHUB_WORKSPACE/figgy-ui/ || true
           ls -l $GITHUB_WORKSPACE/figgy-ui/dist || true
