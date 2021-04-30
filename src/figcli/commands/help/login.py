@@ -1,3 +1,5 @@
+import os
+
 import requests
 from abc import ABC
 import re
@@ -8,6 +10,7 @@ from figcli.commands.help_context import HelpContext
 from figcli.commands.types.help import HelpCommand
 from figcli.config import *
 from figcli.io.input import Input
+from figcli.io.output import Output
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.models.defaults.provider import Provider
@@ -38,6 +41,7 @@ class Login(HelpCommand, ABC):
         self._figgy_context = figgy_context
         self._utils = Utils(self._defaults.colors_enabled)
         self._aws_cfg = AWSConfig(color=self.c)
+        self._out = Output(self._defaults.colors_enabled)
 
         self.example = f"\n\n{self.c.fg_bl}{CLI_NAME} {login.name} \n" \
                        f"{self.c.rs}{self.c.fg_yl}  --or--{self.c.rs}\n" \
@@ -60,6 +64,11 @@ class Login(HelpCommand, ABC):
         """
         If user provides --role flag, skip role & env selection for a smoother user experience.
         """
+        for env_var in RESTRICTED_ENV_VARS:
+            if os.environ.get(env_var):
+                self._out.error_h2('AWS Environment overrides detected')
+                self._out.error(f'Figgy ')
+
         Utils.wipe_vaults() or Utils.wipe_defaults() or Utils.wipe_config_cache()
 
         print(f"{self.c.fg_bl}Logging you into the Figgy Sandbox environment.{self.c.rs}")
