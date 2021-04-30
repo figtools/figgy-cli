@@ -93,13 +93,13 @@ jobs:
           echo "Embedding Figgy UI"
           aws s3 cp s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip .
 
-          unzip figgy-ui-build.zip
+          unzip figgy-ui-build.zip -t figgy-ui-build
           mkdir -p src/figcli/ui/templates/
           mkdir -p src/figcli/ui/assets/
           pwd
           ls -l
-          cp -R templates/* src/figcli/ui/templates/
-          cp -R assets/* src/figcli/ui/assets/
+          cp figgy-ui-build/templates/* src/figcli/ui/templates/
+          cp -R figgy-ui-build/assets/* src/figcli/ui/assets/
 
           echo "MacOs build is happening!!!"
           cd $GITHUB_WORKSPACE/src
