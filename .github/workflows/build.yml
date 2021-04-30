@@ -93,7 +93,7 @@ jobs:
           echo "Embedding Figgy UI"
           aws s3 cp s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip .
 
-          unzip figgy-ui-build.zip -t figgy-ui-build
+          unzip figgy-ui-build.zip -d figgy-ui-build
           mkdir -p src/figcli/ui/templates/
           mkdir -p src/figcli/ui/assets/
           pwd
