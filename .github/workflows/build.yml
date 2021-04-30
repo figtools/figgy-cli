@@ -98,8 +98,8 @@ jobs:
           mkdir -p src/figcli/ui/assets/
           pwd
           ls -l
-          cp figgy-ui-build/templates/* src/figcli/ui/templates/
-          cp -R figgy-ui-build/assets/* src/figcli/ui/assets/
+          cp -R templates/* src/figcli/ui/templates/
+          cp -R assets/* src/figcli/ui/assets/
 
           echo "MacOs build is happening!!!"
           cd $GITHUB_WORKSPACE/src
