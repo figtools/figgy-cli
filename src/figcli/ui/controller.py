@@ -141,7 +141,7 @@ class Controller:
                 result = method(self, *args, **kwargs)
                 return Controller.handle_result(result)
             except ClientError as e:
-                log.exception(e)
+                log.warning(e)
                 # If we get a AccessDenied exception to decrypt this parameter, it must be encrypted
                 if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                     return ResponseBuilder.build(FiggyResponse.no_decrypt_access())
@@ -168,27 +168,27 @@ class Controller:
 
             except botocore.exceptions.ParamValidationError as e2:
                 log.warning(f'Caught parameter validation exception: ${e2}')
-                log.exception(e2)
+                log.warning(e2)
                 return ResponseBuilder.build(FiggyResponse.fig_invalid())
             except CannotRetrieveMFAException as e4:
                 log.info(f"MFA auth is required. Notifying UI of expired session.")
-                log.exception(e4)
+                log.warning(e4)
                 return ResponseBuilder.build(FiggyResponse.mfa_required())
             except InvalidCredentialsException as e5:
                 log.info(f"Invalid credentials provided!")
                 return ResponseBuilder.build(FiggyResponse.force_reauth())
             except BadRequestParameters as e6:
-                log.exception(e6)
+                log.warning(e6)
                 log.info(f"Got request with invalid parameters: {e6.invalid_parameters}")
                 return ResponseBuilder.build(FiggyResponse.invalid_parameters(e6.invalid_parameters))
             except ValueError as e7:
-                log.exception(f"Validation error caught: {e7}")
+                log.warning(f"Validation error caught: {e7}")
                 return ResponseBuilder.build(FiggyResponse.validation_error(f'{e7}'))
             except FiggyValidationError as e8:
-                log.exception(f"Validation error caught: {e8.message}")
+                log.warning(f"Validation error caught: {e8.message}")
                 return ResponseBuilder.build(FiggyResponse.validation_error(f'{e8.message}'))
             except BaseException as e1:
-                log.warning('Caught unexpected exception: {e1}')
+                log.warning(f'Caught unexpected exception: {e1}')
                 log.exception(e1)
 
         return impl

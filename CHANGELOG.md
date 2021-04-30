@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.1.1
+- Reducing log verbosity for the UI when encountering expected errors. 
+
 ## 1.1.0
 - Adding new `build-cache` command that will force build out figgy's caches ahead of time for a more excellent user
 experience (it's also better for demos :smiley:)
