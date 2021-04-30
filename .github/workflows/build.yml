@@ -61,6 +61,12 @@ jobs:
           cd $GITHUB_WORKSPACE/figgy-ui/scripts/
           ./build-and-zip-ui.sh
 
+          pwd
+          ls -l figgy-ui || tru
+          ls -l $GITHUB_WORKSPACE || true
+          ls -l $GITHUB_WORKSPACE/figgy-ui/ || true
+          ls -l $GITHUB_WORKSPACE/figgy-ui/dist || true
+
           cd $GITHUB_WORKSPACE/figgy-ui/dist
           aws s3 cp dist/figgy-ui-build.zip s3://prod-figgy-deploy/releases/ui/unstable/figgy-ui-build.zip
 
