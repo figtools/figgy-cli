@@ -69,6 +69,7 @@ jobs:
           OVERRIDE_KEYRING: true
           FIGGY_DISABLE_METRICS: true
           FIGGY_DISABLE_VERSION_CHECK: true
+          FIGGY_TESTS_ENABLED: true
           TERM: linux
           TERMINFO: /etc/terminfo
         run: |

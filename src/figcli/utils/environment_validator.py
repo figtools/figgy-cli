@@ -1,5 +1,6 @@
 import os
 
+from figcli.config import FIGGY_TESTS_ENABLED
 from figcli.io.output import Output
 from figcli.models.defaults.defaults import CLIDefaults, RESTRICTED_ENV_VARS
 from figcli.models.defaults.provider import Provider
@@ -25,6 +26,10 @@ class EnvironmentValidator:
         return self
 
     def validate_environment_variables(self):
+        # If figgy is operating in a TEST environment, ignore this.
+        if os.environ.get(FIGGY_TESTS_ENABLED):
+            return self
+
         invalid_vars = []
 
         for env_var in RESTRICTED_ENV_VARS:

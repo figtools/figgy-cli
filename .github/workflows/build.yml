@@ -3,8 +3,8 @@ name: Build & Deploy
 on:
   repository_dispatch:
     types: [e2e-tests-complete]
-  watch:
-    types: [started]
+#  watch:
+#    types: [started]
 jobs:
   build_ui:
     runs-on: ubuntu-18.04
