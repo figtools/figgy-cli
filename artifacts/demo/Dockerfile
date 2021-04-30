@@ -51,6 +51,7 @@ ENV FIGGY_MFA_SECRET_OVERRIDE=$FIGGY_MFA_SECRET_OVERRIDE
 ENV FIGGY_PASSWORD_OVERRIDE=$FIGGY_PASSWORD_OVERRIDE
 ENV FIGGY_KEYRING_PASSWORD=$FIGGY_KEYRING_PASSWORD
 
+# Hydrates a cache across all 90 Integrated Role/Account/Region combinations. Makes the ui snappier :)
 RUN figgy config build-cache
 
 EXPOSE 5000
