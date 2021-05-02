@@ -5,7 +5,7 @@ on:
 
 jobs:
   build_container:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
@@ -27,10 +27,39 @@ jobs:
           OKTA_EMBED_URL: ${{ secrets.OKTA_EMBED_URL }}
         run: |
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_REPO_PREFIX}
-          docker build -t figgy-demo:latest -f artifacts/demo/Dockerfile . --build-arg FIGGY_MFA_SECRET_OVERRIDE=${DEMO_USER_MFA_SECRET} --build-arg FIGGY_PASSWORD_OVERRIDE=${DEMO_USER_PASSWORD_OVERRIDE} --build-arg OKTA_EMBED_URL=${OKTA_EMBED_URL}
+          docker build -t figgy-demo:latest -f artifacts/Dockerfile . --build-arg FIGGY_MFA_SECRET_OVERRIDE=${DEMO_USER_MFA_SECRET} --build-arg FIGGY_PASSWORD_OVERRIDE=${DEMO_USER_PASSWORD_OVERRIDE} --build-arg OKTA_EMBED_URL=${OKTA_EMBED_URL}
 
           docker tag figgy-demo:latest ${ECR_REPO_PREFIX}figgy-demo:latest
           docker push public.ecr.aws/y9w7q0o6/figgy-demo:latest
 
+  build_container_version:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update \
+          && sudo apt-get install libusb-1.0-0-dev libxmu-dev libxmu-headers \
+          freeglut3-dev libxext-dev libxi-dev libudev1 libudev-dev
+
+      - name: Build
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          ECR_REPO_PREFIX: ${{ secrets.ECR_REPO_PREFIX }}
+          DEMO_USER_MFA_SECRET: ${{ secrets.DEFAULT_DEMO_USER_MFA_SECRET }}
+          DEMO_USER_PASSWORD_OVERRIDE: ${{ secrets.DEFAULT_DEMO_USER_PASSWORD_OVERRIDE }}
+          OKTA_EMBED_URL: ${{ secrets.OKTA_EMBED_URL }}
+        run: |
+          VERSION=$(scripts/get_version.sh)
+
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR_REPO_PREFIX}
+          docker build -t figgy-demo:${VERSION} -f artifacts/Dockerfile . --build-arg FIGGY_MFA_SECRET_OVERRIDE=${DEMO_USER_MFA_SECRET} --build-arg FIGGY_PASSWORD_OVERRIDE=${DEMO_USER_PASSWORD_OVERRIDE} --build-arg OKTA_EMBED_URL=${OKTA_EMBED_URL}
+
+          docker tag figgy-demo:latest ${ECR_REPO_PREFIX}figgy-demo:latest
+          docker push public.ecr.aws/y9w7q0o6/figgy-demo:${VERSION}
 
 

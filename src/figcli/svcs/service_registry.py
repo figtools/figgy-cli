@@ -40,13 +40,14 @@ def refreshable_cache(cache_key):
 
     def decorate(method):
         """
-        Stores initialized servicies in an in-memory cache. Services are cached by ENV and REGION. Due to
+        Stores initialized services in an in-memory cache. Services are cached by ENV and REGION. Due to
         issues with @cachetools that I have still not entirely figured out, methods cached with @cachetools decorators
-        cause boto3 connection pools to evade garbage collection. To address issue we are purging this cache as
+        cause boto3 connection pools to evade garbage collection. To address this issue, we are purging this cache as
         we get to an estimated MAX_CACHED_BOTO_POOLS number of connection pools. Purging this cache is not enough as
         GC will not clean up the connection pools unless all methods cached by @cachetools have their clear_cache()
-        method executed. This will forceable purge all method-level caches when this local cache is purged, thereby
-        allow garbage collection to clean up the boto connection pools and prevent figgy from approaching ulimits.
+        method executed. This decorator will forceably purge all method-level caches when this service cache is purged,
+        thereby allowing garbage collection to clean up the boto connection pools and prevent figgy from maintaining
+        too many open files and potentially approaching ulimits on some systems.
         """
 
         @wraps(method)
