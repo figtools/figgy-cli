@@ -5,6 +5,7 @@ ARG FIGGY_MFA_SECRET_OVERRIDE
 ARG FIGGY_PASSWORD_OVERRIDE
 ARG FIGGY_KEYRING_PASSWORD="KyR1ingP@sS1Word!!D"
 ARG OKTA_EMBED_URL
+ARG ARTIFACT_SUBDIR
 
 RUN apt update -y && \
     apt upgrade -y && \
@@ -24,8 +25,8 @@ RUN mkdir -p ${INSTALL_DIR} && \
     mkdir -p "/home/${USER}/source" && chown -R ${USER}:${USER} "/home/${USER}/source"
 
 
-COPY artifacts/demo/config /home/${USER}/.figgy/config
-COPY artifacts/demo/defaults.json /home/${USER}/.figgy/cache/other/defaults.json
+COPY artifacts/${ARTIFACT_SUBDIR}/config /home/${USER}/.figgy/config
+COPY artifacts/${ARTIFACT_SUBDIR}/defaults.json /home/${USER}/.figgy/cache/other/defaults.json
 RUN sed --in-place 's#\${OKTA_EMBED_URL}#${OKTA_EMBED_URL}#g' /home/${USER}/.figgy/config
 
 USER demo-user
