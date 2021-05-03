@@ -40,6 +40,7 @@ class AnonymousUsageTracker:
     _USER_KEY = 'user_id'
     _VERSION_KEY = 'version'
     _PLATFORM_KEY = 'platform'
+    _COUNT_KEY = 'count'
     _DISABLE_METRICS_ENV_VAR = 'FIGGY_DISABLE_METRICS'
 
     REPORT_FREQUENCY = 1000 * 60 * 5  # Report every 5 minutes
@@ -52,7 +53,7 @@ class AnonymousUsageTracker:
 
         metrics_json = {AnonymousUsageTracker._METRICS_KEY: {}, AnonymousUsageTracker._USER_KEY: metrics.user_id}
         for key, val in metrics.metrics.items():
-            metrics_json[AnonymousUsageTracker._METRICS_KEY][key] = val.get(FiggyMetrics.COUNT_KEY, 0)
+            metrics_json[AnonymousUsageTracker._METRICS_KEY][key] = val.get(AnonymousUsageTracker._COUNT_KEY, 0)
 
         metrics_json[AnonymousUsageTracker._VERSION_KEY] = VERSION
         metrics_json[AnonymousUsageTracker._PLATFORM_KEY] = platform.system()
@@ -70,6 +71,8 @@ class AnonymousUsageTracker:
                 return function(self, *args, **kwargs)    
 
             command = getattr(self, 'type', None)
+            log.info(f'GOt command {command}')
+
             if command:
                 command = command.name
                 cache = CacheManager(AnonymousUsageTracker._CACHE_NAME)
@@ -92,6 +95,7 @@ class AnonymousUsageTracker:
                         # Ship it async. If it don't worky, oh well :shruggie:
                         with ThreadPoolExecutor(max_workers=1) as pool:
                             pool.submit(AnonymousUsageTracker.report_usage, metrics)
+                            log.info(f'Reporting anonymous usage for metrics: {metrics}')
                             cache.write(AnonymousUsageTracker._METRICS_KEY, FiggyMetrics(user_id=user_id))
                             return function(self, *args, **kwargs)
                 else:

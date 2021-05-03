@@ -1,6 +1,6 @@
 import webbrowser
-import time
 from figcli.commands.command_context import CommandContext
+from figcli.commands.types.command import Command
 from figcli.svcs.auth.session_manager import SessionManager
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker
@@ -9,11 +9,10 @@ from figcli.utils.utils import *
 log = logging.getLogger(__name__)
 
 
-class UI(CliCommand):
+class UI(Command):
 
     def __init__(self, context: CommandContext, session_mgr: SessionManager):
-        super().__init__(ui)
-        self.context = context
+        super().__init__(ui, context.defaults.colors_enabled, context)
         self._session_mgr = session_mgr
         self._utils = Utils(context.defaults.colors_enabled)
         self._out = Output(context.defaults.colors_enabled)
