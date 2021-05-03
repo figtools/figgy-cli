@@ -146,11 +146,11 @@ class ConfigService:
             if "AccessDeniedException" == e.response['Error']['Code'] and 'ciphertext' in f'{e}':
                 return True
 
-    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
+    @cachetools.func.ttl_cache(maxsize=256, ttl=15)
     def is_replication_source(self, name: str) -> bool:
         return bool(self._repl.get_cfgs_by_src(name))
 
-    @cachetools.func.ttl_cache(maxsize=256, ttl=30)
+    @cachetools.func.ttl_cache(maxsize=256, ttl=15)
     def is_replication_destination(self, name: str) -> bool:
         return bool(self._repl.get_config_repl(name))
 

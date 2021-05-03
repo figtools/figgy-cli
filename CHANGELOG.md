@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.1.2
+- Adding Figgy UI tour. 
+
 ## 1.1.1
 - Reducing log verbosity for the UI when encountering expected errors. 
 
