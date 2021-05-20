@@ -1,7 +1,7 @@
 Figgy CLI Changelog:
 
 ## 1.1.3
-- Fixing bug with anonymouse metric reporting.
+- Fixing bug with anonymous metric reporting.
 
 ## 1.1.2
 - Adding Figgy UI tour. 

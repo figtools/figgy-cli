@@ -4,7 +4,8 @@ on:
     types: [trigger-build-containers]
   watch:
     types: [started]
-
+  schedule:
+    - cron:  '0 0 * * *'
 jobs:
   build_container:
     runs-on: ubuntu-18.04
