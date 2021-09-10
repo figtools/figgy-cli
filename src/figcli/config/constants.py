@@ -84,6 +84,10 @@ PS_FIGGY_DEFAULT_SERVICE_NS_PATH = '/figgy/defaults/service-namespace'
 PS_FIGGY_REPL_KEY_ID_PATH = '/figgy/kms/replication-key-id'
 PS_FIGGY_ALL_KMS_KEYS_PATH = '/figgy/kms/all-keys'
 PS_FIGGY_REGIONS = '/figgy/regions'
+PS_FIGGY_UTILITY_ACCOUNT_ID = '/figgy/utility-account-id'
+PS_FIGGY_OTS_KEY_ID = '/figgy/kms/figgy-ots-key-id'
+PS_FIGGY_ENV_ALIAS = '/figgy/env_alias'
+PS_FIGGY_CURRENT_ACCOUNT_ID = '/figgy/account_id'
 
 # Replication Types:
 repl_types = [REPL_TYPE_APP, REPL_TYPE_MERGE]

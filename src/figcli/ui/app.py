@@ -1,4 +1,5 @@
 import logging
+import os
 from threading import Thread
 from typing import List
 
@@ -66,6 +67,9 @@ class App:
         return send_from_directory(self._static_files_root_folder_path, file_relative_path_to_root, cache_timeout=-1)
 
     def run(self):
+        # Disables prod Flask warning. Base flask is not an issue due to our single-user case.
+        os.environ["WERKZEUG_RUN_MAIN"] = "true"
+
         CORS(self.app)
         for ctlr in self.controllers:
             for route in ctlr.routes():

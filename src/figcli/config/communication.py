@@ -82,8 +82,11 @@ PROFILE_HELP_TEXT = "Overrides all other figgy configurations and instead pulls 
 IAM_RESTORE_HELP_TEXT = "Restores any credentials in ~/.aws/credentials that were automatically backed up by figgy."
 UI_HELP_TEXT = "Loads the Figgy UI in your default browser."
 RUN_HELP_TEXT = "Runs the Figgy UI -- this command is optional and can be run by default with `figgy ui`. "
-BUILD_CACHE_HELP_TEXT = "Makes figgy log-in to every account/region and build out a local cache for uber fast figgy usage. The cache will auto-build on its own with usage."
-
+OTS_HELP_TEXT = "Store & retrieve self destructing one-time-secrets."
+BUILD_CACHE_HELP_TEXT = "Makes figgy log-in to every account/region and build out a local cache for uber fast figgy usage. " \
+                        "The cache will auto-build on its own with usage."
+OTS_GET_HELP_TEXT = "Store a one-time-secret that self destructs on read or after a time interval."
+OTS_PUT_HELP_TEXT = "Read a previously stored one-time-secret."
 
 # Point in time (--point-in-time)
 POINT_IN_TIME = "Restore all parameters to a point in time."
@@ -135,7 +138,10 @@ HELP_TEXT_MAP = {
     iam_restore: IAM_RESTORE_HELP_TEXT,
     ui: UI_HELP_TEXT,
     run: RUN_HELP_TEXT,
-    build_cache: BUILD_CACHE_HELP_TEXT
+    build_cache: BUILD_CACHE_HELP_TEXT,
+    ots: OTS_HELP_TEXT,
+    ots_get: OTS_GET_HELP_TEXT,
+    ots_put: OTS_PUT_HELP_TEXT,
 }
 
 # Other

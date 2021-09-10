@@ -14,8 +14,9 @@ ui = CliCommand('ui')
 config = CliCommand('config')
 iam = CliCommand('iam')
 login = CliCommand('login')
+ots = CliCommand('ots')
 
-resources = {config, iam, login, ui}
+resources = {config, iam, login, ui, ots}
 
 # Config Sub Command definitions
 sync = CliCommand('sync')
@@ -54,8 +55,12 @@ build_cache = CliCommand('build-cache')
 export = CliCommand('export')
 iam_restore = CliCommand('restore', hash_key='iam_restore')
 
-# UI Sub comands
+# UI subcommands
 run = CliCommand('run')
+
+# OTS subcommands
+ots_get = CliCommand('get')
+ots_put = CliCommand('put')
 
 all_profiles = CliCommand('all-profiles')
 role = CliCommand('role')
@@ -255,7 +260,21 @@ arg_options = {
             debug: {action: store_true, required: False},
             role: {action: None, required: False},
         }
-    }
+    },
+    ots: {
+        ots_get: {
+            info: {action: store_true, required: False},
+            skip_upgrade: {action: store_true, required: False},
+            debug: {action: store_true, required: False},
+            profile: {action: None, required: False},
+        },
+        ots_put: {
+            info: {action: store_true, required: False},
+            skip_upgrade: {action: store_true, required: False},
+            debug: {action: store_true, required: False},
+            profile: {action: None, required: False},
+        }
+    },
 }
 
 # Merge key suffixes
@@ -270,6 +289,7 @@ iam_commands = [export, iam_restore]
 help_commands = [configure, version, login, sandbox, upgrade, role]
 login_commands = [login, sandbox]
 ui_commands = [ui]
+ots_commands = [ots_get, ots_put]
 
 all_commands = iam_commands + help_commands + config_commands + login_commands + ui_commands
 
@@ -278,7 +298,8 @@ resource_map = {
     config: config_commands,
     iam: iam_commands,
     login: login_commands,
-    ui: [run]
+    ui: [run],
+    ots: ots_commands
 }
 
 options = {ci_path,  info}

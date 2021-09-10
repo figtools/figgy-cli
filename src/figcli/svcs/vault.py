@@ -2,6 +2,7 @@ from figcli.utils.secrets_manager import SecretsManager
 from figcli.utils.utils import Utils
 from cryptography.fernet import Fernet
 from figcli.config.constants import DEFAULT_ENCRYPTION_KEY
+
 """
 Largely taken from simple-crypt, but removing pycrypto requirement, instead using pycryptodome.
 Slight tuning to account for faster encrypt/decrypt speeds. Remember, Figgy _only_ deals with temporary

@@ -553,6 +553,12 @@ class Utils:
         matching_attr = [p for p in props if comparator in str(getattr(obj, p))]
         return bool(matching_attr)
 
+    @staticmethod
+    def safe_cast(val, to_type, default=None):
+        try:
+            return to_type(val)
+        except (ValueError, TypeError):
+            return default
 
 class InvalidSessionError(Exception):
     pass
