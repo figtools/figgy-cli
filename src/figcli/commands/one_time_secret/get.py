@@ -30,6 +30,7 @@ class Get(OTSCommand):
 
         if value:
             self._out.print(f"\n[[Retrieved Value:]] {value}")
+            self._out.warn(f"\nThis value has been deleted and can no longer be retrieved.")
         else:
             self._out.warn(f"\nThe value associated with the provided ID does not exist, has already been retrieved, "
                            f"or has expired.")

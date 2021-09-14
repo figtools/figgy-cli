@@ -52,13 +52,13 @@ class Login(HelpCommand, ABC):
                              f"You cannot login until you've configured Figgy. Please run `{CLI_NAME}` --configure")
         provider = SessionProviderFactory(self._defaults, self._figgy_context).instance()
         assumable_roles: List[AssumableRole] = provider.get_assumable_roles()
-        print(f"{self.c.fg_bl}Found {len(assumable_roles)} possible logins. Logging in...{self.c.rs}")
+        self._out.print(f"{self.c.fg_bl}Found {len(assumable_roles)} possible logins. Logging in...{self.c.rs}")
 
         for role in assumable_roles:
-            print(f"Login successful for {role.role} in environment: {role.run_env}")
+            self._out.print(f"Login successful for {role.role} in environment: {role.run_env}")
             provider.get_session_and_role(role, False)
 
-        print(f"{self.c.fg_gr}Login successful. All sessions are cached.{self.c.rs}")
+        self._out.print(f"{self.c.fg_gr}Login successful. All sessions are cached.{self.c.rs}")
 
     def login_sandbox(self):
         """
@@ -68,7 +68,7 @@ class Login(HelpCommand, ABC):
 
         Utils.wipe_vaults() or Utils.wipe_defaults() or Utils.wipe_config_cache()
 
-        print(f"{self.c.fg_bl}Logging you into the Figgy Sandbox environment.{self.c.rs}")
+        self._out.print(f"{self.c.fg_bl}Logging you into the Figgy Sandbox environment.{self.c.rs}")
         user = Input.input("Please input a user name: ", min_length=2)
         colors = Input.select_enable_colors()
 
@@ -90,8 +90,8 @@ class Login(HelpCommand, ABC):
         data = result.json()
         response = SandboxLoginResponse(**data)
         self._aws_cfg.write_credentials(access_key=response.AWS_ACCESS_KEY_ID, secret_key=response.AWS_SECRET_ACCESS_KEY,
-                                      token=response.AWS_SESSION_TOKEN, region=FIGGY_SANDBOX_REGION,
-                                      profile_name=FIGGY_SANDBOX_PROFILE)
+                                        token=response.AWS_SESSION_TOKEN, region=FIGGY_SANDBOX_REGION,
+                                        profile_name=FIGGY_SANDBOX_PROFILE)
 
         defaults = CLIDefaults.sandbox(user=user, role=role, colors=colors)
         self._setup.save_defaults(defaults)
@@ -105,10 +105,9 @@ class Login(HelpCommand, ABC):
         defaults = self._setup.configure_figgy_defaults(defaults)
         self._setup.save_defaults(defaults)
 
-        print(f"\n{self.c.fg_gr}Login successful. Your sandbox session will last for{self.c.rs} "
-              f"{self.c.fg_bl}1 hour.{self.c.rs}")
+        self._out.success(f"\nLogin successful. Your sandbox session will last for [[1 hour]].")
 
-        print(
+        self._out.print(
             f"\nIf your session expires, you may rerun `{CLI_NAME} login sandbox` to get another sandbox session. "
             f"\nAll previous figgy sessions have been disabled, you'll need to run {CLI_NAME} "
             f"--configure to leave the sandbox.")

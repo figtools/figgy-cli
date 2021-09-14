@@ -137,6 +137,7 @@ class ServiceRegistry:
                                     self.__user(env, refresh), self.config_svc(env, refresh),
                                     self.kms_svc(env, refresh), self.__cache_mgr(env))
 
+    @Utils.trace
     @refreshable_cache('config-svc')
     def config_svc(self, env: GlobalEnvironment, refresh: bool = False) -> ConfigService:
         """
@@ -163,6 +164,7 @@ class ServiceRegistry:
                                      config_svc=self.config_svc(env, refresh),
                                      profile=env.role.profile)
 
+    @Utils.trace
     @refreshable_cache('ots-svc')
     def ots_svc(self, env: GlobalEnvironment, refresh: bool = False) -> OTSService:
         """
@@ -173,12 +175,12 @@ class ServiceRegistry:
 
         try:
             config_svc = self.config_svc(env=env, refresh=refresh)
-            utility_account_id: Fig = config_svc.get_fig_simple(PS_FIGGY_UTILITY_ACCOUNT_ID).value
+            utility_account_id: Fig = config_svc.get_fig_with_cache(PS_FIGGY_UTILITY_ACCOUNT_ID).value
             log.debug(f"Got utility account id: {utility_account_id}")
-            current_account_id: Fig = config_svc.get_fig_simple(PS_FIGGY_CURRENT_ACCOUNT_ID).value
+            current_account_id: Fig = config_svc.get_fig_with_cache(PS_FIGGY_CURRENT_ACCOUNT_ID).value
             log.debug(f"Got current session alias: {current_account_id}")
             new_role = Role(role='figgy-default', full_name='figgy-default')
-            regions = config_svc.get_fig_simple(PS_FIGGY_REGIONS)
+            regions = config_svc.get_fig_with_cache(PS_FIGGY_REGIONS)
             ots_region = json.loads(regions.value)[0]
 
             if utility_account_id != current_account_id:
@@ -192,7 +194,7 @@ class ServiceRegistry:
                                                      f"Figgy Cloud?") from e
 
         config_svc = self.config_svc(env=new_env, refresh=refresh)
-        ots_key: Fig = config_svc.get_fig_simple(PS_FIGGY_OTS_KEY_ID)
+        ots_key: Fig = config_svc.get_fig_with_cache(PS_FIGGY_OTS_KEY_ID)
 
         return OTSService(self.__ssm(env=new_env, refresh=refresh),
                           self.__kms(env=new_env, refresh=refresh),
@@ -210,6 +212,7 @@ class ServiceRegistry:
         """
         return self.session_mgr.get_session(env, prompt=False)
 
+    @Utils.trace
     @refreshable_cache('ssm-dao')
     @lock_boto_client_creation
     def __ssm(self, env: GlobalEnvironment, refresh: bool) -> SsmDao:
@@ -218,6 +221,7 @@ class ServiceRegistry:
         """
         return SsmDao(self.__env_session(env, refresh).client('ssm'))
 
+    @Utils.trace
     @refreshable_cache('kms-dao')
     @lock_boto_client_creation
     def __kms(self, env: GlobalEnvironment, refresh: bool) -> KmsDao:

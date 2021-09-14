@@ -34,7 +34,7 @@ class Put(OTSCommand):
         expires_in_hours = Utils.safe_cast(expires_in_hours, float, expires_in_hours)
         self._utils.validate(isinstance(expires_in_hours, int) or isinstance(expires_in_hours, float),
                              "You must provide a number of hours for when this secret should expire. No strings accepted.")
-        self._utils.validate(expires_in_hours < 48, "You may not specify an expiration time more than 48 hours in the future.")
+        self._utils.validate(expires_in_hours <= 48, "You may not specify an expiration time more than 48 hours in the future.")
 
         self._ots.put_ots(secret_id, value, password, expires_in_hours)
         self._out.print(f"\n\nTo share this secret, recipients will need the following")

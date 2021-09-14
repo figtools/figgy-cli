@@ -127,15 +127,16 @@ class CacheManager:
     @wipe_bad_cache
     def get_or_refresh(self, cache_key: str, refresher: Callable, *args, max_age: int = DEFAULT_REFRESH_INTERVAL) \
             -> Tuple[int, Any]:
-
         assert isinstance(max_age, int), "Invalid max_age provided for session, it must be of type <int>"
 
         last_write, val = self.get(cache_key)
         if Utils.millis_since_epoch() - last_write > max_age or not val:
             new_val = refresher(*args)
             self.write(cache_key, new_val)
+            log.info(f"{cache_key} not found in cache. It was fetched.")
             return Utils.millis_since_epoch(), new_val
         else:
+            log.info(f"Value for key: {cache_key} was found in cache.")
             return last_write, val
 
     @prime_cache

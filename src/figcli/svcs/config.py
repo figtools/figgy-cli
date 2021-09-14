@@ -40,6 +40,7 @@ class ConfigService:
     MEMORY_CACHED_NAMES: Set[str] = []
     MEMORY_CACHE_REFRESH_INTERVAL: int = 5000
     MEMORY_CACHE_LAST_REFRESH_TIME: int = 0
+    DEFAULT_FIG_CACHE_DURATION: int = 60 * 60 * 24 * 7 * 1000  # 1 week in MS
 
     def __init__(self, config_dao: ConfigDao, ssm: SsmDao, replication_dao: ReplicationDao,
                  cache_mgr: CacheManager, kms_svc: KmsService, run_env: RunEnv):
@@ -133,6 +134,10 @@ class ConfigService:
 
     def get_fig_simple(self, name: str) -> Fig:
         return self._fig_svc.get_simple(name)
+
+    def get_fig_with_cache(self, name: str, cache_duration: int = DEFAULT_FIG_CACHE_DURATION):
+        last_write, value = self._cache_mgr.get_or_refresh(name, self.get_fig_simple, name, max_age=cache_duration)
+        return value
 
     def set_fig(self, fig: Fig):
         self._fig_svc.set(fig)
