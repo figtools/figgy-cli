@@ -20,7 +20,7 @@ from filelock import FileLock
 
 from figcli.commands.command_context import CommandContext
 from figcli.config import BOTO3_CLIENT_FILE_LOCK_PATH, PS_FIGGY_ENV_ALIAS, PS_FIGGY_UTILITY_ACCOUNT_ID, \
-    PS_FIGGY_CURRENT_ACCOUNT_ID, PS_FIGGY_OTS_KEY_ID, PS_FIGGY_REGIONS
+    PS_FIGGY_CURRENT_ACCOUNT_ID, PS_FIGGY_OTS_KEY_ID, PS_FIGGY_REGIONS, FIGGY_DEFAULT_ROLE_NAME
 from figcli.config.tuning import DYNAMO_DB_MAX_POOL_SIZE, MAX_CACHED_BOTO_POOLS
 from figcli.models.assumable_role import AssumableRole
 from figcli.models.role import Role
@@ -171,6 +171,7 @@ class ServiceRegistry:
         Returns a hydrated & properly configured One-time-secret service. This service will be configured for the appropriate
         "utility" account by the registry.
         """
+
         new_env = env
 
         try:
@@ -179,15 +180,15 @@ class ServiceRegistry:
             log.debug(f"Got utility account id: {utility_account_id}")
             current_account_id: Fig = config_svc.get_fig_with_cache(PS_FIGGY_CURRENT_ACCOUNT_ID).value
             log.debug(f"Got current session alias: {current_account_id}")
-            new_role = Role(role='figgy-default', full_name='figgy-default')
+            new_role = Role(role=FIGGY_DEFAULT_ROLE_NAME, full_name='figgy-default')
             regions = config_svc.get_fig_with_cache(PS_FIGGY_REGIONS)
             ots_region = json.loads(regions.value)[0]
 
-            if utility_account_id != current_account_id:
-                new_env = GlobalEnvironment(role=AssumableRole(account_id=utility_account_id,
-                                                               run_env=RunEnv(env="utility", account_id=utility_account_id),
-                                                               role=new_role),
-                                            region=ots_region)
+            new_env = GlobalEnvironment(role=AssumableRole(account_id=utility_account_id,
+                                                           run_env=RunEnv(env="utility", account_id=utility_account_id),
+                                                           role=new_role,
+                                                           provider_name=env.role.provider_name),
+                                        region=ots_region)
         except BaseException as e:
             raise InvalidFiggyConfigurationException(f"Unable to initialize one-time-secret service. Are you sure your "
                                                      f"'utility_account_alias' was set to a valid value when you configured "

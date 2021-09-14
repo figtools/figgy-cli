@@ -158,26 +158,30 @@ class OktaSessionProvider(SSOSessionProvider, ABC):
 
         # SAML arns should look something like this:
         # arn:aws:iam::106481321259:saml-provider/okta,arn:aws:iam::106481321259:role/figgy-dev-data
+        # One exception is the `figgy-default` role.
         pattern = r'^arn:aws:iam::([0-9]+):saml-provider/(\w+),arn:aws:iam::.*role/(\w+-(\w+)-(\w+))'
         assumable_roles: List[AssumableRole] = []
         for value in role_attribute.findall('.//saml2:AttributeValue', prefix_map):
-            result = re.search(pattern, value.text)
-            unparsable_msg = f'{value.text} is of an invalid pattern, it must match: {pattern} for figgy to ' \
-                             f'dynamically map account_id -> run_env -> role for OKTA users.'
-            if not result:
-                Utils.stc_error_exit(unparsable_msg)
+            if FIGGY_DEFAULT_ROLE_NAME not in value:
+                result = re.search(pattern, value.text)
+                unparsable_msg = f'{value.text} is of an invalid pattern, it must match: {pattern} for figgy to ' \
+                                 f'dynamically map account_id -> run_env -> role for OKTA users. If this is not a figgy role, ' \
+                                 f'ignore this message.'
+                if not result:
+                    Utils.stc_warn(unparsable_msg)
+                    continue
 
-            result.groups()
-            account_id, provider_name, role_name, run_env, role = result.groups()
+                result.groups()
+                account_id, provider_name, role_name, run_env, role = result.groups()
 
-            if not account_id or not run_env or not role_name or not role:
-                Utils.stc_error_exit(unparsable_msg)
-            else:
-                assumable_roles.append(AssumableRole(account_id=account_id,
-                                                     role=Role(role=role, full_name=role_name),
-                                                     run_env=RunEnv(env=run_env),
-                                                     provider_name=provider_name,
-                                                     profile=None))
+                if not account_id or not run_env or not role_name or not role:
+                    Utils.stc_error_exit(unparsable_msg)
+                else:
+                    assumable_roles.append(AssumableRole(account_id=account_id,
+                                                         role=Role(role=role, full_name=role_name),
+                                                         run_env=RunEnv(env=run_env),
+                                                         provider_name=provider_name,
+                                                         profile=None))
         return assumable_roles
 
     def cleanup_session_cache(self):

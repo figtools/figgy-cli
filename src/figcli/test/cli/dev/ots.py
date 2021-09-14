@@ -19,13 +19,13 @@ class DevOTS(FiggyTest):
         super().__init__(None, extra_args=extra_args)
 
     def __child_get(self):
-        child = pexpect.spawn(f'python -m figcli ots {ots_get.name} '
+        child = pexpect.spawn(f'figgy ots {ots_get.name} '
                                     f'--skip-upgrade {self.extra_args}', timeout=45, encoding='utf-8')
         self.__init_child(child)
         return child
 
     def __child_put(self):
-        child = pexpect.spawn(f'python -m figcli ots {ots_put.name} '
+        child = pexpect.spawn(f'figgy ots {ots_put.name} '
                       f'--skip-upgrade {self.extra_args}', timeout=45, encoding='utf-8')
         self.__init_child(child)
         return child
@@ -70,7 +70,7 @@ class DevOTS(FiggyTest):
         child.sendcontrol('u')  # deletes the auto-inputted text
         child.sendline(str(expires))
         output = self.readline(count=20, child=child)
-        secret_id = re.search(r'Secret Id -> ([\w+-]+)', output, flags=re.MULTILINE).group(1)
+        secret_id = re.search(r'.*Secret Id.* -> ([\w+-]+)', output, flags=re.MULTILINE).group(1)
         self.log(f'Parsed secret: {secret_id}')
         return secret_id
 

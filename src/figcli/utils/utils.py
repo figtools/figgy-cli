@@ -164,6 +164,11 @@ class Utils:
     def stc_notify(message: str):
         print(message)
 
+
+    @staticmethod
+    def stc_warn(message: str):
+        print(f"WARNING: {message}")
+
     def merge_config_contents(self, a: Dict, b: Dict, a_path: str, b_path: str):
         for key in b:
             if isinstance(b[key], dict):

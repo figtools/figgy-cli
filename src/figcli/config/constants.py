@@ -23,6 +23,7 @@ BREW_FORMULA = 'figtools/figgy/figgy'
 # Role names are assumed to be prefixed with `figgy-` - Users may override by setting the below ENV variable.
 FIGGY_ROLE_NAME_PREFIX = 'figgy-'
 FIGGY_ROLE_PREFIX_OVERRIDE_ENV = 'FIGGY_ROLE_PREFIX_OVERRIDE'
+FIGGY_DEFAULT_ROLE_NAME = 'figgy-default'
 
 # Table-specific Constants
 REPL_TABLE_NAME = "figgy-config-replication"
