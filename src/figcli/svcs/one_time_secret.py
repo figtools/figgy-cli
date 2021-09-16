@@ -1,6 +1,8 @@
 import base64
 import datetime
-from typing import Optional
+import random
+import string
+from typing import Optional, Union
 
 from figgy.data.dao.kms import KmsDao
 from figgy.data.dao.ssm import SsmDao
@@ -21,11 +23,13 @@ class OTSService:
         self._kms = kms
         self.kms_id = kms_id
 
-    def get_ots(self, name: str, password: str) -> Optional[str]:
+    def get_ots(self, secret_id: str) -> Optional[str]:
         """
         Takes a one-time-secret name and its associated password and returns the associated value (if it exists).
         """
-        param_name: str = f'{self.OTS_NAMESPACE}/{name}'
+
+        key, password = tuple(secret_id.split("--"))
+        param_name: str = f'{self.OTS_NAMESPACE}/{key}'
         encrypted_str_value = self._ssm.get_parameter(param_name)
         if encrypted_str_value:
             b64_encoded_value = encrypted_str_value.encode('utf-8')
@@ -35,11 +39,15 @@ class OTSService:
         else:
             return None
 
-    def put_ots(self, name: str, value: str, password: str, expires_in_hours: int = 1):
+    def put_ots(self, value: str, expires_in_hours: Union[int, float] = 1) -> str:
         """
         Takes a one-time-secret name, value, and password and encrypts and stores the one-time-secret.
+
+        returns: secret_id
         """
-        param_name: str = f'{self.OTS_NAMESPACE}/{name}'
+        secret_id = ''.join(random.choice(string.ascii_lowercase) for i in range(14))
+        password = ''.join(random.choice(string.ascii_lowercase) for i in range(14))
+        param_name: str = f'{self.OTS_NAMESPACE}/{secret_id}'
         encrypted_value = self._kms.encrypt(self.kms_id, value, password)
         b64_encoded_value = base64.b64encode(encrypted_value)
         decoded_str = b64_encoded_value.decode('utf-8')
@@ -56,3 +64,5 @@ class OTSService:
         }
 
         self._ssm.set_parameter(param_name, decoded_str, self.DEFAULT_DESCRIPTION, policies=[expiration_policy])
+
+        return f'{secret_id}--{password}'

@@ -24,9 +24,7 @@ class Get(OTSCommand):
         self._utils.validate("--" in secret_id, "Provided secret id is not a valid format.")
         self._utils.validate(len(secret_id.split("--")) == 2, "Provided secret id is not a valid format.")
 
-        secret_id, password = tuple(secret_id.split("--"))
-
-        value = self._ots.get_ots(secret_id, password)
+        value = self._ots.get_ots(secret_id)
 
         if value:
             self._out.print(f"\n[[Retrieved Value:]] {value}")

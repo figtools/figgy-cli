@@ -26,3 +26,8 @@ class Error:
     BAD_REQUEST = {'error_code': 'BAD_REQUEST',
                      'message': 'Invalid request submitted.',
                      'status_code': 400}
+
+    OTS_MISSING = {'error_code': 'OTS_MISSING',
+                   'message': 'The value associated with the provided ID does not exist, has already been retrieved, '
+                              'or has expired.',
+                   'status_code': 200}

@@ -24,8 +24,6 @@ class Put(OTSCommand):
         self._out = Output(colors_enabled)
 
     def _put(self):
-        secret_id = ''.join(random.choice(string.ascii_lowercase) for i in range(14))
-        password = ''.join(random.choice(string.ascii_lowercase) for i in range(14))
         value = Input.input(f"Please input a value to share: ")
 
         # Safe convert to int or float, then validate
@@ -36,9 +34,9 @@ class Put(OTSCommand):
                              "You must provide a number of hours for when this secret should expire. No strings accepted.")
         self._utils.validate(expires_in_hours <= 48, "You may not specify an expiration time more than 48 hours in the future.")
 
-        self._ots.put_ots(secret_id, value, password, expires_in_hours)
+        secret_id = self._ots.put_ots(value, expires_in_hours)
         self._out.print(f"\n\nTo share this secret, recipients will need the following")
-        self._out.print(f"\n[[Secret Id]] -> {secret_id}--{password}")
+        self._out.print(f"\n[[Secret Id]] -> {secret_id}")
         self._out.success(f"\n\nValue successfully stored, it will expire in {expires_in_hours} hours, or when retrieved.")
 
     def execute(self):

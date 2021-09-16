@@ -14,6 +14,7 @@ from figcli.ui.api.audit import AuditController
 from figcli.ui.api.config import ConfigController
 from figcli.ui.api.investigate import InvestigateController
 from figcli.ui.api.maintenance import MaintenanceController
+from figcli.ui.api.one_time_secret import OTSController
 from figcli.ui.api.usage import UsageController
 from figcli.ui.api.user import UserController
 from figcli.ui.controller import Controller
@@ -54,6 +55,7 @@ class App:
         self.controllers.append(AuditController('/audit', self._context, self._svc_registry))
         self.controllers.append(UsageController('/usage', self._context, self._svc_registry))
         self.controllers.append(InvestigateController('/investigate', self._context, self._svc_registry))
+        self.controllers.append(OTSController('/', self._context, self._svc_registry))
 
     def run_app(self):
         self.app.add_url_rule('/', 'index', self._goto_index, methods=['GET'])

@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from figcli.commands.command_context import CommandContext
 from figcli.models.assumable_role import AssumableRole
 from figcli.svcs.audit import AuditService
+from figcli.svcs.one_time_secret import OTSService
 from figcli.svcs.service_registry import ServiceRegistry
 from figcli.svcs.usage_tracking import UsageTrackingService
 from figcli.ui.exceptions import CannotRetrieveMFAException, InvalidCredentialsException, BadRequestParameters
@@ -56,6 +57,9 @@ class Controller:
 
     def _usage(self, refresh: bool = False) -> UsageTrackingService:
         return self._registry.usage_svc(self.get_environment(), refresh)
+
+    def _ots(self, refresh: bool = False) -> OTSService:
+        return self._registry.ots_svc(self.get_environment(), refresh)
 
     def routes(self) -> List[Route]:
         return self._routes
