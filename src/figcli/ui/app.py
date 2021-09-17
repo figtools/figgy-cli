@@ -1,4 +1,5 @@
 import logging
+import os
 from threading import Thread
 from typing import List
 
@@ -13,6 +14,7 @@ from figcli.ui.api.audit import AuditController
 from figcli.ui.api.config import ConfigController
 from figcli.ui.api.investigate import InvestigateController
 from figcli.ui.api.maintenance import MaintenanceController
+from figcli.ui.api.one_time_secret import OTSController
 from figcli.ui.api.usage import UsageController
 from figcli.ui.api.user import UserController
 from figcli.ui.controller import Controller
@@ -53,6 +55,7 @@ class App:
         self.controllers.append(AuditController('/audit', self._context, self._svc_registry))
         self.controllers.append(UsageController('/usage', self._context, self._svc_registry))
         self.controllers.append(InvestigateController('/investigate', self._context, self._svc_registry))
+        self.controllers.append(OTSController('/', self._context, self._svc_registry))
 
     def run_app(self):
         self.app.add_url_rule('/', 'index', self._goto_index, methods=['GET'])
@@ -66,6 +69,9 @@ class App:
         return send_from_directory(self._static_files_root_folder_path, file_relative_path_to_root, cache_timeout=-1)
 
     def run(self):
+        # Disables prod Flask warning. Base flask is not an issue due to our single-user case.
+        os.environ["WERKZEUG_RUN_MAIN"] = "true"
+
         CORS(self.app)
         for ctlr in self.controllers:
             for route in ctlr.routes():

@@ -15,6 +15,7 @@ class KmsService:
         self._kms = kms_dao
         self._ssm = ssm_dao
         self.account_id = self._ssm.get_parameter(ACCOUNT_ID_PATH)
+        self.region = self._ssm.get_parameter(REGION_PATH)
 
     def decrypt(self, base64_ciphertext) -> str:
         return self._kms.decrypt(base64_ciphertext)
@@ -23,7 +24,7 @@ class KmsService:
         return self._kms.decrypt_with_context(base64_ciphertext, context)
 
     def decrypt_parameter(self, parameter_name, encrypted_value: str):
-        parameter_arn = f"arn:aws:ssm:us-east-1:{self.account_id}:parameter{parameter_name}"
+        parameter_arn = f"arn:aws:ssm:{self.region}:{self.account_id}:parameter{parameter_name}"
 
         return self.decrypt_with_context(encrypted_value, {"PARAMETER_ARN": parameter_arn})
 
@@ -32,3 +33,6 @@ class KmsService:
             return self.decrypt_parameter(parameter_name, encrypted_value)
         except Exception as e:
             return encrypted_value
+
+    def encrypt(self, value: str, encryption_context: str):
+        self._kms.encrypt()

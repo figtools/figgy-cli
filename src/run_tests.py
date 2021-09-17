@@ -8,6 +8,7 @@ from figcli.test.cli.data.put import DataPut
 from figcli.test.cli.data.share import DataShare
 from figcli.test.cli.data.sync import DataSync
 from figcli.test.cli.dev.audit import DevAudit
+from figcli.test.cli.dev.ots import DevOTS
 from figcli.test.cli.dev.validate import DevValidate
 from figcli.test.cli.dev.browse import DevBrowse
 from figcli.test.cli.dev.prune import DevPrune
@@ -139,6 +140,7 @@ def dev_tests(profile=None, key_down_to_shared=4):
 
     if not profile:
         run_test("Dev Promote", DevPromote(extra_args=extra_args))
+        run_test("Dev OTS", DevOTS(extra_args=extra_args))
 
     # run_test("Dev List", DevList(extra_args=extra_args))
     run_test("Dev Audit", DevAudit(extra_args=extra_args))

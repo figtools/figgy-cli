@@ -164,6 +164,11 @@ class Utils:
     def stc_notify(message: str):
         print(message)
 
+
+    @staticmethod
+    def stc_warn(message: str):
+        print(f"WARNING: {message}")
+
     def merge_config_contents(self, a: Dict, b: Dict, a_path: str, b_path: str):
         for key in b:
             if isinstance(b[key], dict):
@@ -553,6 +558,12 @@ class Utils:
         matching_attr = [p for p in props if comparator in str(getattr(obj, p))]
         return bool(matching_attr)
 
+    @staticmethod
+    def safe_cast(val, to_type, default=None):
+        try:
+            return to_type(val)
+        except (ValueError, TypeError):
+            return default
 
 class InvalidSessionError(Exception):
     pass

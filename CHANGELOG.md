@@ -1,5 +1,9 @@
 Figgy CLI Changelog:
 
+## 1.2.0
+- Adding support for sharing auto-expiring one-read secrets in the figgy ui and cli. 
+- Stop sharing secrets with your colleagues through email!
+
 ## 1.1.3
 - Fixing bug with anonymous metric reporting.
 
