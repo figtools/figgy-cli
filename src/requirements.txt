@@ -12,7 +12,7 @@ urllib3==1.26.5 # MIT
 pyotp==2.3.0 # MIT
 python-u2flib-host==3.0.3 # BSD
 cryptography==3.3.2 # BSD
-requests==2.23.0 # Apache
+requests==2.26.0 # Apache
 filelock==3.0.12
 pygments==2.7.4
 cachetools==4.2.1
