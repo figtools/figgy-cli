@@ -48,6 +48,10 @@ class FiggyResponse(BaseModel):
         return FiggyResponse(error=FiggyError(**Error.FORCE_REAUTHENTICATION))
 
     @staticmethod
+    def ots_missing() -> "FiggyResponse":
+        return FiggyResponse(error=FiggyError(**Error.OTS_MISSING))
+
+    @staticmethod
     def invalid_parameters(missing_parameters: List[str]) -> "FiggyResponse":
         error = FiggyError(**Error.BAD_REQUEST)
         error.message = error.message + f" The following request parameter(s) were expected but missing or invalid: " \

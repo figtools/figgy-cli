@@ -76,8 +76,8 @@ class Notification:
         Standard colored prints - 'p' is for 'paragraph' like in html/css
         Text color = all text will be in this color except [[test contained in brackets]] which will be accent_color.
         """
-        self.message = self.message\
-            .replace("[[", f'{self.color.rs}{accent_color}')\
+        self.message = self.message \
+            .replace("[[", f'{self.color.rs}{accent_color}') \
             .replace("]]", f'{self.color.rs}{text_color}')
 
         print(f"{text_color}{self.message}{self.color.rs}")
@@ -111,6 +111,7 @@ class Notification:
 
     def print_h2(self):
         self.h2('', '', '')
+
 
 class Output:
     """

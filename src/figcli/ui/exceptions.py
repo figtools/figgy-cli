@@ -16,3 +16,7 @@ class BadRequestParameters(BaseException):
     def __init__(self, message: str, invalid_parameters: List[str]):
         self.message = message
         self.invalid_parameters = invalid_parameters
+
+
+class InvalidFiggyConfigurationException(BaseException):
+    pass

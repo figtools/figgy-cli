@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from figcli.commands.figgy_context import FiggyContext
 from figcli.config.sso import *
-from figcli.config.constants import GOOGLE_SESSION_CACHE_PATH
+from figcli.config.constants import GOOGLE_SESSION_CACHE_PATH, FIGGY_DEFAULT_ROLE_NAME
 from typing import Optional, Any, List
 
 from figcli.models.assumable_role import AssumableRole
@@ -77,27 +77,28 @@ class GoogleSessionProvider(SSOSessionProvider):
             pattern = r'^arn:aws:iam::([0-9]+):role/(\w+-(\w+)-(\w+)),.*saml-provider/(\w+)'
             assumable_roles: List[AssumableRole] = []
             for value in role_attribute.findall('.//saml2:AttributeValue', prefix_map):
-                result = re.search(pattern, value.text)
-                unparsable_msg = f'{value.text} is of an invalid pattern, it must match: {pattern} for figgy to ' \
-                                 f'dynamically map account_id -> run_env -> role for Google users. Are you sure that' \
-                                 f'you mapped your SAML Attributes correctly in Google Admin Console? The decoded SAML ' \
-                                 f'assertion that caused the error has been saved here: {ERROR_LOG_DIR}/saml-error.xml'
-                if not result:
-                    Utils.write_error('saml-error.xml', unparsable_msg)
-                    Utils.stc_error_exit(unparsable_msg)
+                if FIGGY_DEFAULT_ROLE_NAME not in value:
+                    result = re.search(pattern, value.text)
+                    unparsable_msg = f'{value.text} is of an invalid pattern, it must match: {pattern} for figgy to ' \
+                                     f'dynamically map account_id -> run_env -> role for Google users. Are you sure that' \
+                                     f'you mapped your SAML Attributes correctly in Google Admin Console? The decoded SAML ' \
+                                     f'assertion that caused the error has been saved here: {ERROR_LOG_DIR}/saml-error.xml'
+                    if not result:
+                        Utils.write_error('saml-error.xml', unparsable_msg)
+                        Utils.stc_error_exit(unparsable_msg)
 
-                result.groups()
-                account_id, role_name, run_env, role, provider_name = result.groups()
+                    result.groups()
+                    account_id, role_name, run_env, role, provider_name = result.groups()
 
-                if not account_id or not run_env or not role_name or not role:
-                    Utils.write_error('saml-error.xml', decoded_assertion)
-                    Utils.stc_error_exit(unparsable_msg)
-                else:
-                    assumable_roles.append(AssumableRole(account_id=account_id,
-                                                         role=Role(role=role, full_name=role_name),
-                                                         run_env=RunEnv(env=run_env),
-                                                         provider_name=provider_name,
-                                                         profile=None))
+                    if not account_id or not run_env or not role_name or not role:
+                        Utils.write_error('saml-error.xml', decoded_assertion)
+                        Utils.stc_error_exit(unparsable_msg)
+                    else:
+                        assumable_roles.append(AssumableRole(account_id=account_id,
+                                                             role=Role(role=role, full_name=role_name),
+                                                             run_env=RunEnv(env=run_env),
+                                                             provider_name=provider_name,
+                                                             profile=None))
 
             return assumable_roles
 

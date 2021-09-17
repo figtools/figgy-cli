@@ -20,7 +20,7 @@ class Audit(ConfigCommand):
                  colors_enabled: bool, config_context: ConfigContext):
         super().__init__(audit, colors_enabled, config_context)
         self._ssm = ssm_init
-        self._config = audit_init
+        self._audit_dao = audit_init
         self._config_completer = config_completer_init
         self._utils = Utils(colors_enabled)
         self._out = Output(colors_enabled)
@@ -30,7 +30,7 @@ class Audit(ConfigCommand):
 
         while audit_more:
             ps_name = Input.input(f"Please input a PS Name : ", completer=self._config_completer)
-            audit_logs = self._config.get_audit_logs(ps_name)
+            audit_logs = self._audit_dao.get_audit_logs(ps_name)
             result_count = len(audit_logs)
             if result_count > 0:
                 self._out.print(f"\nFound [[{result_count}]] results.")
