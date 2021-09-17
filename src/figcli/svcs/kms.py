@@ -33,3 +33,6 @@ class KmsService:
             return self.decrypt_parameter(parameter_name, encrypted_value)
         except Exception as e:
             return encrypted_value
+
+    def encrypt(self, value: str, encryption_context: str):
+        self._kms.encrypt()

@@ -1,7 +1,7 @@
 import random
 import getpass
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from prompt_toolkit.lexers import PygmentsLexer
 

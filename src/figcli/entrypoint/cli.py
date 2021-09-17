@@ -252,7 +252,6 @@ def main():
 
         cli: FiggyCLI = FiggyCLI(args)
         command: Command = cli.get_command()
-
         if hasattr(args, 'info') and args.info:
             command.print_help_text()
         else:
@@ -262,7 +261,9 @@ def main():
         Utils.stc_error_exit(e.args[0])
     except KeyboardInterrupt:
         pass
-    except Exception as e:
+    except SystemExit:
+        pass
+    except (BaseException, Exception) as e:
         try:
             error_reporter = FiggyErrorReporter(FiggySetup.stc_get_defaults(skip=True, profile=None))
             error_reporter.log_error(original_command, e)

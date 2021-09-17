@@ -14,6 +14,8 @@ from figcli.commands.help_factory import HelpFactory
 from figcli.commands.iam_context import IAMContext
 from figcli.commands.iam_factory import IAMFactory
 from figcli.commands.factory import Factory
+from figcli.commands.ots_context import OTSContext
+from figcli.commands.ots_factory import OTSFactory
 from figcli.commands.ui_factory import UIFactory
 from figcli.models.defaults.defaults import CLIDefaults
 from figgy.models.run_env import RunEnv
@@ -26,6 +28,8 @@ from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.auth.session_manager import SessionManager
 from figgy.data.dao.config import ConfigDao
 
+from figcli.svcs.one_time_secret import OTSService
+from figcli.svcs.service_registry import ServiceRegistry
 from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.utils import Utils
 from figcli.config import *
@@ -57,12 +61,14 @@ class CommandFactory(Factory):
         self._config = None
         self._kms = None
         self._s3_rsc = None
+        self._service_registry = None
         self._all_sessions = None
         self._config_svc = None
         self._cache_mgr = None
         self._rbac_config_view = None
         self._audit = None
         self._repl = None
+        self._ots_svc = None
         self.__env_lock = Lock()
         self.__mgr_lock = Lock()
 
@@ -189,6 +195,25 @@ class CommandFactory(Factory):
                                                            self._context.profile)
         return self._rbac_config_view
 
+    def __service_registry(self) -> ServiceRegistry:
+        """
+        Returns an initialized service registry that may be used to hydrate and build services
+        """
+        if not self._service_registry:
+            context = CommandContext(self._context.run_env, self._context.command, defaults=self._cli_defaults)
+            self._service_registry = ServiceRegistry(self.__session_manager(), context)
+
+        return self._service_registry
+
+    def __ots_svc(self) -> OTSService:
+        """
+        Returns a valid & hydrated One-time-secret servce
+        """
+        if not self._ots_svc:
+            self._ots_svc = self.__service_registry().ots_svc(env=self.__build_env())
+
+        return self._ots_svc
+
     def __init_sessions(self):
         """
         Bootstraps sessions (blocking) before we do threaded lookups that require these sessions.
@@ -213,7 +238,7 @@ class CommandFactory(Factory):
             futures = set()
             # Multiple threads to init resources saves 500 - 1000 MS
             with ThreadPoolExecutor(max_workers=5) as pool:
-                futures.add(pool.submit(self._ssm))
+                futures.add(pool.submit(self.__ssm))
                 futures.add(pool.submit(self.__kms))
                 futures.add(pool.submit(self.__s3_resource))
 
@@ -240,6 +265,11 @@ class CommandFactory(Factory):
         elif self._context.command in ui_commands or self._context.resource == ui:
             context = CommandContext(self._context.run_env, self._context.command, defaults=self._cli_defaults)
             factory = UIFactory(self._context.command, context, self.__session_manager(), self._context)
+
+        elif self._context.command in ots_commands or self._context.resource == ots:
+            context = OTSContext(self._context.run_env, self._context.role, defaults=self._cli_defaults)
+            factory = OTSFactory(self._context.command, context, self.__env_session(),
+                                 self._context.colors_enabled, self.__ots_svc())
 
         else:
             if self._context.command is None or self._context.resource:

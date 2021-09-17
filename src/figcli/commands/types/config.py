@@ -3,9 +3,7 @@ from typing import Optional
 from figcli.config import *
 from abc import ABC, abstractmethod
 from figcli.commands.config_context import ConfigContext
-from figcli.commands.command_context import CommandContext
 from figcli.commands.types.command import Command
-from figcli.models.defaults.defaults import CLIDefaults
 
 
 class ConfigCommand(Command, ABC):

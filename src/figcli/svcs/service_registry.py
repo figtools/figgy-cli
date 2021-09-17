@@ -1,3 +1,4 @@
+import json
 import logging
 from functools import wraps
 
@@ -13,11 +14,16 @@ from figgy.data.dao.replication import ReplicationDao
 from figgy.data.dao.ssm import SsmDao
 from figgy.data.dao.usage_tracker import UsageTrackerDao
 from figgy.data.dao.user_cache import UserCacheDao
+from figgy.models.fig import Fig
+from figgy.models.run_env import RunEnv
 from filelock import FileLock
 
 from figcli.commands.command_context import CommandContext
-from figcli.config import BOTO3_CLIENT_FILE_LOCK_PATH
+from figcli.config import BOTO3_CLIENT_FILE_LOCK_PATH, PS_FIGGY_ENV_ALIAS, PS_FIGGY_UTILITY_ACCOUNT_ID, \
+    PS_FIGGY_CURRENT_ACCOUNT_ID, PS_FIGGY_OTS_KEY_ID, PS_FIGGY_REGIONS, FIGGY_DEFAULT_ROLE_NAME
 from figcli.config.tuning import DYNAMO_DB_MAX_POOL_SIZE, MAX_CACHED_BOTO_POOLS
+from figcli.models.assumable_role import AssumableRole
+from figcli.models.role import Role
 from figcli.svcs.audit import AuditService
 from figcli.svcs.auth.session_manager import SessionManager
 from botocore.client import Config
@@ -25,8 +31,11 @@ from botocore.client import Config
 from figcli.svcs.cache_manager import CacheManager
 from figcli.svcs.config import ConfigService
 from figcli.svcs.kms import KmsService
+from figcli.svcs.one_time_secret import OTSService
 from figcli.svcs.usage_tracking import UsageTrackingService
+from figcli.ui.exceptions import InvalidFiggyConfigurationException
 from figcli.ui.models.global_environment import GlobalEnvironment
+from figcli.utils.utils import Utils
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
 
 log = logging.getLogger(__name__)
@@ -87,7 +96,7 @@ def refreshable_cache(cache_key):
 
 def lock_boto_client_creation(method):
     """
-    Locks boto client creationa cross threads to prevent occasional error messages due to non-thread safe nature of botoclients
+    Locks boto client creationa cross threads to prevent occasional error messages due to non-thread safe nature of botoclient
     creation.
     """
 
@@ -128,6 +137,7 @@ class ServiceRegistry:
                                     self.__user(env, refresh), self.config_svc(env, refresh),
                                     self.kms_svc(env, refresh), self.__cache_mgr(env))
 
+    @Utils.trace
     @refreshable_cache('config-svc')
     def config_svc(self, env: GlobalEnvironment, refresh: bool = False) -> ConfigService:
         """
@@ -154,6 +164,43 @@ class ServiceRegistry:
                                      config_svc=self.config_svc(env, refresh),
                                      profile=env.role.profile)
 
+    @Utils.trace
+    @refreshable_cache('ots-svc')
+    def ots_svc(self, env: GlobalEnvironment, refresh: bool = False) -> OTSService:
+        """
+        Returns a hydrated & properly configured One-time-secret service. This service will be configured for the appropriate
+        "utility" account by the registry.
+        """
+
+        new_env = env
+
+        try:
+            config_svc = self.config_svc(env=env, refresh=refresh)
+            utility_account_id: Fig = config_svc.get_fig_with_cache(PS_FIGGY_UTILITY_ACCOUNT_ID).value
+            log.debug(f"Got utility account id: {utility_account_id}")
+            current_account_id: Fig = config_svc.get_fig_with_cache(PS_FIGGY_CURRENT_ACCOUNT_ID).value
+            log.debug(f"Got current session alias: {current_account_id}")
+            new_role = Role(role=FIGGY_DEFAULT_ROLE_NAME, full_name='figgy-default')
+            regions = config_svc.get_fig_with_cache(PS_FIGGY_REGIONS)
+            ots_region = json.loads(regions.value)[0]
+
+            new_env = GlobalEnvironment(role=AssumableRole(account_id=utility_account_id,
+                                                           run_env=RunEnv(env="utility", account_id=utility_account_id),
+                                                           role=new_role,
+                                                           provider_name=env.role.provider_name),
+                                        region=ots_region)
+        except BaseException as e:
+            raise InvalidFiggyConfigurationException(f"Unable to initialize one-time-secret service. Are you sure your "
+                                                     f"'utility_account_alias' was set to a valid value when you configured "
+                                                     f"Figgy Cloud?") from e
+
+        config_svc = self.config_svc(env=new_env, refresh=refresh)
+        ots_key: Fig = config_svc.get_fig_with_cache(PS_FIGGY_OTS_KEY_ID)
+
+        return OTSService(self.__ssm(env=new_env, refresh=refresh),
+                          self.__kms(env=new_env, refresh=refresh),
+                          kms_id=ots_key.value)
+
     @refreshable_cache('cache-mgr')
     def __cache_mgr(self, env: GlobalEnvironment, refresh: bool = False):
         return CacheManager(f'{env.cache_key()}')
@@ -166,6 +213,7 @@ class ServiceRegistry:
         """
         return self.session_mgr.get_session(env, prompt=False)
 
+    @Utils.trace
     @refreshable_cache('ssm-dao')
     @lock_boto_client_creation
     def __ssm(self, env: GlobalEnvironment, refresh: bool) -> SsmDao:
@@ -174,6 +222,7 @@ class ServiceRegistry:
         """
         return SsmDao(self.__env_session(env, refresh).client('ssm'))
 
+    @Utils.trace
     @refreshable_cache('kms-dao')
     @lock_boto_client_creation
     def __kms(self, env: GlobalEnvironment, refresh: bool) -> KmsDao:
