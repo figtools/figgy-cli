@@ -14,6 +14,8 @@ from figcli.commands.help_factory import HelpFactory
 from figcli.commands.iam_context import IAMContext
 from figcli.commands.iam_factory import IAMFactory
 from figcli.commands.factory import Factory
+from figcli.commands.maintenance_context import MaintenanceContext
+from figcli.commands.maintenance_factory import MaintenanceFactory
 from figcli.commands.ots_context import OTSContext
 from figcli.commands.ots_factory import OTSFactory
 from figcli.commands.ui_factory import UIFactory
@@ -260,7 +262,13 @@ class CommandFactory(Factory):
             optional_args = self._context.find_matching_optional_arguments(help_commands)
             context = HelpContext(self._context.resource, self._context.command, optional_args, self._context.run_env,
                                   defaults=self._cli_defaults, role=self._context.role)
-            factory = HelpFactory(self._context.command, context, self._context, self.__config_service())
+            factory = HelpFactory(self._context.command, context, self._context)
+
+        elif self._context.find_matching_optional_arguments(maintenance_commands) or self._context.resource in maintenance_commands:
+            optional_args = self._context.find_matching_optional_arguments(maintenance_commands)
+            context = MaintenanceContext(self._context.resource, self._context.command, optional_args, self._context.run_env,
+                                  defaults=self._cli_defaults, role=self._context.role)
+            factory = MaintenanceFactory(self._context.command, context, self._context, self.__config_service())
 
         elif self._context.command in ui_commands or self._context.resource == ui:
             context = CommandContext(self._context.run_env, self._context.command, defaults=self._cli_defaults)

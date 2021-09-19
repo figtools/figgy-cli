@@ -1,6 +1,7 @@
 import sys
-from figcli.commands.help_context import HelpContext
-from figcli.commands.types.help import HelpCommand
+
+from figcli.commands.maintenance_context import MaintenanceContext
+from figcli.commands.types.maintenance import MaintenanceCommand
 from figcli.config import *
 from figcli.io.input import Input
 from figcli.io.output import Output
@@ -11,17 +12,17 @@ from figcli.svcs.upgrade_manager import UpgradeManager
 from figcli.utils.utils import Utils
 
 
-class Upgrade(HelpCommand):
+class Upgrade(MaintenanceCommand):
     """
     Drives the --version command
     """
 
-    def __init__(self, help_context: HelpContext, config_service: ConfigService):
-        super().__init__(version, help_context.defaults.colors_enabled, help_context)
+    def __init__(self, maintenance_context: MaintenanceContext, config_service: ConfigService):
+        super().__init__(version, maintenance_context.defaults.colors_enabled, maintenance_context)
         self.tracker = VersionTracker(self.context.defaults, config_service)
-        self.upgrade_mgr = UpgradeManager(help_context.defaults.colors_enabled)
-        self._utils = Utils(colors_enabled=help_context.defaults.colors_enabled)
-        self._out = Output(colors_enabled=help_context.defaults.colors_enabled)
+        self.upgrade_mgr = UpgradeManager(maintenance_context.defaults.colors_enabled)
+        self._utils = Utils(colors_enabled=maintenance_context.defaults.colors_enabled)
+        self._out = Output(colors_enabled=maintenance_context.defaults.colors_enabled)
 
     def upgrade(self):
         latest_version: FiggyVersionDetails = self.tracker.get_version()

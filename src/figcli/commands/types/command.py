@@ -2,6 +2,7 @@ from typing import Union
 
 from figcli.commands.config_context import ConfigContext
 from figcli.commands.help_context import HelpContext
+from figcli.commands.maintenance_context import MaintenanceContext
 from figcli.commands.ots_context import OTSContext
 from figcli.config import *
 from figcli.config.style.terminal_factory import TerminalFactory
@@ -16,7 +17,7 @@ class Command(ABC):
     """
 
     def __init__(self, command_type: CliCommand, colors_enabled: bool,
-                 context: Union[CommandContext, HelpContext, ConfigContext, OTSContext]):
+                 context: Union[CommandContext, HelpContext, ConfigContext, OTSContext, MaintenanceContext]):
         self.type = command_type
         self.run_env = context.run_env
         self.c = TerminalFactory(colors_enabled).instance().get_colors()
