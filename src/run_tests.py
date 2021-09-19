@@ -140,6 +140,7 @@ def dev_tests(profile=None, key_down_to_shared=4):
 
     if not profile:
         run_test("Dev Promote", DevPromote(extra_args=extra_args))
+        run_test("Dev OTS", DevOTS(extra_args=extra_args))
 
     # run_test("Dev List", DevList(extra_args=extra_args))
     run_test("Dev Audit", DevAudit(extra_args=extra_args))
@@ -151,7 +152,6 @@ def dev_tests(profile=None, key_down_to_shared=4):
     run_test("Dev Export", DevExport(extra_args=extra_args))
     run_test("Dev Edit", DevEdit(extra_args=extra_args))
     run_test("Dev Validate", DevValidate(extra_args=extra_args))
-    run_test("Dev OTS", DevOTS(extra_args=extra_args))
 
 
 def data_tests():
