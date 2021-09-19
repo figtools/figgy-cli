@@ -4,6 +4,7 @@ from figcli.commands.types.help import HelpCommand
 from figcli.config import *
 from figcli.io.input import Input
 from figcli.io.output import Output
+from figcli.svcs.config import ConfigService
 from figcli.svcs.observability.anonymous_usage_tracker import AnonymousUsageTracker
 from figcli.svcs.observability.version_tracker import VersionTracker, FiggyVersionDetails
 from figcli.svcs.upgrade_manager import UpgradeManager
@@ -15,9 +16,9 @@ class Upgrade(HelpCommand):
     Drives the --version command
     """
 
-    def __init__(self, help_context: HelpContext):
+    def __init__(self, help_context: HelpContext, config_service: ConfigService):
         super().__init__(version, help_context.defaults.colors_enabled, help_context)
-        self.tracker = VersionTracker(self.context.defaults)
+        self.tracker = VersionTracker(self.context.defaults, config_service)
         self.upgrade_mgr = UpgradeManager(help_context.defaults.colors_enabled)
         self._utils = Utils(colors_enabled=help_context.defaults.colors_enabled)
         self._out = Output(colors_enabled=help_context.defaults.colors_enabled)
@@ -49,9 +50,15 @@ class Upgrade(HelpCommand):
         if latest_version.version == VERSION:
             self._out.success(f'You are currently using the latest version of [[{CLI_NAME}]]: [[{VERSION}]]')
             upgrade_it = False
-
-        elif self.tracker.upgrade_available(VERSION, latest_version.version):
+        elif self.tracker.upgrade_available():
             self._out.notify_h2(f"New version: [[{latest_version.version}]] is more recent than your version: [[{VERSION}]]")
+            upgrade_it = True
+        elif not self.tracker.cloud_version_compatible_with_upgrade():
+            self._out.notify_h2(f"Version [[{self.tracker.get_version().version}]] of the Figgy CLI is available but your "
+                                f"current version of Figgy Cloud ([[{self.tracker.current_cloud_version()}]]) is not compatible."
+                                f" Your administrator must first update FiggyCloud to at least version: "
+                                f"[[{self.tracker.required_cloud_version()}]] before you can upgrade Figgy.")
+            upgrade_it = False
         else:
             self._out.notify_h2(f"Your version: [[{VERSION}]] is more recent then the current recommended version "
                                 f"of {CLI_NAME}: [[{latest_version.version}]]")
@@ -71,11 +78,11 @@ class Upgrade(HelpCommand):
 
             if install_success:
                 self._out.success(f"Installation successful! Exiting. Rerun `[[{CLI_NAME}]]` "
-                      f"to use the latest version!")
+                                  f"to use the latest version!")
             else:
                 self._out.warn(f"\nUpgrade may not have been successful. Check by re-running "
-                      f"[[`{CLI_NAME}` --version]] to see if it was. If it wasn't, please reinstall [[`{CLI_NAME}`]]. "
-                      f"See {INSTALL_URL}.")
+                               f"[[`{CLI_NAME}` --version]] to see if it was. If it wasn't, please reinstall [[`{CLI_NAME}`]]. "
+                               f"See {INSTALL_URL}.")
 
     def install_mac(self, latest_version: FiggyVersionDetails) -> bool:
         install_path = '/usr/local/bin/figgy'
@@ -95,7 +102,7 @@ class Upgrade(HelpCommand):
             return True
         else:
             self._out.print(f'\n[[Auto-upgrade aborted. To upgrade through brew run:]] \n'
-                  f'-> brew upgrade figtools/figgy/figgy')
+                            f'-> brew upgrade figtools/figgy/figgy')
             self._out.warn(f"\n\nYou may continue to manage [[{CLI_NAME}]] through Homebrew, but doing so will "
                            f"limit some upcoming functionality around canary releases, rollbacks, and dynamic "
                            f"version-swapping.")

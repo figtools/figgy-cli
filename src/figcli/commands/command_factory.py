@@ -260,7 +260,7 @@ class CommandFactory(Factory):
             optional_args = self._context.find_matching_optional_arguments(help_commands)
             context = HelpContext(self._context.resource, self._context.command, optional_args, self._context.run_env,
                                   defaults=self._cli_defaults, role=self._context.role)
-            factory = HelpFactory(self._context.command, context, self._context)
+            factory = HelpFactory(self._context.command, context, self._context, self.__config_service())
 
         elif self._context.command in ui_commands or self._context.resource == ui:
             context = CommandContext(self._context.run_env, self._context.command, defaults=self._cli_defaults)
