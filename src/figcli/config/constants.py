@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # If cloud has been updated with required changes, please updated REQUIRES_CLI_VERSION in figtools/figgy
-VERSION = '1.2.0'
+VERSION = '1.2.1'
 CLI_NAME = 'figgy'
 PROJECT_NAME = 'figgy'
 
@@ -90,6 +90,10 @@ PS_FIGGY_UTILITY_ACCOUNT_ID = '/figgy/utility-account-id'
 PS_FIGGY_OTS_KEY_ID = '/figgy/kms/figgy-ots-key-id'
 PS_FIGGY_ENV_ALIAS = '/figgy/env_alias'
 PS_FIGGY_CURRENT_ACCOUNT_ID = '/figgy/account_id'
+<<<<<<< HEAD
+PS_CLOUD_VERSION_PATH = '/figgy/cloud/version'
+=======
+>>>>>>> master
 
 # Replication Types:
 repl_types = [REPL_TYPE_APP, REPL_TYPE_MERGE]

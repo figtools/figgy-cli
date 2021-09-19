@@ -1,7 +1,12 @@
 Figgy CLI Changelog:
 
+## 1.2.1
+- Making `--version` and `--upgrade` commands now consult the current installed figgy-cloud version 
+before attempting auto-upgrade.
+
 ## 1.2.0
-- Adding support for sharing auto-expiring one-read secrets in the figgy ui and cli. 
+- **Requires Figgy Cloud version 1.1.0**
+- Added support for sharing auto-expiring one-read secrets in the figgy ui and cli.
 - Stop sharing secrets with your colleagues through email!
 
 ## 1.1.3

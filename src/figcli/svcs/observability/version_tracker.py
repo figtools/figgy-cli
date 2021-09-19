@@ -1,4 +1,6 @@
 from typing import Optional, Tuple, Dict
+
+import cachetools.func
 import requests
 import logging
 import random
@@ -10,7 +12,9 @@ from pydantic import BaseModel
 from figcli.config.constants import *
 from figcli.config.style.color import Color
 from figcli.config.style.terminal_factory import TerminalFactory
+from figcli.io.output import Output
 from figcli.models.defaults.defaults import CLIDefaults
+from figcli.svcs.config import ConfigService
 
 log = logging.getLogger(__name__)
 
@@ -19,6 +23,7 @@ class FiggyVersionDetails(BaseModel):
     version: str
     notify_chance: int
     changelog: str
+    cloud_version_requirement: str
 
     def changes_from(self, old_version: str):
         regex = f'.*(##+\s+{self.version}.*)##+\s+{old_version}.*'
@@ -44,7 +49,8 @@ class FiggyVersionDetails(BaseModel):
         return FiggyVersionDetails(
             version=version,
             notify_chance=int(notify_chance),
-            changelog=response.get('changelog')
+            changelog=response.get('changelog'),
+            cloud_version_requirement=response.get('cloud_version_requirement')
         )
 
 
@@ -52,11 +58,14 @@ class VersionTracker:
     _UPGRADE_CHECK_PERCENTAGE = 5  # % chance any decorated method execution will check for an upgrade
     _DISABLE_CHECK_ENV_VAR = "FIGGY_DISABLE_VERSION_CHECK"
 
-    def __init__(self, cli_defaults: CLIDefaults):
+    def __init__(self, cli_defaults: CLIDefaults, config_service: ConfigService):
         self._cli_defaults = cli_defaults
         self.c = TerminalFactory(self._cli_defaults.colors_enabled).instance().get_colors()
+        self._config = config_service
+        self._out = Output(colors_enabled=cli_defaults.colors_enabled)
 
     @staticmethod
+    @cachetools.func.ttl_cache(maxsize=2, ttl=100)
     def get_version() -> FiggyVersionDetails:
         result = requests.get(FIGGY_GET_VERSION_URL)
         if result.status_code == 200:
@@ -129,9 +138,39 @@ class VersionTracker:
         except IndentationError:
             pass
 
-    @staticmethod
-    def upgrade_available(current_version: str, new_version: str):
+    def current_version(self):
+        return VERSION
+
+    @cachetools.func.ttl_cache(maxsize=2, ttl=100)
+    def current_cloud_version(self):
+        return self._config.get_fig_simple(PS_CLOUD_VERSION_PATH).value
+
+    @cachetools.func.ttl_cache(maxsize=2, ttl=100)
+    def required_cloud_version(self):
+        details: FiggyVersionDetails = self.get_version()
+        return details.cloud_version_requirement
+
+    def cloud_version_compatible_with_upgrade(self):
+        req_cloud_version = self.required_cloud_version()
+        current_cloud_version: str = self.current_cloud_version()
+
+        cl_req_major = req_cloud_version.split('.')[0]
+        cl_req_minor = req_cloud_version.split('.')[1]
+        cl_req_patch = req_cloud_version.split('.')[2].strip('ab')
+        cl_cur_major = current_cloud_version.split('.')[0]
+        cl_cur_minor = current_cloud_version.split('.')[1]
+        cl_cur_patch = current_cloud_version.split('.')[2].strip('ab')
+
+        return cl_cur_major > cl_req_major or \
+               (cl_cur_major == cl_req_major and cl_cur_minor >= cl_req_minor) or \
+               (cl_cur_major == cl_req_major and cl_cur_minor == cl_req_minor and cl_cur_patch >= cl_req_patch)
+
+    def upgrade_available(self):
         try:
+            current_version = VERSION
+            details: FiggyVersionDetails = self.get_version()
+            new_version = details.version
+
             cu_major = current_version.split('.')[0]
             cu_minor = current_version.split('.')[1]
             cu_patch = current_version.split('.')[2].strip('ab')
@@ -139,14 +178,17 @@ class VersionTracker:
             new_minor = new_version.split('.')[1]
             new_patch = new_version.split('.')[2].strip('ab')
 
-            if new_major > cu_major:
-                return True
-            elif new_major >= cu_major and new_minor > cu_minor:
-                return True
-            elif new_major >= cu_major and new_minor >= cu_minor and new_patch > cu_patch:
-                return True
-            else:
-                return False
+            if self.cloud_version_compatible_with_upgrade():
+                if new_major > cu_major:
+                    return True
+                elif new_major >= cu_major and new_minor > cu_minor:
+                    return True
+                elif new_major >= cu_major and new_minor >= cu_minor and new_patch > cu_patch:
+                    return True
+                else:
+                    return False
+
+            return False
         except IndentationError:
             pass
 
