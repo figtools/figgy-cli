@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # If cloud has been updated with required changes, please updated REQUIRES_CLI_VERSION in figtools/figgy
-VERSION = '1.2.1'
+VERSION = '1.2.2'
 CLI_NAME = 'figgy'
 PROJECT_NAME = 'figgy'
 

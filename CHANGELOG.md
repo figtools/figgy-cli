@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.2
+- Fixing a bug whereby the latest version of the UI (including OTS work) was not embedded in the released CLI version.
+
 ## 1.2.1
 - Making `--version` and `--upgrade` commands now consult the current installed figgy-cloud version 
 before attempting auto-upgrade.
