@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.3
+- Adding support for OSX Big Sur x86.
+
 ## 1.2.2
 - Fixing a bug whereby the latest version of the UI (including OTS work) was not embedded in the released CLI version.
 
