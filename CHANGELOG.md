@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.4
+- Fixing a dependency issue for PYPI based figgy-cli installations.
+
 ## 1.2.3
 - Adding support for OSX Big Sur x86.
 

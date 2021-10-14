@@ -76,7 +76,7 @@ LOGIN_SANDBOX_HELP_TEXT = "Get a temporary session from the free figgy sandbox a
 
 MISSING_PS_NAME_MESSAGE = "Your application is missing at least one ParameterStore name that it expects to exist as " \
                           "defined in your figgy.json file. To resolve this issue, first try running the `figgy config "\
-                          " sync` command to validate and synchronize your expected configs."
+                          "sync` command to validate and synchronize your expected configs."
 PROFILE_HELP_TEXT = "Overrides all other figgy configurations and instead pulls ALL credentials from your local " \
                     "~/.aws/credentials file and uses that for all types of authorization. Ideal for CICD pipelines."
 IAM_RESTORE_HELP_TEXT = "Restores any credentials in ~/.aws/credentials that were automatically backed up by figgy."
