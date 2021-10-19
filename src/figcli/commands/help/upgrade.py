@@ -1,4 +1,5 @@
 import sys
+from typing import Optional
 
 from figcli.commands.maintenance_context import MaintenanceContext
 from figcli.commands.types.maintenance import MaintenanceCommand
@@ -17,7 +18,7 @@ class Upgrade(MaintenanceCommand):
     Drives the --version command
     """
 
-    def __init__(self, maintenance_context: MaintenanceContext, config_service: ConfigService):
+    def __init__(self, maintenance_context: MaintenanceContext, config_service: Optional[ConfigService]):
         super().__init__(version, maintenance_context.defaults.colors_enabled, maintenance_context)
         self.tracker = VersionTracker(self.context.defaults, config_service)
         self.upgrade_mgr = UpgradeManager(maintenance_context.defaults.colors_enabled)

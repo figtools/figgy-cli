@@ -15,6 +15,7 @@ from figcli.config.style.terminal_factory import TerminalFactory
 from figcli.io.output import Output
 from figcli.models.defaults.defaults import CLIDefaults
 from figcli.svcs.config import ConfigService
+from figcli.utils.utils import Utils
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ class VersionTracker:
     _UPGRADE_CHECK_PERCENTAGE = 5  # % chance any decorated method execution will check for an upgrade
     _DISABLE_CHECK_ENV_VAR = "FIGGY_DISABLE_VERSION_CHECK"
 
-    def __init__(self, cli_defaults: CLIDefaults, config_service: ConfigService):
+    def __init__(self, cli_defaults: CLIDefaults, config_service: Optional[ConfigService]):
         self._cli_defaults = cli_defaults
         self.c = TerminalFactory(self._cli_defaults.colors_enabled).instance().get_colors()
         self._config = config_service
@@ -143,7 +144,15 @@ class VersionTracker:
 
     @cachetools.func.ttl_cache(maxsize=2, ttl=100)
     def current_cloud_version(self):
-        return self._config.get_fig_simple(PS_CLOUD_VERSION_PATH).value
+        if self._config:
+            return self._config.get_fig_simple(PS_CLOUD_VERSION_PATH).value
+        else:
+            Utils.stc_error_exit("Before upgrading you must configure Figgy to ensure your version of "
+                                 f"the Figgy CLI will be compatible your installed version of Figgy Cloud. "
+                                 f"Please run `{CLI_NAME} --configure` before trying again. If you do not have an installed "
+                                 f"version of Figgy Cloud, you may log into the Figgy Sandbox and try again. "
+                                 f"`figgy login sandbox`. Good luck!")
+
 
     @cachetools.func.ttl_cache(maxsize=2, ttl=100)
     def required_cloud_version(self):

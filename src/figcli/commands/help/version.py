@@ -1,3 +1,5 @@
+from typing import Optional
+
 from figcli.commands.maintenance_context import MaintenanceContext
 from figcli.commands.types.maintenance import MaintenanceCommand
 from figcli.config import *
@@ -11,7 +13,7 @@ class Version(MaintenanceCommand):
     Drives the --version command
     """
 
-    def __init__(self, maint_context: MaintenanceContext, config_service: ConfigService):
+    def __init__(self, maint_context: MaintenanceContext, config_service: Optional[ConfigService]):
         super().__init__(version, maint_context.defaults.colors_enabled, maint_context)
         self.tracker = VersionTracker(self.context.defaults, config_service)
 

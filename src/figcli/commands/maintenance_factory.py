@@ -1,3 +1,5 @@
+from typing import Optional
+
 from figcli.commands.factory import Factory
 from figcli.commands.figgy_context import FiggyContext
 from figcli.commands.help.upgrade import Upgrade
@@ -10,14 +12,14 @@ from figcli.utils.utils import Utils, CollectionUtils
 
 
 class MaintenanceFactory(Factory):
-    def __init__(self, command: CliCommand, context: MaintenanceContext, figgy_context: FiggyContext, config: ConfigService):
+    def __init__(self, command: CliCommand, context: MaintenanceContext, figgy_context: FiggyContext, config: Optional[ConfigService]):
         self._command = command
         self._context = context
         self._figgy_context = figgy_context
         self._options = context.options
         self._utils = Utils(False)
         self._setup: FiggySetup = FiggySetup(self._figgy_context)
-        self._config: ConfigService = config
+        self._config: Optional[ConfigService] = config
 
     def instance(self):
         return self.get(self._command)

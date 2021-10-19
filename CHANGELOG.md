@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.5
+- Fixing a bug where the `version` command would error if run on an unconfigured figgy CLI installation.
+
 ## 1.2.4
 - Fixing a dependency issue for PYPI based figgy-cli installations.
 

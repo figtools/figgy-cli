@@ -10,6 +10,7 @@ from figcli.svcs.auth.okta.okta_session_provider import OktaSessionProvider
 from figcli.svcs.auth.profile.profile_session_provider import ProfileSessionProvider
 from figcli.svcs.auth.provider.session_provider import SessionProvider
 from figcli.svcs.auth.provider.sso_session_provider import SSOSessionProvider
+from figcli.svcs.auth.unselected.unselected_session_provider import UnselectedSessionProvider
 
 
 class SessionProviderFactory(Factory):
@@ -43,5 +44,7 @@ class SessionProviderFactory(Factory):
                 self.__profile_provider = ProfileSessionProvider(self._defaults, self._context)
 
             return self.__profile_provider
+        elif self._defaults.provider is Provider.UNSELECTED:
+            return UnselectedSessionProvider(self._defaults, self._context)
         else:
             raise NotImplementedError(f"Provider: {self._defaults.provider} is not currently supported.")

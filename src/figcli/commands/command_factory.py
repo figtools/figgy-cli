@@ -266,9 +266,15 @@ class CommandFactory(Factory):
 
         elif self._context.find_matching_optional_arguments(maintenance_commands) or self._context.resource in maintenance_commands:
             optional_args = self._context.find_matching_optional_arguments(maintenance_commands)
+
+            try:
+                cfg = self.__config_service()
+            except NotImplementedError:
+                cfg = None
+
             context = MaintenanceContext(self._context.resource, self._context.command, optional_args, self._context.run_env,
                                   defaults=self._cli_defaults, role=self._context.role)
-            factory = MaintenanceFactory(self._context.command, context, self._context, self.__config_service())
+            factory = MaintenanceFactory(self._context.command, context, self._context, cfg)
 
         elif self._context.command in ui_commands or self._context.resource == ui:
             context = CommandContext(self._context.run_env, self._context.command, defaults=self._cli_defaults)
