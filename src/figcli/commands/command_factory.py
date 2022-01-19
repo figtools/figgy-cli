@@ -4,6 +4,7 @@ import logging
 import uuid
 
 from figgy.data.dao.audit import AuditDao
+from figgy.data.dao.kms import KmsDao
 from figgy.data.dao.replication import ReplicationDao
 
 from figcli.commands.command_context import CommandContext
@@ -36,7 +37,7 @@ from figcli.ui.models.global_environment import GlobalEnvironment
 from figcli.utils.utils import Utils
 from figcli.config import *
 from figgy.data.dao.ssm import SsmDao
-from typing import Dict
+from typing import Dict, Optional
 from concurrent.futures import ThreadPoolExecutor, thread, as_completed
 
 from figcli.views.rbac_limited_config import RBACLimitedConfigView
@@ -71,6 +72,7 @@ class CommandFactory(Factory):
         self._audit = None
         self._repl = None
         self._ots_svc = None
+        self._kms_dao: Optional[KmsDao] = None
         self.__env_lock = Lock()
         self.__mgr_lock = Lock()
 
@@ -133,9 +135,15 @@ class CommandFactory(Factory):
         Returns a hydrated KMS Service object based on these selected ENV
         """
         if not self._kms:
-            self._kms: KmsService = KmsService(self.__env_session().client('kms'), self.__ssm())
+            self._kms: KmsService = KmsService(self.__kms_dao(), self.__ssm())
 
         return self._kms
+
+    def __kms_dao(self) -> KmsDao:
+        if not self._kms_dao:
+            self._kms_dao = KmsDao(self.__env_session().client('kms'))
+
+        return self._kms_dao
 
     def __config(self) -> ConfigDao:
         """
