@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.6
+- Fixing a bug where `share` command was printing unnecessary log statements. 
+
 ## 1.2.5
 - Fixing a bug where the `version` command would error if run on an unconfigured figgy CLI installation.
 

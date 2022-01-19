@@ -70,7 +70,6 @@ class Share(ConfigCommand):
                                      "proper permissions to share the provided Name.")
 
             namespace = self._utils.parse_namespace(dest)
-            print(f'RUN_ENV: {self.run_env}   ')
             repl_config = ReplicationConfig(destination=dest, env_alias=self.run_env.env,
                                             namespace=namespace, source=key, type=ReplicationType.APP.value)
             self._repl.put_config_repl(repl_config)
