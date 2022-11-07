@@ -55,6 +55,6 @@ ENV FIGGY_KEYRING_PASSWORD=$FIGGY_KEYRING_PASSWORD
 # Hydrates a cache across all 90 Integrated Role/Account/Region combinations. Makes the ui snappier :)
 RUN figgy config build-cache
 
-EXPOSE 5000
+EXPOSE 5111
 ENTRYPOINT ["figgy"]
 CMD ["ui"]

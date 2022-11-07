@@ -26,7 +26,7 @@ class UI(Command):
             app = App(self.context, self._session_mgr)
             app.run()
             self._out.success_h2("Loading Figgy UI")
-            webbrowser.open("http://localhost:5000/")
+            webbrowser.open("http://localhost:5111/")
             # Wait for Ctrl C to exit...
             while True:
                 time.sleep(1)
