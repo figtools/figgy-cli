@@ -98,7 +98,7 @@ jobs:
 
           echo "MacOs build is happening!!!"
           cd $GITHUB_WORKSPACE/src
-          pip3 install pyinstaller==4.3
+          pip3 install pyinstaller==4.10
           pip3 install -r requirements.txt
           pip3 install -r requirements-darwin.txt
 
@@ -191,7 +191,7 @@ jobs:
           cd $GITHUB_WORKSPACE/src
 
           # install requirements
-          pip3 install pyinstaller==4.3
+          pip3 install pyinstaller==4.10
           pip3 install -r requirements.txt
           pip3 install -r requirements-linux.txt
 
@@ -275,7 +275,7 @@ jobs:
           cd $GITHUB_WORKSPACE/src
 
           # install requirements
-          pip3 install pyinstaller==4.3
+          pip3 install pyinstaller==4.10
           pip3 install -r requirements.txt
           pip3 install -r requirements-windows.txt
 
