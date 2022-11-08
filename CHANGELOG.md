@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.7
+- Making Figgy compatible with latest version of MacOs by changing default port to 5111.
+
 ## 1.2.6
 - Fixing a bug where `share` command was printing unnecessary log statements. 
 
