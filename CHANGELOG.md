@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.8 
+- Upgrading flask and changes required for compatibility for flask 2.2.2
+
 ## 1.2.7
 - Making Figgy compatible with latest version of MacOs by changing default port to 5111.
 

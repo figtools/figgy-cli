@@ -1,8 +1,11 @@
+import functools
 import logging
 import os
+import sys
 from threading import Thread
-from typing import List
+from typing import List, Callable, Dict, Any, Tuple
 
+import werkzeug
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 
@@ -57,10 +60,15 @@ class App:
         self.controllers.append(InvestigateController('/investigate', self._context, self._svc_registry))
         self.controllers.append(OTSController('/', self._context, self._svc_registry))
 
+
     def run_app(self):
+        cli = sys.modules['flask.cli']
+        cli.show_server_banner = lambda *x: None
+        werkzeug.serving._ansi_style = self.__ansi_style_supressor(werkzeug.serving._ansi_style)
+
         self.app.add_url_rule('/', 'index', self._goto_index, methods=['GET'])
         # Todo set back to 127.0.0.1 after docker demos.
-        self.app.run(host='0.0.0.0', port=5111, debug=False)
+        self.app.run(host='127.0.0.1', port=5111, debug=False, use_reloader=False)
 
     def _goto_index(self):
         return self._serve_page("index.html")
@@ -70,7 +78,7 @@ class App:
 
     def run(self):
         # Disables prod Flask warning. Base flask is not an issue due to our single-user case.
-        os.environ["WERKZEUG_RUN_MAIN"] = "true"
+        # os.environ["WERKZEUG_RUN_MAIN"] = "true"
 
         CORS(self.app)
         for ctlr in self.controllers:
@@ -84,3 +92,13 @@ class App:
         app_thread = Thread(target=self.run_app, args=())
         app_thread.daemon = True
         app_thread.start()
+
+
+    def __ansi_style_supressor(self, func: Callable[..., Any]) -> Callable[..., Any]:
+        @functools.wraps(func)
+        def wrapper(*args: Tuple[Any, ...], **kwargs: Dict[str, Any]) -> Any:
+            if args and isinstance(args[0], str) and args[0].startswith('WARNING: '):
+                return ''
+            return func(*args, **kwargs)
+
+        return wrapper
