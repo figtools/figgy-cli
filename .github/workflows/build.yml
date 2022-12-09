@@ -78,7 +78,7 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9.7
+          python-version: 3.9.16
 
       - name: Build
         env:
@@ -163,7 +163,7 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9.7
+          python-version: 3.9.16
 
       - name: Install dependencies
         run: |
@@ -252,7 +252,7 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9.7
+          python-version: 3.9.16
 
       - name: Build
         shell: bash
