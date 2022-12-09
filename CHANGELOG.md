@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.9
+- Minor performance tuning for some dynamo db queries. 
+
 ## 1.2.8 
 - Upgrading flask and changes required for compatibility for flask 2.2.2
 
