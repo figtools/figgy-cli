@@ -1,5 +1,8 @@
 Figgy CLI Changelog:
 
+## 1.2.10
+- Upgrading figgy lib to fix a bug where replication table data may be stored in the wrong format.
+
 ## 1.2.9
 - Minor performance tuning for some dynamo db queries. 
 
