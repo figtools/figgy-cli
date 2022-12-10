@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_ui:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout Figgy UI
         uses: actions/checkout@v2
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '19.2'
+          node-version: '18'
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
@@ -51,7 +51,7 @@ jobs:
           cd $GITHUB_WORKSPACE/figgy-ui/app
 
           # Install dependencies
-          npm install
+          npm install --force
           npm install -g @angular/cli
 
           # Install app
