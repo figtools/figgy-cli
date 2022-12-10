@@ -45,6 +45,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
           VERSION: ${{ env.RELEASE_VERSION }}
+          NODE_OPTIONS: "--openssl-legacy-provider"
         run: |
           # Print working directory
           echo "Installing Figgy UI"
