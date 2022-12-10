@@ -51,7 +51,7 @@ jobs:
           cd $GITHUB_WORKSPACE/figgy-ui/app
 
           # Install dependencies
-          npm install
+          npm install --force
           npm install -g @angular/cli
 
           # Install app
