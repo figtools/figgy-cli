@@ -25,5 +25,5 @@ git+https://github.com/samuelcolvin/pydantic.git@v1.8.2
 
 
 ## Figgy UI
-flask==2.1.2 # BSD
+flask==2.3.2 # BSD
 flask-cors==3.0.10 # MIT
